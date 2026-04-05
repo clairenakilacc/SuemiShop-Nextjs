@@ -1,0 +1,227 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+/* remove blue line in links */
+a {
+  text-decoration: none;
+}
+/* dashboard panel fit to screen */
+/* Make html/body take full screen */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  display: flex;
+  flex-direction: column; /* stack header, main, footer vertically */
+  min-height: 100vh; /* fill the viewport height */
+  margin: 0;
+}
+
+/* my css */
+
+.dropdown-item-custom {
+  border-radius: 0 !important; /* keep square */
+  transition: background-color 0.2s;
+}
+
+.dropdown-item-custom:hover {
+  background-color: #6c757d; /* dark grey Bootstrap color */
+  color: white; /* ensure text is visible */
+}
+
+/* login form css */
+.login-page {
+  background-color: #ffffff;
+}
+
+.login-card {
+  max-width: 400px;
+  width: 100%;
+  border-radius: 12px;
+}
+
+/* Optional subtle fade-in animation */
+.login-card {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 🌸 Custom Rose Button (#FFAEBB) */
+.btn-rose {
+  background-color: #fb8296; /* base rose color */
+  border-color: #fb8296;
+  color: #fff;
+  transition: all 0.2s ease-in-out;
+}
+/* ffaebb  for hover*/
+
+.btn-rose:hover {
+  background-color: #fb8296; /* slightly darker on hover */
+  border-color: #fb8296;
+  color: #fff;
+}
+
+.btn-rose:active,
+.btn-rose:focus {
+  background-color: #fb8296; /* darker rose on click */
+  border-color: #fb8296;
+  box-shadow: 0 0 0 0.25rem rgba(255, 174, 187, 0.4);
+  color: #fff;
+}
+/* ffd2da */
+
+.btn-rose:disabled {
+  background-color: #ffd2da; /* light rose for disabled */
+  border-color: #ffd2da;
+  opacity: 0.8;
+}
+
+/* register button in login */
+
+/* loader image spinner */
+.loader-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: #ffffff; /* white background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loader-image {
+  animation: pulse 0.5s infinite ease-in-out;
+}
+
+/* Simple pulse animation */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* sidebar and submenu  */
+/* Sidebar links hover - make text white */
+nav .nav-link {
+  transition:
+    color 0.2s,
+    background-color 0.2s;
+}
+
+nav .nav-link:hover,
+nav .nav-link:focus {
+  color: white !important; /* ensures text becomes white */
+  background-color: #495057; /* optional: darken the background slightly */
+}
+
+/* Submenu links */
+nav ul.nav ul.nav-link,
+nav ul.nav li .nav-link {
+  transition:
+    color 0.2s,
+    background-color 0.2s;
+}
+
+nav ul.nav ul.nav-link:hover,
+nav ul.nav li .nav-link:hover {
+  color: white !important;
+  background-color: #495057; /* slightly dark grey on hover */
+}
+
+/* search bar */
+/* Search bar container */
+.search-bar-container {
+  width: 100%;
+  max-width: 300px; /* default for desktop */
+}
+
+/* Make it full width on small screens */
+@media (max-width: 768px) {
+  .search-bar-container {
+    max-width: 100%;
+  }
+}
+
+/* Style the dropdown to match input width */
+.search-bar-container .list-group {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 9999; /* ensure it's above table/modal */
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 0 0 4px 4px;
+}
+
+/* table is at the back */
+.table-responsive {
+  position: relative;
+  z-index: 1; /* table is behind dropdown */
+}
+/* 
+//logout button */
+
+.btn-pink-hover {
+  border-color: #ffb6c1;
+  color: black; /* default text color */
+  background-color: transparent;
+  transition: all 0.3s ease;
+}
+
+.btn-pink-hover:hover,
+.btn-pink-hover:focus,
+.btn-pink-hover:active {
+  background-color: #ffb6c1; /* pink background on hover/click/focus */
+  color: black; /* text stays black */
+  border-color: #ffb6c1; /* keep border pink */
+  box-shadow: none; /* remove Bootstrap focus shadow if any */
+}
