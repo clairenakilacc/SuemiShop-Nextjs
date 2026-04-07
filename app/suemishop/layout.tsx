@@ -372,7 +372,7 @@ export default function DashboardLayout({
               color: "#FF69B4", // optional pink color
             }}
           >
-            SuemiShop
+            {/* SuemiShop */}
           </h2>
           <button
             className="btn btn-outline-secondary btn-sm btn-pink-hover"
