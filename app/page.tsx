@@ -86,13 +86,13 @@ export default function HomePage() {
             </div>
 
             {/* Google login below with white background and same edges */}
-            <button
+            {/* <button
               onClick={handleGoogleLogin}
               className="flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-lg bg-white border border-gray-300 hover:bg-gray-100 transition"
             >
               <FaGoogle size={20} />
               Login with Google
-            </button>
+            </button> */}
           </div>
         ) : (
           <div className="flex gap-4">
