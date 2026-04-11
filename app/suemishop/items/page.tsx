@@ -7,9 +7,7 @@ import { supabase } from "@/lib/supabase";
 import SearchBar from "../../components/SearchBar";
 import ConfirmDelete from "../../components/ConfirmDelete";
 // import { DataTable, Column } from "../../components/DataTable";
-import ItemTable, {
-  ItemColumn,
-} from "../../components/Items/ItemTable";
+import ItemTable, { ItemColumn } from "../../components/Items/ItemTable";
 
 import BulkEdit from "../../components/BulkEdit";
 import DateRangePicker from "../../components/DateRangePicker";
@@ -18,8 +16,6 @@ import ImportButton from "../../components/ImportButton";
 import ExportButton from "../../components/ExportButton";
 import AddItemModal from "../../components/AddItemModal";
 import EditRowButton from "../../components/EditRowButton";
-import EditItemModal from "../../components/items/EditItemModal";
-import ViewItemModal from "../../components/items/ViewItemModal";
 import {
   dateNoTimezone,
   applyDiscount,
@@ -208,18 +204,6 @@ export default function SoldItemsPage() {
         header: "Action",
         accessor: (row) => (
           <div className="flex gap-2 justify-center">
-            <ViewRowButton
-              itemId={row.id!}
-              ModalComponent={ViewItemModal}
-              onSuccess={fetchItems}
-            />
-              
-  
-            <EditRowButton
-              itemId={row.id!}
-              ModalComponent={EditItemModal}
-              onSuccess={fetchItems}
-            />
             <ConfirmDelete
               confirmMessage={`Are you sure you want to delete item ${row.id}?`}
               onConfirm={async () => {
@@ -394,7 +378,7 @@ export default function SoldItemsPage() {
           >
             <i className="bi bi-calendar3 fs-5 text-secondary"></i>
           </button>
-            {/* <ToggleColumns columns={tableColumns} onChange={setTableColumns} /> */}
+          {/* <ToggleColumns columns={tableColumns} onChange={setTableColumns} /> */}
         </div>
       </div>
 
@@ -429,22 +413,20 @@ export default function SoldItemsPage() {
           </div>
         </div>
       )}
-<ItemTable
-  data={items}
-  columns={tableColumns}
-  rowKey="id"
-  selectable
-  selectedIds={selectedItems}
-  onToggleSelect={toggleSelectItem}
-  onToggleSelectAll={toggleSelectAll}
-  page={page}
-  pageSize={pageSize}
-  totalCount={totalCount}
-  onPageChange={setPage}
-  onPageSizeChange={setPageSize}
-/>
-
-
+      <ItemTable
+        data={items}
+        columns={tableColumns}
+        rowKey="id"
+        selectable
+        selectedIds={selectedItems}
+        onToggleSelect={toggleSelectItem}
+        onToggleSelectAll={toggleSelectAll}
+        page={page}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+      />
     </div>
   );
 }
