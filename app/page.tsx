@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { FaGoogle } from "react-icons/fa";
 import { ROUTES } from "./routes";
+import { useRouter } from "next/navigation";
+import LoadingButton from "./components/LoadingButton";
 
 export default function HomePage() {
   const bags = [
@@ -33,20 +35,8 @@ export default function HomePage() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  // Google login
-  const handleGoogleLogin = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: window.location.origin,
-        },
-      });
-      if (error) throw error;
-    } catch (err: any) {
-      console.error(err.message);
-    }
-  };
+  //loadingbutton
+  const router = useRouter();
 
   return (
     <main
@@ -70,19 +60,19 @@ export default function HomePage() {
           <div className="flex flex-col items-center gap-4">
             {/* Regular Login/Register */}
             <div className="flex gap-4">
-              <Link
+              <LoadingButton
                 href={ROUTES.LOGIN}
                 className="btn-rose px-6 py-3 font-semibold rounded-lg"
               >
                 Login
-              </Link>
+              </LoadingButton>
 
-              <Link
+              <LoadingButton
                 href={ROUTES.REGISTER}
                 className="px-6 py-3 font-semibold rounded-lg bg-black text-white hover:bg-gray-800 transition"
               >
                 Register
-              </Link>
+              </LoadingButton>
             </div>
 
             {/* Google login below with white background and same edges */}
