@@ -47,7 +47,7 @@ export default function RegisterPage() {
     text.replace(/\b\w/g, (char) => char.toUpperCase());
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     let updatedValue = value;
@@ -56,17 +56,22 @@ export default function RegisterPage() {
     let phoneNumberError = "";
 
     if (name === "name") {
+      // allow letters, space, dot, hyphen
       updatedValue = value.replace(/[^a-zA-Z .-]/g, "");
-      updatedValue = capitalizeWords(updatedValue);
 
+      // input validation for name
+      if (updatedValue.includes("..")) {
+        nameError = "Name cannot contain consecutive dots";
+      }
+      updatedValue = capitalizeWords(updatedValue);
       if (hasInvalidConsecutiveText(updatedValue)) {
         nameError = "Name cannot contain 4 consecutive vowels or consonants";
       }
     }
 
+    // input validation for email
     if (name === "email") {
       updatedValue = value.replace(/[^a-zA-Z0-9.@]/g, "");
-
       if (!updatedValue.endsWith("@gmail.com")) {
         emailError = "Email must end with @gmail.com";
       } else if (hasInvalidConsecutiveText(updatedValue)) {
@@ -74,17 +79,19 @@ export default function RegisterPage() {
       }
     }
 
+    // input validation for address
     if (name === "address") {
       updatedValue = value.slice(0, 100);
 
       if (hasInvalidConsecutiveText(updatedValue)) {
         toast.dismiss();
         toast.error(
-          "Address cannot contain 4 consecutive vowels or consonants"
+          "Address cannot contain 4 consecutive vowels or consonants",
         );
       }
     }
 
+    // input validation for phone_number
     if (name === "phone_number") {
       updatedValue = value.replace(/\D/g, "").slice(0, 11);
 
@@ -162,7 +169,7 @@ export default function RegisterPage() {
 
         if (!newRole || insertRoleError) {
           toast.error(
-            insertRoleError?.message || "Failed to create Shopper role"
+            insertRoleError?.message || "Failed to create Shopper role",
           );
           return;
         }
@@ -218,103 +225,111 @@ export default function RegisterPage() {
         <h2 className="fw-bold text-center mb-3">Register</h2>
 
         <form onSubmit={handleSubmit}>
-          <label className="form-label fw-semibold">Name</label>
-          <input
-            type="text"
-            name="name"
-            className={`form-control mb-1 ${errors.name ? "is-invalid" : ""}`}
-            placeholder="Full Name"
-            value={form.name}
-            onChange={handleChange}
-            required
-          />
-          {errors.name && (
-            <div className="text-danger small mb-2">{errors.name}</div>
-          )}
-
-          <label className="form-label fw-semibold">Email address</label>
-          <input
-            type="email"
-            name="email"
-            className={`form-control mb-1 ${errors.email ? "is-invalid" : ""}`}
-            placeholder="example@gmail.com"
-            value={form.email}
-            onChange={handleChange}
-            required
-          />
-          {errors.email && (
-            <div className="text-danger small mb-2">{errors.email}</div>
-          )}
-
-          <label className="form-label fw-semibold">Address</label>
-          <textarea
-            name="address"
-            className="form-control mb-2"
-            placeholder="Complete address"
-            value={form.address}
-            onChange={handleChange}
-            required
-            rows={3}
-            maxLength={100}
-          />
-          <small className="text-muted d-block mb-3">
-            {form.address.length}/100 characters
-          </small>
-
-          <label className="form-label fw-semibold">Phone Number</label>
-          <input
-            type="text"
-            name="phone_number"
-            className={`form-control mb-1 ${
-              errors.phone_number ? "is-invalid" : ""
-            }`}
-            placeholder="09XXXXXXXXX"
-            value={form.phone_number}
-            onChange={handleChange}
-            required
-          />
-          {errors.phone_number && (
-            <div className="text-danger small mb-3">{errors.phone_number}</div>
-          )}
-
-          <label className="form-label fw-semibold">Password</label>
-          <div className="input-group mb-3">
+          <div className="mb-4">
+            <label className="form-label fw-semibold">Name</label>
             <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              className="form-control"
-              placeholder="Password"
-              value={form.password}
+              type="text"
+              name="name"
+              className={`form-control mb-1 ${errors.name ? "is-invalid" : ""}`}
+              placeholder="Full Name"
+              value={form.name}
               onChange={handleChange}
               required
             />
-            <span
-              className="input-group-text"
-              style={{ cursor: "pointer" }}
-              onClick={() => setShowPassword((prev) => !prev)}
-            >
-              <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} />
-            </span>
+            {errors.name && (
+              <div className="text-danger small mb-2">{errors.name}</div>
+            )}
+
+            <label className="form-label fw-semibold">Address</label>
+            <input
+              type="text"
+              name="address"
+              className="form-control mb-2"
+              placeholder="Complete address"
+              value={form.address}
+              onChange={handleChange}
+              required
+              maxLength={100}
+            />
+            <small className="text-muted d-block mb-3">
+              {form.address.length}/100 characters
+            </small>
+
+            <label className="form-label fw-semibold">Phone Number</label>
+            <input
+              type="text"
+              name="phone_number"
+              className={`form-control mb-1 ${
+                errors.phone_number ? "is-invalid" : ""
+              }`}
+              placeholder="09XXXXXXXXX"
+              value={form.phone_number}
+              onChange={handleChange}
+              required
+            />
+            {errors.phone_number && (
+              <div className="text-danger small">{errors.phone_number}</div>
+            )}
           </div>
 
-          <label className="form-label fw-semibold">Confirm Password</label>
-          <div className="input-group mb-4">
+          <div className="mb-4">
+            <label className="form-label fw-semibold">Email address</label>
             <input
-              type={showConfirm ? "text" : "password"}
-              name="confirmPassword"
-              className="form-control"
-              placeholder="Confirm Password"
-              value={form.confirmPassword}
+              type="email"
+              name="email"
+              className={`form-control mb-1 ${errors.email ? "is-invalid" : ""}`}
+              placeholder="example@gmail.com"
+              value={form.email}
               onChange={handleChange}
               required
             />
-            <span
-              className="input-group-text"
-              style={{ cursor: "pointer" }}
-              onClick={() => setShowConfirm((prev) => !prev)}
-            >
-              <i className={`bi ${showConfirm ? "bi-eye-slash" : "bi-eye"}`} />
-            </span>
+            {errors.email && (
+              <div className="text-danger small mb-2">{errors.email}</div>
+            )}
+
+            <label className="form-label fw-semibold">Password</label>
+            <div className="input-group mb-3">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                className="form-control"
+                placeholder="Password"
+                value={form.password}
+                onChange={handleChange}
+                required
+              />
+              <span
+                className="input-group-text"
+                style={{ cursor: "pointer" }}
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                <i
+                  className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}
+                />
+              </span>
+            </div>
+
+            <label className="form-label fw-semibold">Confirm Password</label>
+            <div className="input-group mb-4">
+              <input
+                type={showConfirm ? "text" : "password"}
+                name="confirmPassword"
+                className="form-control"
+                placeholder="Confirm Password"
+                value={form.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+              <span
+                className="input-group-text"
+                style={{ cursor: "pointer" }}
+                onClick={() => setShowConfirm((prev) => !prev)}
+              >
+                <i
+                  className={`bi ${showConfirm ? "bi-eye-slash" : "bi-eye"}`}
+                />
+              </span>
+            </div>
           </div>
 
           <button

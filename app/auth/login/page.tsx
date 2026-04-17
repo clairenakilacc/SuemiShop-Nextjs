@@ -106,14 +106,9 @@ export default function LoginPage() {
           <button
             type="submit"
             className="btn btn-rose w-100 fw-bold"
-            onClick={(e) => {
-              if (loading) {
-                e.preventDefault();
-                return;
-              }
-            }}
+            disabled={loading}
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 

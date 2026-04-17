@@ -27,7 +27,7 @@ export default function LoadingButton({
     }
   };
 
-  const text = loading ? "..." : children;
+  const text = loading ? "Loading..." : children;
 
   if (href) {
     return (
