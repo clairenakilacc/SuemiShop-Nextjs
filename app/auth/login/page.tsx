@@ -98,15 +98,22 @@ export default function LoginPage() {
               onClick={() => setShowPassword((prev) => !prev)}
             >
               <i
-                className={`bi ${
-                  showPassword ? "bi-eye-slash" : "bi-eye"
-                }`}
+                className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}
               ></i>
             </span>
           </div>
 
-          <button className="btn btn-rose w-100 fw-bold" disabled={loading}>
-            {loading ? "Logging in..." : "Login"}
+          <button
+            type="submit"
+            className="btn btn-rose w-100 fw-bold"
+            onClick={(e) => {
+              if (loading) {
+                e.preventDefault();
+                return;
+              }
+            }}
+          >
+            Login
           </button>
         </form>
 
