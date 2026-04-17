@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface User {
   name?: string;
   email?: string;
   address?: string;
   gender?: string;
+  role?: any; // important: can be object
 }
 
 interface ProfileCardProps {
@@ -14,68 +15,52 @@ interface ProfileCardProps {
 }
 
 export default function ProfileCard({ user }: ProfileCardProps) {
-  // State to track loading
   const [loading, setLoading] = useState(true);
 
-  // Effect: consider user data "loaded" once user object exists
   useEffect(() => {
-    if (user) {
-      setLoading(false);
-    }
+    if (user) setLoading(false);
   }, [user]);
 
-  // Determine avatar emoji
   const isFemale =
     user?.gender === "female" || user?.email === "superadmin@gmail.com";
-  const avatarEmoji = isFemale ? "👧🏻" : "👦🏻";
 
-  // Safely handle missing fields
-  const name = user?.name || "Loading...";
-  const email = user?.email || "email@example.com";
-  const address = user?.address ?? "No address provided.";
+  // ✅ SAFE ROLE HANDLING
+  const roleName =
+    typeof user?.role === "object" ? user?.role?.name : user?.role;
 
   return (
-    <div
-      className="card text-center"
-      style={{
-        width: 360,
-        height: 500,
-        borderRadius: 15,
-        border: "none",
-        boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
-        position: "relative",
-      }}
-    >
-      <div className="card-body p-4">
-        {/* Avatar */}
+    <div className="w-full lg:w-[340px] flex justify-center lg:justify-start shrink-0">
+      <div className="w-full max-w-sm sm:max-w-md lg:max-w-sm bg-white rounded-xl shadow-md text-center p-4 sm:p-5 lg:p-6 min-w-0">
+        {/* AVATAR */}
         <div
-          className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+          className="mx-auto mb-4 flex items-center justify-center rounded-full"
           style={{
-            width: 160,
-            height: 160,
-            fontSize: 60,
-            backgroundColor: "#FFB6C1", //pink
+            width: "clamp(90px, 20vw, 130px)",
+            height: "clamp(90px, 20vw, 130px)",
+            fontSize: "clamp(36px, 6vw, 52px)",
+            backgroundColor: "#FFB6C1",
           }}
         >
-          {loading ? "⏳" : avatarEmoji}
+          {loading ? "⏳" : isFemale ? "👧🏻" : "👦🏻"}
         </div>
 
-        {/* Name */}
-        <h5 className="text-capitalize fw-bold mb-1 fs-4">
-          {loading ? "Loading..." : name}
-        </h5>
-
-        {/* Email */}
-        <p className="text-muted mb-4" style={{ fontSize: "0.95rem" }}>
-          {loading ? "Loading email..." : email}
+        {/* NAME */}
+        <p className="font-bold text-base sm:text-lg capitalize truncate w-full px-2">
+          {user?.name || "Loading..."}
+        </p>
+        {/* EMAIL */}
+        <p className="text-gray-500 text-sm sm:text-base truncate px-2 mt-1">
+          {user?.email || "email@example.com"}
         </p>
 
-        {/* Address */}
-        <p
-          className="text-muted text-capitalize"
-          style={{ lineHeight: 1.6, whiteSpace: "pre-line" }}
-        >
-          {loading ? "Fetching address..." : address}
+        {/* ADDRESS */}
+        <p className="text-gray-500 text-sm sm:text-base truncate mt-2 px-2">
+          {user?.address || "No address provided."}
+        </p>
+
+        {/* ROLE (FIXED) */}
+        <p className="text-gray-500 text-sm sm:text-base truncate mt-2 px-2">
+          Role: {roleName || "No role assigned"}
         </p>
       </div>
     </div>

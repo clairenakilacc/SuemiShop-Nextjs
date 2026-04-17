@@ -14,22 +14,21 @@ export default function DashboardLayout({
 }) {
   const [mounted, setMounted] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+
   const [usersMenuOpen, setUsersMenuOpen] = useState(false);
   const [itemsMenuOpen, setItemsMenuOpen] = useState(false);
   const [payslipsMenuOpen, setPayslipsMenuOpen] = useState(false);
-  const [userName, setUserName] = useState<string>("");
-  const [roleName, setRoleName] = useState<string>("");
+
+  const [userName, setUserName] = useState("");
+  const [roleName, setRoleName] = useState("");
   const [loading, setLoading] = useState(false);
+
   const router = useRouter();
 
   const MENU_ROLES = {
     itemsSection: ["Superadmin", "Admin"],
-    categories: ["Superadmin"],
-    inventories: ["Superadmin"],
     usersSection: ["Superadmin", "Manager"],
     payslipsSection: ["Superadmin", "Manager"],
-    attendance: ["Superadmin"],
-    settings: ["Superadmin"],
   };
 
   const canAccess = (roles: string[]) => roles.includes(roleName);
@@ -43,17 +42,10 @@ export default function DashboardLayout({
 
       if (stored) {
         user = JSON.parse(stored);
-        if (!user.role) {
-          const res = await fetch("/api/me");
-          const data = await res.json();
-          if (data.user) {
-            user = data.user;
-            localStorage.setItem("user", JSON.stringify(user));
-          }
-        }
       } else {
         const res = await fetch("/api/me");
         const data = await res.json();
+
         if (data.user) {
           user = data.user;
           localStorage.setItem("user", JSON.stringify(user));
@@ -70,10 +62,14 @@ export default function DashboardLayout({
     fetchUser();
   }, [router]);
 
-  const toggleSidebar = () => setCollapsed((p) => !p);
-  const toggleUsersMenu = () => setUsersMenuOpen((p) => !p);
-  const toggleItemsMenu = () => setItemsMenuOpen((p) => !p);
-  const togglePayslipsMenu = () => setPayslipsMenuOpen((p) => !p);
+  if (!mounted) return null;
+
+  const sidebarWidth = collapsed ? "70px" : "230px";
+
+  const handleNavClick = (path: string) => {
+    setLoading(true);
+    router.push(path);
+  };
 
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" });
@@ -81,15 +77,6 @@ export default function DashboardLayout({
     toast.success("Logged out successfully");
     router.push(ROUTES.HOME);
   };
-
-  const handleNavClick = (path: string) => {
-    setLoading(true);
-    router.push(path);
-  };
-
-  if (!mounted) return null;
-
-  const sidebarWidth = collapsed ? "60px" : "220px";
 
   return (
     <div
@@ -105,47 +92,51 @@ export default function DashboardLayout({
 
       {/* SIDEBAR */}
       <nav
-        className="bg-dark text-white d-flex flex-column p-3"
+        className="bg-dark text-white d-flex flex-column"
         style={{
           width: "var(--sidebar-width)",
-          transition: "width 0.3s ease",
+          height: "100vh",
           flexShrink: 0,
+          overflowY: "auto", // ✅ WHOLE SIDEBAR SCROLLS
+          overflowX: "hidden",
+          transition: "width 0.3s ease",
         }}
       >
-        {/* Toggle */}
-        <div
-          className={`w-100 d-flex ${
-            collapsed ? "justify-content-center" : "justify-content-end"
-          } mb-3`}
-        >
-          <button
-            className="btn btn-outline-light btn-sm"
-            onClick={toggleSidebar}
+        {/* TOGGLE + LOGO (inside same scroll) */}
+        <div className="p-3">
+          <div
+            className={`d-flex ${
+              collapsed ? "justify-content-center" : "justify-content-end"
+            } mb-3`}
           >
-            <i className="bi bi-list"></i>
-          </button>
+            <button
+              className="btn btn-outline-light btn-sm"
+              onClick={() => setCollapsed((p) => !p)}
+            >
+              <i className="bi bi-list"></i>
+            </button>
+          </div>
+
+          {!collapsed && (
+            <div className="d-flex justify-content-center mb-3">
+              <Link href={ROUTES.HOME}>
+                <img
+                  src="/images/logo2.png"
+                  alt="Logo"
+                  style={{ maxWidth: "120px" }}
+                />
+              </Link>
+            </div>
+          )}
         </div>
 
-        {/* Logo */}
-        {!collapsed && (
-          <div className="mb-4 w-100 d-flex justify-content-center">
-            <Link href={ROUTES.HOME}>
-              <img
-                src="/images/logo2.png"
-                alt="Logo"
-                className="img-fluid"
-                style={{ maxWidth: "120px" }}
-              />
-            </Link>
-          </div>
-        )}
-
-        <ul className="nav nav-pills flex-column grow">
-          {/* Dashboard */}
+        {/* MENU */}
+        <ul className="nav nav-pills flex-column px-2 pb-3">
+          {/* DASHBOARD */}
           <li className="nav-item mb-2">
             <button
-              className={`nav-link text-white d-flex align-items-center btn btn-dark w-100 ${
-                collapsed ? "justify-content-center" : "text-start"
+              className={`nav-link text-white btn btn-dark w-100 d-flex align-items-center ${
+                collapsed ? "justify-content-center" : ""
               }`}
               onClick={() => handleNavClick("/suemishop/dashboard")}
             >
@@ -158,14 +149,10 @@ export default function DashboardLayout({
           {canAccess(MENU_ROLES.itemsSection) && (
             <li className="nav-item mb-2">
               <button
-                className={`nav-link text-white d-flex align-items-center btn btn-dark w-100 ${
-                  collapsed
-                    ? "justify-content-center"
-                    : "justify-content-between"
-                }`}
-                onClick={toggleItemsMenu}
+                className="nav-link text-white btn btn-dark w-100 d-flex justify-content-between"
+                onClick={() => setItemsMenuOpen((p) => !p)}
               >
-                <span className="d-flex align-items-center">
+                <span>
                   <i className="bi bi-handbag"></i>
                   {!collapsed && <span className="ms-2">Items</span>}
                 </span>
@@ -181,27 +168,25 @@ export default function DashboardLayout({
 
               {itemsMenuOpen && !collapsed && (
                 <ul className="nav flex-column ms-3 mt-2">
-                  <li className="nav-item mb-1">
+                  <li>
                     <button
-                      className="nav-link text-white btn btn-dark text-start w-100"
+                      className="nav-link text-white btn btn-dark w-100 text-start"
                       onClick={() => handleNavClick("/suemishop/categories")}
                     >
                       Categories
                     </button>
                   </li>
-
-                  <li className="nav-item mb-1">
+                  <li>
                     <button
-                      className="nav-link text-white btn btn-dark text-start w-100"
+                      className="nav-link text-white btn btn-dark w-100 text-start"
                       onClick={() => handleNavClick("/suemishop/items")}
                     >
                       Sold Items
                     </button>
                   </li>
-
-                  <li className="nav-item mb-1">
+                  <li>
                     <button
-                      className="nav-link text-white btn btn-dark text-start w-100"
+                      className="nav-link text-white btn btn-dark w-100 text-start"
                       onClick={() => handleNavClick("/suemishop/inventories")}
                     >
                       Inventories
@@ -216,14 +201,10 @@ export default function DashboardLayout({
           {canAccess(MENU_ROLES.usersSection) && (
             <li className="nav-item mb-2">
               <button
-                className={`nav-link text-white d-flex align-items-center btn btn-dark w-100 ${
-                  collapsed
-                    ? "justify-content-center"
-                    : "justify-content-between"
-                }`}
-                onClick={toggleUsersMenu}
+                className="nav-link text-white btn btn-dark w-100 d-flex justify-content-between"
+                onClick={() => setUsersMenuOpen((p) => !p)}
               >
-                <span className="d-flex align-items-center">
+                <span>
                   <i className="bi bi-people"></i>
                   {!collapsed && <span className="ms-2">Users</span>}
                 </span>
@@ -239,27 +220,25 @@ export default function DashboardLayout({
 
               {usersMenuOpen && !collapsed && (
                 <ul className="nav flex-column ms-3 mt-2">
-                  <li className="nav-item mb-1">
+                  <li>
                     <button
-                      className="nav-link text-white btn btn-dark text-start w-100"
+                      className="nav-link text-white btn btn-dark w-100 text-start"
                       onClick={() => handleNavClick("/suemishop/employees")}
                     >
                       Users
                     </button>
                   </li>
-
-                  <li className="nav-item mb-1">
+                  <li>
                     <button
-                      className="nav-link text-white btn btn-dark text-start w-100"
+                      className="nav-link text-white btn btn-dark w-100 text-start"
                       onClick={() => handleNavClick("/suemishop/suppliers")}
                     >
                       Suppliers
                     </button>
                   </li>
-
-                  <li className="nav-item mb-1">
+                  <li>
                     <button
-                      className="nav-link text-white btn btn-dark text-start w-100"
+                      className="nav-link text-white btn btn-dark w-100 text-start"
                       onClick={() => handleNavClick("/suemishop/roles")}
                     >
                       Roles
@@ -274,14 +253,10 @@ export default function DashboardLayout({
           {canAccess(MENU_ROLES.payslipsSection) && (
             <li className="nav-item mb-2">
               <button
-                className={`nav-link text-white d-flex align-items-center btn btn-dark w-100 ${
-                  collapsed
-                    ? "justify-content-center"
-                    : "justify-content-between"
-                }`}
-                onClick={togglePayslipsMenu}
+                className="nav-link text-white btn btn-dark w-100 d-flex justify-content-between"
+                onClick={() => setPayslipsMenuOpen((p) => !p)}
               >
-                <span className="d-flex align-items-center">
+                <span>
                   <i className="bi bi-credit-card-2-front"></i>
                   {!collapsed && <span className="ms-2">Payroll</span>}
                 </span>
@@ -297,18 +272,17 @@ export default function DashboardLayout({
 
               {payslipsMenuOpen && !collapsed && (
                 <ul className="nav flex-column ms-3 mt-2">
-                  <li className="nav-item mb-1">
+                  <li>
                     <button
-                      className="nav-link text-white btn btn-dark text-start w-100"
+                      className="nav-link text-white btn btn-dark w-100 text-start"
                       onClick={() => handleNavClick("/suemishop/payslips")}
                     >
                       Payslips
                     </button>
                   </li>
-
-                  <li className="nav-item mb-1">
+                  <li>
                     <button
-                      className="nav-link text-white btn btn-dark text-start w-100"
+                      className="nav-link text-white btn btn-dark w-100 text-start"
                       onClick={() => handleNavClick("/suemishop/attendance")}
                     >
                       Attendance
@@ -322,9 +296,7 @@ export default function DashboardLayout({
           {/* EXPENSES */}
           <li className="nav-item mb-2">
             <button
-              className={`nav-link text-white d-flex align-items-center btn btn-dark w-100 ${
-                collapsed ? "justify-content-center" : "text-start"
-              }`}
+              className="nav-link text-white btn btn-dark w-100 d-flex align-items-center"
               onClick={() => handleNavClick("/suemishop/expenses")}
             >
               <i className="bi bi-gear"></i>
@@ -335,9 +307,7 @@ export default function DashboardLayout({
           {/* PROFILE */}
           <li className="nav-item mb-2">
             <button
-              className={`nav-link text-white d-flex align-items-center btn btn-dark w-100 ${
-                collapsed ? "justify-content-center" : "text-start"
-              }`}
+              className="nav-link text-white btn btn-dark w-100 d-flex align-items-center"
               onClick={() => handleNavClick("/suemishop/profile")}
             >
               <i className="bi bi-person-check"></i>
@@ -349,16 +319,16 @@ export default function DashboardLayout({
 
       {/* MAIN CONTENT */}
       <div
-        className="d-flex flex-column vh-100 grow"
+        className="d-flex flex-column vh-100"
         style={{
           width: "calc(100% - var(--sidebar-width))",
-          transition: "width 0.3s ease",
           overflow: "hidden",
+          transition: "width 0.3s ease",
         }}
       >
-        <header className="bg-light border-bottom p-3 d-flex justify-content-between align-items-center shrink-0">
-          <span className="fw-semibold text-secondary">
-            Hi, {userName || "Loading..."}
+        <header className="bg-light border-bottom p-3 d-flex justify-content-between align-items-center">
+          <span className="fw-semibold text-secondary truncate">
+            Hi, {userName}
           </span>
 
           <button className="btn btn-secondary btn-sm" onClick={handleLogout}>
