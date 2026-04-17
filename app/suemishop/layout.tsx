@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 import { ROUTES } from "../routes";
-import Loader from "../components/Loader";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 export default function DashboardLayout({
   children,
@@ -24,6 +24,14 @@ export default function DashboardLayout({
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
+  const pathname = usePathname();
+
+  // ✅ ROLE MAP (fix for role_id)
+  const ROLE_MAP: Record<number, string> = {
+    1: "Superadmin",
+    2: "Admin",
+    3: "Manager",
+  };
 
   const MENU_ROLES = {
     itemsSection: ["Superadmin", "Admin"],
@@ -33,40 +41,66 @@ export default function DashboardLayout({
 
   const canAccess = (roles: string[]) => roles.includes(roleName);
 
+  // ----------------------------
+  // LOAD USER
+  // ----------------------------
   useEffect(() => {
-    setMounted(true);
-
     const fetchUser = async () => {
-      let user: any = null;
-      const stored = localStorage.getItem("user");
+      try {
+        let user: any = null;
+        const stored = localStorage.getItem("user");
 
-      if (stored) {
-        user = JSON.parse(stored);
-      } else {
-        const res = await fetch("/api/me");
-        const data = await res.json();
-
-        if (data.user) {
-          user = data.user;
-          localStorage.setItem("user", JSON.stringify(user));
+        if (stored) {
+          user = JSON.parse(stored);
         } else {
-          router.push(ROUTES.HOME);
-          return;
-        }
-      }
+          const res = await fetch("/api/me");
+          const data = await res.json();
 
-      setUserName(user.name || "Unknown User");
-      setRoleName(user.role?.name || "");
+          if (data.user) {
+            user = data.user;
+            localStorage.setItem("user", JSON.stringify(user));
+          } else {
+            router.push(ROUTES.HOME);
+            return;
+          }
+        }
+
+        setUserName(user.name || "Unknown User");
+
+        // ✅ FIX ROLE
+        setRoleName(ROLE_MAP[user.role_id] || "");
+      } catch (err) {
+        console.error("User fetch error:", err);
+        router.push(ROUTES.HOME);
+      } finally {
+        setMounted(true);
+      }
     };
 
     fetchUser();
   }, [router]);
+
+  // ----------------------------
+  // ROUTE CHANGE LOADING
+  // ----------------------------
+  useEffect(() => {
+    if (!mounted) return;
+
+    setLoading(true);
+
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 150); // small delay for smooth UX
+
+    return () => clearTimeout(timeout);
+  }, [pathname, mounted]);
 
   if (!mounted) return null;
 
   const sidebarWidth = collapsed ? "70px" : "230px";
 
   const handleNavClick = (path: string) => {
+    if (path === pathname) return; // prevent unnecessary reload
     setLoading(true);
     router.push(path);
   };
@@ -88,7 +122,8 @@ export default function DashboardLayout({
         } as React.CSSProperties
       }
     >
-      {loading && <Loader />}
+      {/* LOADING */}
+      {loading && <LoadingOverlay />}
 
       {/* SIDEBAR */}
       <nav
@@ -97,12 +132,11 @@ export default function DashboardLayout({
           width: "var(--sidebar-width)",
           height: "100vh",
           flexShrink: 0,
-          overflowY: "auto", // ✅ WHOLE SIDEBAR SCROLLS
+          overflowY: "auto",
           overflowX: "hidden",
           transition: "width 0.3s ease",
         }}
       >
-        {/* TOGGLE + LOGO (inside same scroll) */}
         <div className="p-3">
           <div
             className={`d-flex ${
@@ -146,7 +180,7 @@ export default function DashboardLayout({
           </li>
 
           {/* ITEMS */}
-          {canAccess(MENU_ROLES.itemsSection) && (
+          {roleName && canAccess(MENU_ROLES.itemsSection) && (
             <li className="nav-item mb-2">
               <button
                 className="nav-link text-white btn btn-dark w-100 d-flex justify-content-between"
@@ -198,7 +232,7 @@ export default function DashboardLayout({
           )}
 
           {/* USERS */}
-          {canAccess(MENU_ROLES.usersSection) && (
+          {roleName && canAccess(MENU_ROLES.usersSection) && (
             <li className="nav-item mb-2">
               <button
                 className="nav-link text-white btn btn-dark w-100 d-flex justify-content-between"
@@ -250,7 +284,7 @@ export default function DashboardLayout({
           )}
 
           {/* PAYROLL */}
-          {canAccess(MENU_ROLES.payslipsSection) && (
+          {roleName && canAccess(MENU_ROLES.payslipsSection) && (
             <li className="nav-item mb-2">
               <button
                 className="nav-link text-white btn btn-dark w-100 d-flex justify-content-between"
@@ -317,19 +351,16 @@ export default function DashboardLayout({
         </ul>
       </nav>
 
-      {/* MAIN CONTENT */}
+      {/* MAIN */}
       <div
         className="d-flex flex-column vh-100"
         style={{
           width: "calc(100% - var(--sidebar-width))",
           overflow: "hidden",
-          transition: "width 0.3s ease",
         }}
       >
         <header className="bg-light border-bottom p-3 d-flex justify-content-between align-items-center">
-          <span className="fw-semibold text-secondary truncate">
-            Hi, {userName}
-          </span>
+          <span className="fw-semibold text-secondary">Hi, {userName}</span>
 
           <button className="btn btn-secondary btn-sm" onClick={handleLogout}>
             Logout
