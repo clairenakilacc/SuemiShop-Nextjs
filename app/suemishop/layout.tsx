@@ -22,7 +22,6 @@ export default function DashboardLayout({
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // Define menu roles
   const MENU_ROLES = {
     itemsSection: ["Superadmin", "Admin"],
     categories: ["Superadmin"],
@@ -30,7 +29,6 @@ export default function DashboardLayout({
     usersSection: ["Superadmin", "Manager"],
     payslipsSection: ["Superadmin", "Manager"],
     attendance: ["Superadmin"],
-
     settings: ["Superadmin"],
   };
 
@@ -72,10 +70,10 @@ export default function DashboardLayout({
     fetchUser();
   }, [router]);
 
-  const toggleSidebar = () => setCollapsed((prev) => !prev);
-  const toggleUsersMenu = () => setUsersMenuOpen((prev) => !prev);
-  const toggleItemsMenu = () => setItemsMenuOpen((prev) => !prev);
-  const togglePayslipsMenu = () => setPayslipsMenuOpen((prev) => !prev);
+  const toggleSidebar = () => setCollapsed((p) => !p);
+  const toggleUsersMenu = () => setUsersMenuOpen((p) => !p);
+  const toggleItemsMenu = () => setItemsMenuOpen((p) => !p);
+  const togglePayslipsMenu = () => setPayslipsMenuOpen((p) => !p);
 
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" });
@@ -91,19 +89,30 @@ export default function DashboardLayout({
 
   if (!mounted) return null;
 
+  const sidebarWidth = collapsed ? "60px" : "220px";
+
   return (
-    <div className="d-flex vh-100 w-100" style={{ overflow: "hidden" }}>
+    <div
+      className="d-flex vh-100 w-100"
+      style={
+        {
+          overflow: "hidden",
+          "--sidebar-width": sidebarWidth,
+        } as React.CSSProperties
+      }
+    >
       {loading && <Loader />}
 
-      {/* Sidebar */}
+      {/* SIDEBAR */}
       <nav
         className="bg-dark text-white d-flex flex-column p-3"
         style={{
-          width: collapsed ? "60px" : "220px",
+          width: "var(--sidebar-width)",
           transition: "width 0.3s ease",
+          flexShrink: 0,
         }}
       >
-        {/* Toggle button */}
+        {/* Toggle */}
         <div
           className={`w-100 d-flex ${
             collapsed ? "justify-content-center" : "justify-content-end"
@@ -125,7 +134,7 @@ export default function DashboardLayout({
                 src="/images/logo2.png"
                 alt="Logo"
                 className="img-fluid"
-                style={{ maxWidth: "120px", cursor: "pointer" }}
+                style={{ maxWidth: "120px" }}
               />
             </Link>
           </div>
@@ -145,7 +154,7 @@ export default function DashboardLayout({
             </button>
           </li>
 
-          {/* Items Section */}
+          {/* ITEMS */}
           {canAccess(MENU_ROLES.itemsSection) && (
             <li className="nav-item mb-2">
               <button
@@ -160,27 +169,26 @@ export default function DashboardLayout({
                   <i className="bi bi-handbag"></i>
                   {!collapsed && <span className="ms-2">Items</span>}
                 </span>
+
                 {!collapsed && (
                   <i
                     className={`bi ${
                       itemsMenuOpen ? "bi-chevron-up" : "bi-chevron-down"
                     }`}
-                  ></i>
+                  />
                 )}
               </button>
 
               {itemsMenuOpen && !collapsed && (
                 <ul className="nav flex-column ms-3 mt-2">
-                  {canAccess(MENU_ROLES.categories) && (
-                    <li className="nav-item mb-1">
-                      <button
-                        className="nav-link text-white btn btn-dark text-start w-100"
-                        onClick={() => handleNavClick("/suemishop/categories")}
-                      >
-                        Categories
-                      </button>
-                    </li>
-                  )}
+                  <li className="nav-item mb-1">
+                    <button
+                      className="nav-link text-white btn btn-dark text-start w-100"
+                      onClick={() => handleNavClick("/suemishop/categories")}
+                    >
+                      Categories
+                    </button>
+                  </li>
 
                   <li className="nav-item mb-1">
                     <button
@@ -191,22 +199,20 @@ export default function DashboardLayout({
                     </button>
                   </li>
 
-                  {canAccess(MENU_ROLES.inventories) && (
-                    <li className="nav-item mb-1">
-                      <button
-                        className="nav-link text-white btn btn-dark text-start w-100"
-                        onClick={() => handleNavClick("/suemishop/inventories")}
-                      >
-                        Inventories
-                      </button>
-                    </li>
-                  )}
+                  <li className="nav-item mb-1">
+                    <button
+                      className="nav-link text-white btn btn-dark text-start w-100"
+                      onClick={() => handleNavClick("/suemishop/inventories")}
+                    >
+                      Inventories
+                    </button>
+                  </li>
                 </ul>
               )}
             </li>
           )}
 
-          {/* Users Section */}
+          {/* USERS */}
           {canAccess(MENU_ROLES.usersSection) && (
             <li className="nav-item mb-2">
               <button
@@ -221,12 +227,13 @@ export default function DashboardLayout({
                   <i className="bi bi-people"></i>
                   {!collapsed && <span className="ms-2">Users</span>}
                 </span>
+
                 {!collapsed && (
                   <i
                     className={`bi ${
                       usersMenuOpen ? "bi-chevron-up" : "bi-chevron-down"
                     }`}
-                  ></i>
+                  />
                 )}
               </button>
 
@@ -240,6 +247,7 @@ export default function DashboardLayout({
                       Users
                     </button>
                   </li>
+
                   <li className="nav-item mb-1">
                     <button
                       className="nav-link text-white btn btn-dark text-start w-100"
@@ -248,6 +256,7 @@ export default function DashboardLayout({
                       Suppliers
                     </button>
                   </li>
+
                   <li className="nav-item mb-1">
                     <button
                       className="nav-link text-white btn btn-dark text-start w-100"
@@ -261,7 +270,7 @@ export default function DashboardLayout({
             </li>
           )}
 
-          {/* Payslips Section */}
+          {/* PAYROLL */}
           {canAccess(MENU_ROLES.payslipsSection) && (
             <li className="nav-item mb-2">
               <button
@@ -276,59 +285,54 @@ export default function DashboardLayout({
                   <i className="bi bi-credit-card-2-front"></i>
                   {!collapsed && <span className="ms-2">Payroll</span>}
                 </span>
+
                 {!collapsed && (
                   <i
                     className={`bi ${
                       payslipsMenuOpen ? "bi-chevron-up" : "bi-chevron-down"
                     }`}
-                  ></i>
+                  />
                 )}
               </button>
 
               {payslipsMenuOpen && !collapsed && (
                 <ul className="nav flex-column ms-3 mt-2">
-                  {canAccess(MENU_ROLES.payslipsSection) && (
-                    <li className="nav-item mb-1">
-                      <button
-                        className="nav-link text-white btn btn-dark text-start w-100"
-                        onClick={() => handleNavClick("/suemishop/payslips")}
-                      >
-                        Payslips
-                      </button>
-                    </li>
-                  )}
+                  <li className="nav-item mb-1">
+                    <button
+                      className="nav-link text-white btn btn-dark text-start w-100"
+                      onClick={() => handleNavClick("/suemishop/payslips")}
+                    >
+                      Payslips
+                    </button>
+                  </li>
 
-                  {canAccess(MENU_ROLES.attendance) && (
-                    <li className="nav-item mb-1">
-                      <button
-                        className="nav-link text-white btn btn-dark text-start w-100"
-                        onClick={() => handleNavClick("/suemishop/attendance")}
-                      >
-                        Attendance
-                      </button>
-                    </li>
-                  )}
+                  <li className="nav-item mb-1">
+                    <button
+                      className="nav-link text-white btn btn-dark text-start w-100"
+                      onClick={() => handleNavClick("/suemishop/attendance")}
+                    >
+                      Attendance
+                    </button>
+                  </li>
                 </ul>
               )}
             </li>
           )}
 
-          {/* Expenses */}
-          {canAccess(MENU_ROLES.settings) && (
-            <li className="nav-item mb-2">
-              <button
-                className={`nav-link text-white d-flex align-items-center btn btn-dark w-100 ${
-                  collapsed ? "justify-content-center" : "text-start"
-                }`}
-                onClick={() => handleNavClick("/suemishop/expenses")}
-              >
-                <i className="bi bi-gear"></i>
-                {!collapsed && <span className="ms-2">Expenses</span>}
-              </button>
-            </li>
-          )}
+          {/* EXPENSES */}
+          <li className="nav-item mb-2">
+            <button
+              className={`nav-link text-white d-flex align-items-center btn btn-dark w-100 ${
+                collapsed ? "justify-content-center" : "text-start"
+              }`}
+              onClick={() => handleNavClick("/suemishop/expenses")}
+            >
+              <i className="bi bi-gear"></i>
+              {!collapsed && <span className="ms-2">Expenses</span>}
+            </button>
+          </li>
 
-          {/* Profile */}
+          {/* PROFILE */}
           <li className="nav-item mb-2">
             <button
               className={`nav-link text-white d-flex align-items-center btn btn-dark w-100 ${
@@ -343,12 +347,18 @@ export default function DashboardLayout({
         </ul>
       </nav>
 
-      {/* Main Content */}
-      <div className="d-flex flex-column grow vh-100 overflow-hidden">
+      {/* MAIN CONTENT */}
+      <div
+        className="d-flex flex-column vh-100 grow"
+        style={{
+          width: "calc(100% - var(--sidebar-width))",
+          transition: "width 0.3s ease",
+          overflow: "hidden",
+        }}
+      >
         <header className="bg-light border-bottom p-3 d-flex justify-content-between align-items-center shrink-0">
           <span className="fw-semibold text-secondary">
             Hi, {userName || "Loading..."}
-            {/* {roleName ? ` - ${roleName}` : ""} */}
           </span>
 
           <button className="btn btn-secondary btn-sm" onClick={handleLogout}>
