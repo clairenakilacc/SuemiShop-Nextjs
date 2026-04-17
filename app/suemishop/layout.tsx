@@ -374,10 +374,7 @@ export default function DashboardLayout({
           >
             {/* SuemiShop */}
           </h2>
-          <button
-            className="btn btn-outline-secondary btn-sm btn-pink-hover"
-            onClick={handleLogout}
-          >
+          <button className="btn btn-secondary btn-sm" onClick={handleLogout}>
             Logout
           </button>
         </header>

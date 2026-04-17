@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-import { useState } from "react";
-
-// import EditProfileModal from "../../../components/profile/EditProfileModal";
-
-
-
-export default function ProfileSettings() {
-=======
 "use client";
 import { useEffect, useState } from "react";
 import EditProfileModal from "../../components/profile/EditProfileModal";
@@ -21,7 +12,6 @@ interface ProfileSettingsProps {
 export default function ProfileSettings({ user }: ProfileSettingsProps) {
   const [isEditOpen, setIsEditOpen] = useState(false);
 
->>>>>>> 89c1300caeecf60ade28c4d49c7af729f3923542
   return (
     <div>
       <h5 className="fw-bold mb-3 text-dark">Profile Settings</h5>
@@ -47,19 +37,11 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
             </div>
             <div className="col-md-6">
               <label className="form-label">Email</label>
-<<<<<<< HEAD
-              <input className="form-control" />
-            </div>
-            <div className="col-md-6 my-5">
-              <label className="form-label ">Phone Number</label>
-              <input className="form-control" />
-=======
               <input
                 className="form-control"
                 value={user?.email || ""}
                 readOnly
               />
->>>>>>> 89c1300caeecf60ade28c4d49c7af729f3923542
             </div>
             <div className="col-md-6 my-5">
               <label className="form-label">Phone Number</label>
