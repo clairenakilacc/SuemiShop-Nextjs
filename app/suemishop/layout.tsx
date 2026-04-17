@@ -328,21 +328,6 @@ export default function DashboardLayout({
             </li>
           )}
 
-          {/* Settings */}
-          {canAccess(MENU_ROLES.settings) && (
-            <li className="nav-item mb-2">
-              <button
-                className={`nav-link text-white d-flex align-items-center btn btn-dark w-100 ${
-                  collapsed ? "justify-content-center" : "text-start"
-                }`}
-                onClick={() => handleNavClick("/suemishop/settings")}
-              >
-                <i className="bi bi-gear"></i>
-                {!collapsed && <span className="ms-2">Settings</span>}
-              </button>
-            </li>
-          )}
-
           {/* Profile */}
           <li className="nav-item mb-2">
             <button
@@ -361,19 +346,11 @@ export default function DashboardLayout({
       {/* Main Content */}
       <div className="d-flex flex-column grow vh-100 overflow-hidden">
         <header className="bg-light border-bottom p-3 d-flex justify-content-between align-items-center shrink-0">
-          {/* <span className="fw-semibold text-secondary">
-            {userName || "Loading..."}
-            {roleName ? ` - ${roleName}` : ""}
-          </span> */}
-          <h2
-            style={{
-              fontFamily: "cursive",
-              textShadow: "2px 2px 4px rgba(255, 182, 193, 0.8)",
-              color: "#FF69B4", // optional pink color
-            }}
-          >
-            {/* SuemiShop */}
-          </h2>
+          <span className="fw-semibold text-secondary">
+            Hi, {userName || "Loading..."}
+            {/* {roleName ? ` - ${roleName}` : ""} */}
+          </span>
+
           <button className="btn btn-secondary btn-sm" onClick={handleLogout}>
             Logout
           </button>
