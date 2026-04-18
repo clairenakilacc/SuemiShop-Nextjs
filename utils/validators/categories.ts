@@ -1,19 +1,20 @@
-export const validateCategoryDescription = (value: string): string | null => {
+import { supabase } from "@/lib/supabase";
+
+export const validateCategoryDescription = async (
+  value: string,
+  currentId?: string,
+): Promise<string | null> => {
   const trimmed = value.trim();
 
   if (!trimmed) return "Description is required";
 
   if (trimmed.length > 20) return "Must be 20 characters or less";
 
-  // letters and spaces only (NO numbers, NO symbols)
   if (!/^[a-zA-Z ]+$/.test(trimmed))
     return "No numbers or special characters allowed";
 
-  // prevent multiple spaces
   if (/\s{2,}/.test(trimmed)) return "Too many spaces between words";
 
-  // remove spaces and lowercase for pattern checking
-  //no consecutive 3 vowels and consonants
   const clean = trimmed.replace(/\s+/g, "").toLowerCase();
 
   const vowels = "aeiou";
@@ -30,10 +31,26 @@ export const validateCategoryDescription = (value: string): string | null => {
       vowelCount = 0;
     }
 
-    if (vowelCount >= 3) return "No 3 consecutive vowels allowed";
+    if (vowelCount >= 4) return "No 4 consecutive vowels allowed";
 
-    if (consonantCount >= 3) return "No 3 consecutive consonants allowed";
+    if (consonantCount >= 4) return "No 4 consecutive consonants allowed";
   }
+
+  // UNIQUE description
+  const { data, error } = await supabase
+    .from("categories")
+    .select("id, description")
+    .ilike("description", trimmed);
+
+  if (error) return "Validation error";
+
+  const exists = data?.some(
+    (c) =>
+      c.description.toLowerCase() === trimmed.toLowerCase() &&
+      c.id !== currentId,
+  );
+
+  if (exists) return "Category already exists";
 
   return null;
 };

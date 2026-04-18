@@ -4,6 +4,7 @@ interface Category {
   id: string;
   description: string;
   created_at: string | null;
+  updated_at: string | null;
 }
 
 interface Props {
@@ -35,7 +36,7 @@ export default function ViewCategory({ show, category, onClose }: Props) {
                 <tbody>
                   <tr>
                     <th>Description</th>
-                    <td>{category.description}</td>
+                    <td className="text-capitalize">{category.description}</td>
                   </tr>
 
                   <tr>
@@ -43,6 +44,14 @@ export default function ViewCategory({ show, category, onClose }: Props) {
                     <td>
                       {category.created_at
                         ? new Date(category.created_at).toLocaleString()
+                        : "N/A"}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Updated At</th>
+                    <td>
+                      {category.updated_at
+                        ? new Date(category.updated_at).toLocaleString()
                         : "N/A"}
                     </td>
                   </tr>

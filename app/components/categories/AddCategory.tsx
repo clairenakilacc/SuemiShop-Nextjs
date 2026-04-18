@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import toast from "react-hot-toast";
 import { validateCategoryDescription } from "@/utils/validators/categories";
 
 interface AddCategoryProps {
@@ -21,14 +20,17 @@ export default function AddCategory({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // live validation handled here
-  const handleChange = (value: string) => {
+  // ✅ LIVE VALIDATION (ASYNC SAFE)
+  const handleChange = async (value: string) => {
     setDescription(value);
-    setError(validateCategoryDescription(value));
+
+    const result = await validateCategoryDescription(value);
+    setError(result);
   };
 
+  // ✅ SUBMIT
   const handleSubmit = async () => {
-    const validationError = validateCategoryDescription(description);
+    const validationError = await validateCategoryDescription(description);
 
     setError(validationError);
 
@@ -39,33 +41,39 @@ export default function AddCategory({
 
       const value = description.trim();
 
-      // check duplicate (case-insensitive)
+      // 🔥 duplicate check
       const { data: existing, error: checkError } = await supabase
         .from("categories")
         .select("id")
         .ilike("description", value);
 
-      if (checkError) throw checkError;
+      if (checkError) {
+        setError(checkError.message);
+        return;
+      }
 
       if (existing && existing.length > 0) {
         setError("Category already exists");
         return;
       }
 
+      // 🔥 insert
       const { error } = await supabase
         .from("categories")
         .insert([{ description: value }]);
 
-      if (error) throw error;
+      if (error) {
+        setError(error.message);
+        return;
+      }
 
-      toast.success("Category added successfully!");
-
+      // reset
       setDescription("");
       setError(null);
       setShowModal(false);
       onSuccess();
     } catch (err: any) {
-      toast.error(err.message || "Failed to add category");
+      setError(err.message || "Failed to add category");
     } finally {
       setLoading(false);
     }
@@ -88,6 +96,7 @@ export default function AddCategory({
         >
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content rounded-3 overflow-hidden">
+              {/* HEADER */}
               <div className="modal-header bg-light">
                 <h5 className="modal-title">Add Category</h5>
                 <button
@@ -100,6 +109,7 @@ export default function AddCategory({
                 />
               </div>
 
+              {/* BODY */}
               <div className="modal-body">
                 <label className="form-label">Description</label>
 
@@ -111,11 +121,13 @@ export default function AddCategory({
                   onChange={(e) => handleChange(e.target.value)}
                 />
 
+                {/* 🔥 ERROR UNDER INPUT */}
                 {error && (
                   <small className="text-danger d-block mt-1">{error}</small>
                 )}
               </div>
 
+              {/* FOOTER */}
               <div className="modal-footer">
                 <button
                   className="btn btn-secondary"
@@ -133,7 +145,6 @@ export default function AddCategory({
                   className="btn btn-add"
                   onClick={handleSubmit}
                   disabled={loading || !!error || !description.trim()}
-                  style={{ opacity: 1 }}
                 >
                   {loading ? "Saving..." : "Save"}
                 </button>

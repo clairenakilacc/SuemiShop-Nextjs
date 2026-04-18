@@ -30,7 +30,6 @@ interface Props {
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
 
-  // 🔥 IMPORTANT: refresh callback from parent
   onRefresh: () => void;
 
   showView?: boolean;
@@ -85,8 +84,8 @@ export default function CategoryTable({
     <div>
       {/* TABLE */}
       <div className="table-responsive" style={{ maxHeight: "70vh" }}>
-        <table className="table table-bordered table-striped">
-          <thead className="table-light sticky-top">
+        <table className="table table-bordered table-striped text-capitalize">
+          <thead className="table-light sticky-top text-capitalize">
             <tr>
               <th className="text-center">
                 <input
@@ -103,7 +102,7 @@ export default function CategoryTable({
             </tr>
           </thead>
 
-          <tbody>
+          <tbody className="text-capitalize">
             {data.length === 0 ? (
               <tr>
                 <td colSpan={3} className="text-center py-4 text-muted">

@@ -2,15 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import toast from "react-hot-toast";
 import { Category } from "./CategoryTable";
+import { validateCategoryDescription } from "@/utils/validators/categories";
 
 interface Props {
   show: boolean;
   category: Category | null;
   onClose: () => void;
   onSuccess?: () => void;
-  onRefresh?: () => void;
 }
 
 export default function EditCategory({
@@ -22,22 +21,45 @@ export default function EditCategory({
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // 🔥 unified error state (ALL errors go here)
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    if (category) setDescription(category.description);
+    if (category) {
+      setDescription(category.description);
+      setError(null);
+    }
   }, [category]);
+
+  useEffect(() => {
+    if (!category) return;
+
+    const runValidation = async () => {
+      const result = await validateCategoryDescription(
+        description,
+        category.id,
+      );
+
+      setError(result);
+    };
+
+    runValidation();
+  }, [description, category]);
 
   if (!show || !category) return null;
 
+  const isValid = error === null;
+
   const handleUpdate = async () => {
-    if (!description.trim()) {
-      toast.error("Description is required");
-      return;
-    }
+    const result = await validateCategoryDescription(description, category.id);
+
+    setError(result);
+    if (result) return;
 
     try {
       setLoading(true);
 
-      const { error } = await supabase
+      const { error: dbError } = await supabase
         .from("categories")
         .update({
           description: description.trim(),
@@ -45,13 +67,15 @@ export default function EditCategory({
         })
         .eq("id", category.id);
 
-      if (error) throw error;
+      if (dbError) {
+        setError(dbError.message);
+        return;
+      }
 
-      toast.success("Category updated");
       onSuccess?.();
       onClose();
     } catch (err: any) {
-      toast.error(err.message);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -70,13 +94,19 @@ export default function EditCategory({
           </div>
 
           <div className="modal-body">
-            <label className="form-label">Description</label>
+            <label className="form-label ">Description</label>
 
             <input
-              className="form-control"
+              className={`form-control text-capitalize ${error ? "is-invalid" : ""}`}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              placeholder="Enter category description..."
             />
+
+            {/* 🔥 ALL ERRORS HERE (UNDER INPUT) */}
+            {error && (
+              <small className="text-danger d-block mt-1">{error}</small>
+            )}
           </div>
 
           <div className="modal-footer">
@@ -87,7 +117,7 @@ export default function EditCategory({
             <button
               className="btn btn-edit"
               onClick={handleUpdate}
-              disabled={loading}
+              disabled={loading || !isValid}
             >
               {loading ? "Saving..." : "Save Changes"}
             </button>
