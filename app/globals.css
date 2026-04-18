@@ -81,8 +81,14 @@ body {
     transform: translateY(0);
   }
 }
-/* 
-add button color*/
+
+/* Logout Button */
+.btn-logout {
+  background-color: #0d0c0c !important;
+  color: #fff !important;
+}
+
+/* add button color*/
 .btn-add {
   background-color: #d40d56 !important;
   color: #fff !important;
@@ -235,22 +241,4 @@ nav .nav-link:focus {
 .table-responsive {
   position: relative;
   z-index: 1;
-}
-
-/* =========================
-   LOGOUT BUTTON
-========================= */
-
-.btn-pink-hover {
-  border-color: #ffb6c1;
-  background-color: transparent;
-  color: black;
-}
-
-.btn-pink-hover:hover,
-.btn-pink-hover:active,
-.btn-pink-hover:focus {
-  background-color: #ffb6c1;
-  color: black;
-  box-shadow: none;
 }
