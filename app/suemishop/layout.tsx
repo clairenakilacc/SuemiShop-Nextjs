@@ -360,7 +360,9 @@ export default function DashboardLayout({
         }}
       >
         <header className="bg-light border-bottom p-3 d-flex justify-content-between align-items-center">
-          <span className="fw-semibold text-secondary">Hi, {userName}</span>
+          <span className="fw-semibold text-secondary text-truncate">
+            Hi, {userName}
+          </span>
 
           <button className="btn btn-logout btn-sm" onClick={handleLogout}>
             Logout
