@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { validateBrand } from "@/utils/validators/items";
+import { validateOrderId } from "@/utils/validators/items";
 
 interface AddItemProps {
   onSuccess: () => void;
@@ -19,10 +20,9 @@ export default function AddItem({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [brandError, setBrandError] = useState<string | null>(null); //brand validation
+  const [orderIdError, setOrderIdError] = useState<string | null>(null); //order id validation
 
-  /* =========================
-     USER (prepared_by)
-  ========================= */
+  //Prepared By Fetching
   const [user, setUser] = useState<{ name: string } | null>(null);
 
   useEffect(() => {
@@ -39,9 +39,7 @@ export default function AddItem({
     fetchUser();
   }, []);
 
-  /* =========================
-     FORM STATE
-  ========================= */
+  //Form State
   const [form, setForm] = useState({
     prepared_by: "",
     brand: "",
@@ -60,9 +58,7 @@ export default function AddItem({
     is_returned: "false",
   });
 
-  /* =========================
-     AUTO SET USER NAME
-  ========================= */
+  //Auto Name for Prepared By
   useEffect(() => {
     if (user?.name) {
       setForm((prev) => ({
@@ -80,9 +76,18 @@ export default function AddItem({
     setBrandError(result);
   };
 
-  /* =========================
-     HANDLE CHANGE
-  ========================= */
+  //Order ID Validation Function
+  const handleOrderIdChange = (value: string) => {
+    const upper = value.toUpperCase();
+    const filtered = upper.replace(/[^A-Z0-9]/g, "");
+
+    handleChange("order_id", filtered);
+
+    const error = validateOrderId(filtered);
+    setOrderIdError(error);
+  };
+
+  //Handle Change
   const handleChange = (key: string, value: string) => {
     setForm((prev) => ({
       ...prev,
@@ -209,11 +214,18 @@ export default function AddItem({
 
                   <div className="col-md-6">
                     <input
-                      className="form-control"
-                      placeholder="Order ID"
+                      className={`form-control ${orderIdError ? "is-invalid" : ""}`}
+                      placeholder="ORDER ID"
                       value={form.order_id}
-                      onChange={(e) => handleChange("order_id", e.target.value)}
+                      maxLength={4}
+                      onChange={(e) => handleOrderIdChange(e.target.value)}
                     />
+
+                    {orderIdError && (
+                      <small className="text-danger d-block mt-1">
+                        {orderIdError}
+                      </small>
+                    )}
                   </div>
 
                   <div className="col-md-6">

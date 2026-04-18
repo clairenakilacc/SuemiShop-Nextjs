@@ -1,4 +1,4 @@
-// Brand Validation
+// BRAND VALIDATION
 export const validateBrand = async (value: string): Promise<string | null> => {
   const trimmed = value.trim();
 
@@ -36,6 +36,26 @@ export const validateBrand = async (value: string): Promise<string | null> => {
     if (vowelCount >= 4) return "No 4 consecutive vowels allowed";
 
     if (consonantCount >= 4) return "No 4 consecutive consonants allowed";
+  }
+
+  return null;
+};
+
+//ORDER ID VALIDATION
+export const validateOrderId = (value: string): string | null => {
+  const trimmed = value.trim().toUpperCase();
+
+  // required
+  if (!trimmed) return "Order ID is required";
+
+  // must be exactly 4 characters
+  if (trimmed.length !== 4) {
+    return "Order ID must be exactly 4 characters";
+  }
+
+  // only letters + numbers allowed
+  if (!/^[A-Z0-9]+$/.test(trimmed)) {
+    return "Only letters and numbers allowed (no special characters)";
   }
 
   return null;
