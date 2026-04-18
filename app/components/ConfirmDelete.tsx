@@ -1,7 +1,6 @@
 "use client";
 
 import Swal from "sweetalert2";
-import "sweetalert2/dist/sweetalert2.min.css";
 import toast from "react-hot-toast";
 
 interface ConfirmDeleteProps {
@@ -9,6 +8,9 @@ interface ConfirmDeleteProps {
   children: React.ReactNode;
   confirmMessage?: string;
   className?: string;
+
+  // 🔥 NEW: optional validation hook
+  canProceed?: () => boolean;
 }
 
 export default function ConfirmDelete({
@@ -16,8 +18,15 @@ export default function ConfirmDelete({
   children,
   confirmMessage = "Are you sure you want to delete this item?",
   className = "",
+  canProceed,
 }: ConfirmDeleteProps) {
   const handleClick = async () => {
+    // ❌ BLOCK IF NOTHING SELECTED
+    if (canProceed && !canProceed()) {
+      toast.error("Select record first");
+      return;
+    }
+
     const result = await Swal.fire({
       title: "Are you sure?",
       text: confirmMessage,
@@ -42,9 +51,7 @@ export default function ConfirmDelete({
     <button
       onClick={handleClick}
       className={`px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white shadow-md transition font-medium ${className}`}
-      style={{
-        borderRadius: "4px", // ✅ enforce radius
-      }}
+      style={{ borderRadius: "4px" }}
     >
       {children}
     </button>
