@@ -48,7 +48,7 @@ export default function ExportButton<T>({
   };
 
   return (
-    <button className="btn btn-success" onClick={handleExport}>
+    <button className="btn btn-export" onClick={handleExport}>
       Export
     </button>
   );

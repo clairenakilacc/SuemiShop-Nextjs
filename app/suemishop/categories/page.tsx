@@ -5,12 +5,11 @@ import toast, { Toaster } from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 import AddCategory from "../../components/categories/AddCategory";
 import BulkEditCategory from "../../components/categories/BulkEditCategory";
+import ImportCategory from "../../components/categories/ImportCategory";
+import ExportButton from "../../components/ExportButton";
 import SearchBar from "../../components/SearchBar";
 import ConfirmDelete from "../../components/ConfirmDelete";
 import { DataTable, Column } from "../../components/DataTable";
-import ImportButton from "../../components/ImportButton";
-import ExportButton from "../../components/ExportButton";
-import ToggleColumns from "../../components/ToggleColumns";
 
 interface Category {
   id?: string;
@@ -131,28 +130,7 @@ export default function CategoriesListPage() {
             onSuccess={fetchCategories}
           /> */}
 
-          <ImportButton
-            table="categories"
-            headersMap={{
-              "Created At": "created_at",
-              Description: "description",
-            }}
-            transformRow={async (row) => {
-              const description = row.Description?.toString().trim();
-              if (!description) return null;
-
-              let created_at: string | undefined;
-              if (row["Created At"]) {
-                const date = new Date(row["Created At"]);
-                if (!isNaN(date.getTime())) created_at = date.toISOString();
-              }
-              return { description, ...(created_at ? { created_at } : {}) };
-            }}
-            onSuccess={async () => {
-              await fetchCategories();
-              toast.success("✅ Categories imported successfully");
-            }}
-          />
+          <ImportCategory onSuccess={fetchCategories} />
 
           <ExportButton
             data={filteredCategories}
@@ -199,7 +177,6 @@ export default function CategoriesListPage() {
             onChange={setSearchTerm}
             options={categories.map((c) => c.description)}
           />
-          <ToggleColumns columns={tableColumns} onChange={setTableColumns} />
         </div>
       </div>
 
