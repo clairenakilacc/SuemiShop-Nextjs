@@ -3,12 +3,11 @@
 import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
-
+import AddCategory from "../../components/categories/AddCategory";
+import BulkEditCategory from "../../components/categories/BulkEditCategory";
 import SearchBar from "../../components/SearchBar";
 import ConfirmDelete from "../../components/ConfirmDelete";
 import { DataTable, Column } from "../../components/DataTable";
-import AddCategory from "../../components/categories/AddCategory";
-import BulkEdit from "../../components/BulkEdit";
 import ImportButton from "../../components/ImportButton";
 import ExportButton from "../../components/ExportButton";
 import ToggleColumns from "../../components/ToggleColumns";
@@ -126,14 +125,11 @@ export default function CategoriesListPage() {
       <div className="mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
         <div className="d-flex flex-wrap align-items-center gap-2">
           <AddCategory onSuccess={fetchCategories} />
-          <BulkEdit
-            table="categories"
+
+          {/* <BulkEditCategory
             selectedIds={selectedCategories}
             onSuccess={fetchCategories}
-            fields={[
-              { key: "description", label: "Description", type: "text" },
-            ]}
-          />
+          /> */}
 
           <ImportButton
             table="categories"
