@@ -11,6 +11,11 @@ create extension if not exists pgcrypto;
 -- alter table categories
 -- add column updated_at timestamptz default now();
 
+-- --FOR DESCRIBING
+-- SELECT column_name, data_type, is_nullable
+-- FROM information_schema.columns
+-- WHERE table_name = 'items';
+
 -- =====================================
 -- ROLES
 -- =====================================
