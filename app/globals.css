@@ -81,6 +81,13 @@ body {
     transform: translateY(0);
   }
 }
+/* 
+add button color*/
+
+.btn-add {
+  background-color: #d40d56 !important;
+  color: #fff !important;
+}
 
 /* =========================
    🌸 STEADY ROSE BUTTON (NO BLINK FIX)

@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase";
 import SearchBar from "../../components/SearchBar";
 import ConfirmDelete from "../../components/ConfirmDelete";
 import { DataTable, Column } from "../../components/DataTable";
-import AddButton from "../../components/AddButton";
+import AddCategory from "../../components/categories/AddCategory";
 import BulkEdit from "../../components/BulkEdit";
 import ImportButton from "../../components/ImportButton";
 import ExportButton from "../../components/ExportButton";
@@ -125,14 +125,7 @@ export default function CategoriesListPage() {
       {/* Toolbar */}
       <div className="mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
         <div className="d-flex flex-wrap align-items-center gap-2">
-          <AddButton
-            table="categories"
-            onSuccess={fetchCategories}
-            fields={[
-              { key: "description", label: "Description", type: "text" },
-            ]}
-          />
-
+          <AddCategory onSuccess={fetchCategories} />
           <BulkEdit
             table="categories"
             selectedIds={selectedCategories}
