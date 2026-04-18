@@ -146,7 +146,7 @@ export default function AddCategory({
                   onClick={handleSubmit}
                   disabled={loading || !!error || !description.trim()}
                 >
-                  {loading ? "Saving..." : "Save"}
+                  Save
                 </button>
               </div>
             </div>
