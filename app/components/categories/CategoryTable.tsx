@@ -209,7 +209,7 @@ export default function CategoryTable({
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
           >
-            {[50, 100, 500].map((n) => (
+            {[10, 20, 30].map((n) => (
               <option key={n} value={n}>
                 {n}
               </option>
