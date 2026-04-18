@@ -19,21 +19,31 @@ export default function BulkEditCategory({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleChange = (value: string) => {
+  //Input validation
+  const handleChange = async (value: string) => {
     setDescription(value);
-    setError(validateCategoryDescription(value));
+
+    const result = await validateCategoryDescription(value);
+    setError(result);
   };
 
+  //Submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const validationError = validateCategoryDescription(description);
+    const validationError = await validateCategoryDescription(description);
     setError(validationError);
 
     if (validationError) return;
 
     if (!selectedIds.length) {
       toast.error("Select categories first.");
+      return;
+    }
+
+    //prevent overwriting multiple records
+    if (selectedIds.length > 1) {
+      toast.error("Bulk edit supports only one category.");
       return;
     }
 
@@ -49,21 +59,27 @@ export default function BulkEditCategory({
 
       if (error) throw error;
 
-      toast.success("Categories updated successfully!");
+      toast.success("Category updated successfully!");
 
-      setDescription("");
-      setShow(false);
+      handleClose();
       onSuccess();
     } catch (err: any) {
-      toast.error(err.message || "Failed to update categories");
+      toast.error(err.message || "Failed to update category");
     } finally {
       setLoading(false);
     }
   };
 
+  // Close Modal
+  const handleClose = () => {
+    setShow(false);
+    setDescription("");
+    setError(null);
+  };
+
   return (
     <>
-      {/* Trigger Button */}
+      {/* TRIGGER BUTTON */}
       <button
         className="btn btn-warning"
         onClick={() => {
@@ -77,7 +93,7 @@ export default function BulkEditCategory({
         Edit
       </button>
 
-      {/* Modal */}
+      {/* MODAL */}
       {show && (
         <div
           className="modal fade show d-block"
@@ -85,18 +101,13 @@ export default function BulkEditCategory({
         >
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content rounded-3 overflow-hidden">
+              {/* HEADER */}
               <div className="modal-header bg-light">
-                <h5 className="modal-title">Bulk Edit Categories</h5>
-                <button
-                  className="btn-close"
-                  onClick={() => {
-                    setShow(false);
-                    setError(null);
-                    setDescription("");
-                  }}
-                />
+                <h5 className="modal-title">Edit Category</h5>
+                <button className="btn-close" onClick={handleClose} />
               </div>
 
+              {/* FORM */}
               <form onSubmit={handleSubmit}>
                 <div className="modal-body">
                   <label className="form-label">New Description</label>
@@ -114,11 +125,12 @@ export default function BulkEditCategory({
                   )}
                 </div>
 
+                {/* FOOTER */}
                 <div className="modal-footer">
                   <button
                     type="button"
                     className="btn btn-secondary"
-                    onClick={() => setShow(false)}
+                    onClick={handleClose}
                     disabled={loading}
                   >
                     Cancel
@@ -127,8 +139,7 @@ export default function BulkEditCategory({
                   <button
                     type="submit"
                     className="btn btn-warning"
-                    disabled={loading || !!error}
-                    style={{ opacity: 1 }}
+                    disabled={loading || !!error || !description.trim()}
                   >
                     {loading ? "Saving..." : "Save Changes"}
                   </button>
