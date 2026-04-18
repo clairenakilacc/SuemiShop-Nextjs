@@ -1,9 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+
+import ViewCategory from "../../components/categories/ViewCategory";
+import EditCategory from "../../components/categories/EditCategory";
+import DeleteCategory from "../../components/categories/DeleteCategory";
 
 /* =========================
-   Local Category Type
+   Types
 ========================= */
 export interface Category {
   id: string;
@@ -19,13 +23,16 @@ interface Props {
   selectedIds: string[];
   onToggleSelect: (id: string) => void;
   onToggleSelectAll: (checked: boolean) => void;
-  onDelete: (id: string, description: string) => void;
 
   page: number;
   pageSize: number;
   totalCount: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
+
+  showView?: boolean;
+  showEdit?: boolean;
+  showDelete?: boolean;
 }
 
 /* =========================
@@ -36,18 +43,47 @@ export default function CategoryTable({
   selectedIds,
   onToggleSelect,
   onToggleSelectAll,
-  onDelete,
   page,
   pageSize,
   totalCount,
   onPageChange,
   onPageSizeChange,
+  showView = true,
+  showEdit = true,
+  showDelete = true,
 }: Props) {
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null,
+  );
+
+  const [viewOpen, setViewOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  /* =========================
+     Button Style (BLACK OUTLINE)
+  ========================= */
+  const baseBtn: React.CSSProperties = {
+    border: "1px solid #111827",
+    background: "transparent",
+    color: "#111827",
+    padding: "4px 8px",
+    borderRadius: "6px",
+    transition: "0.2s",
+    cursor: "pointer",
+  };
+
+  const hoverStyle = (color: string) => ({
+    background: color,
+    borderColor: color,
+    color: "#fff",
+  });
 
   return (
     <div>
-      {/* Table */}
+      {/* TABLE */}
       <div className="table-responsive" style={{ maxHeight: "70vh" }}>
         <table className="table table-bordered table-striped">
           <thead className="table-light sticky-top">
@@ -62,7 +98,6 @@ export default function CategoryTable({
                 />
               </th>
 
-              <th>Created At</th>
               <th>Description</th>
               <th className="text-center">Action</th>
             </tr>
@@ -71,7 +106,7 @@ export default function CategoryTable({
           <tbody>
             {data.length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-center py-4 text-muted">
+                <td colSpan={3} className="text-center py-4 text-muted">
                   No categories found.
                 </td>
               </tr>
@@ -86,21 +121,77 @@ export default function CategoryTable({
                     />
                   </td>
 
-                  <td>
-                    {row.created_at
-                      ? new Date(row.created_at).toLocaleDateString()
-                      : ""}
-                  </td>
-
                   <td>{row.description}</td>
 
+                  {/* ACTIONS */}
                   <td className="text-center">
-                    <button
-                      className="btn btn-sm btn-danger"
-                      onClick={() => onDelete(row.id, row.description)}
-                    >
-                      Delete
-                    </button>
+                    <div className="d-flex justify-content-center gap-2">
+                      {/* VIEW */}
+                      {showView && (
+                        <button
+                          style={baseBtn}
+                          onMouseOver={(e) =>
+                            Object.assign(
+                              e.currentTarget.style,
+                              hoverStyle("#d40d56"),
+                            )
+                          }
+                          onMouseOut={(e) =>
+                            Object.assign(e.currentTarget.style, baseBtn)
+                          }
+                          onClick={() => {
+                            setSelectedCategory(row);
+                            setViewOpen(true);
+                          }}
+                        >
+                          👁
+                        </button>
+                      )}
+
+                      {/* EDIT */}
+                      {showEdit && (
+                        <button
+                          style={baseBtn}
+                          onMouseOver={(e) =>
+                            Object.assign(
+                              e.currentTarget.style,
+                              hoverStyle("#f472b6"),
+                            )
+                          }
+                          onMouseOut={(e) =>
+                            Object.assign(e.currentTarget.style, baseBtn)
+                          }
+                          onClick={() => {
+                            setSelectedCategory(row);
+                            setEditOpen(true);
+                          }}
+                        >
+                          ✏️
+                        </button>
+                      )}
+
+                      {/* DELETE */}
+                      {showDelete && (
+                        <button
+                          style={baseBtn}
+                          onMouseOver={(e) =>
+                            Object.assign(
+                              e.currentTarget.style,
+                              hoverStyle("#ef4444"),
+                            )
+                          }
+                          onMouseOut={(e) =>
+                            Object.assign(e.currentTarget.style, baseBtn)
+                          }
+                          onClick={() => {
+                            setSelectedCategory(row);
+                            setDeleteOpen(true);
+                          }}
+                        >
+                          🗑
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))
@@ -109,7 +200,7 @@ export default function CategoryTable({
         </table>
       </div>
 
-      {/* Pagination */}
+      {/* PAGINATION */}
       <div className="d-flex justify-content-between mt-3 flex-wrap gap-2">
         <div>
           Show{" "}
@@ -142,6 +233,25 @@ export default function CategoryTable({
             ))}
         </div>
       </div>
+
+      {/* MODALS */}
+      <ViewCategory
+        show={viewOpen}
+        category={selectedCategory}
+        onClose={() => setViewOpen(false)}
+      />
+
+      <EditCategory
+        show={editOpen}
+        category={selectedCategory}
+        onClose={() => setEditOpen(false)}
+      />
+
+      <DeleteCategory
+        show={deleteOpen}
+        category={selectedCategory}
+        onClose={() => setDeleteOpen(false)}
+      />
     </div>
   );
 }
