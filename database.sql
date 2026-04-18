@@ -124,6 +124,7 @@ create table public.items (
   is_returned boolean default false
 );
 
+
 -- =====================================
 -- EXPENSES
 -- =====================================

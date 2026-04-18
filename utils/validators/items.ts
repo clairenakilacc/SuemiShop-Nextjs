@@ -60,3 +60,79 @@ export const validateOrderId = (value: string): string | null => {
 
   return null;
 };
+
+//LIVE SELLER VALIDATION
+export const validateLiveSeller = (value: string): string | null => {
+  if (!value) return "Live Seller is required";
+  return null;
+};
+
+//CATEGORY VALIDATION
+export const validateCategory = (value: string): string | null => {
+  const trimmed = value.trim();
+
+  if (!trimmed) return "Category is required";
+
+  return null;
+};
+
+//MINED FROM VALIDATION
+export const validateMinedFrom = (value: string): string | null => {
+  if (!value) return "Mined From is required";
+  return null;
+};
+
+// SELLING PRICE VALIDATION
+export const validateSellingPrice = (value: string): string | null => {
+  const trimmed = value.trim();
+
+  if (!trimmed) return "Selling Price is required";
+
+  if (/,/.test(trimmed)) return "No commas allowed";
+
+  if (!/^\d+(\.\d+)?$/.test(trimmed)) {
+    return "Must be a valid number";
+  }
+
+  const num = Number(trimmed);
+
+  if (num < 0) return "Must be non-negative";
+
+  return null;
+};
+
+//CAPITAL VALIDATION
+export const validateCapital = (value: string): string | null => {
+  const trimmed = value.trim();
+
+  if (!trimmed) return "Capital is required";
+
+  if (/,/.test(trimmed)) return "No commas allowed";
+
+  if (!/^\d+(\.\d+)?$/.test(trimmed)) {
+    return "Must be a valid number";
+  }
+
+  const num = Number(trimmed);
+
+  if (num < 0) return "Must be non-negative";
+
+  return null;
+};
+
+//QUANTITY VALIDATION
+export const validateQuantity = (value: string): string | null => {
+  const trimmed = value.trim();
+
+  if (!trimmed) return "Quantity is required";
+
+  if (!/^\d+$/.test(trimmed)) {
+    return "Must be a whole number";
+  }
+
+  const num = Number(trimmed);
+
+  if (num < 1) return "Must start at 1";
+
+  return null;
+};
