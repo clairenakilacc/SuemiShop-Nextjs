@@ -19,8 +19,11 @@ export default function AddItem({
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [brandError, setBrandError] = useState<string | null>(null); //brand validation
-  const [orderIdError, setOrderIdError] = useState<string | null>(null); //order id validation
+  const [brandError, setBrandError] = useState<string | null>(null); //brand state
+  const [orderIdError, setOrderIdError] = useState<string | null>(null); //order id state
+  const [livesellers, setLivesellers] = useState<
+    { id: number; name: string }[]
+  >([]); //live seller state
 
   //Prepared By Fetching
   const [user, setUser] = useState<{ name: string } | null>(null);
@@ -86,6 +89,25 @@ export default function AddItem({
     const error = validateOrderId(filtered);
     setOrderIdError(error);
   };
+
+  //Live Seller Function
+  useEffect(() => {
+    const fetchLiveSellers = async () => {
+      const { data, error } = await supabase
+        .from("users")
+        .select("id, name")
+        .eq("is_live_seller", "Yes");
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      setLivesellers(data || []);
+    };
+
+    fetchLiveSellers();
+  }, []);
 
   //Handle Change
   const handleChange = (key: string, value: string) => {
@@ -227,14 +249,21 @@ export default function AddItem({
                   </div>
 
                   <div className="col-md-6">
-                    <input
-                      className="form-control"
-                      placeholder="Live Seller"
+                    <select
+                      className="form-select"
                       value={form.live_seller}
                       onChange={(e) =>
                         handleChange("live_seller", e.target.value)
                       }
-                    />
+                    >
+                      <option value="">Select Live Seller</option>
+
+                      {livesellers.map((seller) => (
+                        <option key={seller.id} value={seller.id}>
+                          {seller.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 

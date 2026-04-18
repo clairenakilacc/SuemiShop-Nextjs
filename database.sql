@@ -98,19 +98,20 @@ create table public.items (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
 
-  created_by text,
-  updated_by text,
+  created_by bigint,
+  updated_by bigint,
 
-  timestamp timestamptz,
   date_shipped timestamptz,
   date_returned timestamptz,
 
-  prepared_by text,
+  -- FK to users.id
+  prepared_by bigint,
+  live_seller bigint,
+
   brand text,
   order_id text,
-  category text,
+  category bigint,
   mined_from text default '',
-  live_seller text,
 
   shoppee_commission double precision default 0,
   selling_price double precision default 0,
