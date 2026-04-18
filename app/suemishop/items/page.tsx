@@ -5,6 +5,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 
 import AddItem from "../../components/items/AddItem";
+
 import SearchBar from "../../components/SearchBar";
 import ConfirmDelete from "../../components/ConfirmDelete";
 // import { DataTable, Column } from "../../components/DataTable";

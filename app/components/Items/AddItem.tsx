@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { validateBrand } from "@/utils/validators/items";
 
 interface AddItemProps {
   onSuccess: () => void;
@@ -17,7 +18,30 @@ export default function AddItem({
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [brandError, setBrandError] = useState<string | null>(null); //brand validation
 
+  /* =========================
+     USER (prepared_by)
+  ========================= */
+  const [user, setUser] = useState<{ name: string } | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch("/api/me");
+        const json = await res.json();
+        setUser(json.user);
+      } catch (err) {
+        console.error("Failed to fetch user:", err);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  /* =========================
+     FORM STATE
+  ========================= */
   const [form, setForm] = useState({
     prepared_by: "",
     brand: "",
@@ -35,6 +59,26 @@ export default function AddItem({
 
     is_returned: "false",
   });
+
+  /* =========================
+     AUTO SET USER NAME
+  ========================= */
+  useEffect(() => {
+    if (user?.name) {
+      setForm((prev) => ({
+        ...prev,
+        prepared_by: user.name,
+      }));
+    }
+  }, [user]);
+
+  //Brand Validation Function
+  const handleBrandChange = async (value: string) => {
+    handleChange("brand", value);
+
+    const result = await validateBrand(value);
+    setBrandError(result);
+  };
 
   /* =========================
      HANDLE CHANGE
@@ -56,7 +100,6 @@ export default function AddItem({
       const payload = {
         ...form,
 
-        // convert to double precision
         selling_price: Number(form.selling_price || 0),
         capital: Number(form.capital || 0),
         quantity: Number(form.quantity || 0),
@@ -72,9 +115,9 @@ export default function AddItem({
         return;
       }
 
-      // reset
+      /* reset */
       setForm({
-        prepared_by: "",
+        prepared_by: user?.name || "",
         brand: "",
         order_id: "",
         category: "",
@@ -132,32 +175,36 @@ export default function AddItem({
 
               {/* BODY */}
               <div className="modal-body">
-                {/* ERROR */}
                 {error && (
                   <div className="alert alert-danger py-2">{error}</div>
                 )}
 
-                {/* ================= BASIC ================= */}
+                {/* BASIC INFO */}
                 <label className="form-label fw-bold">Basic Info</label>
+
                 <div className="row g-2 mb-3">
+                  {/* Prepared By (AUTO) */}
                   <div className="col-md-6">
                     <input
                       className="form-control"
-                      placeholder="Prepared By"
                       value={form.prepared_by}
-                      onChange={(e) =>
-                        handleChange("prepared_by", e.target.value)
-                      }
+                      readOnly
                     />
                   </div>
 
                   <div className="col-md-6">
                     <input
-                      className="form-control"
+                      className={`form-control ${brandError ? "is-invalid" : ""}`}
                       placeholder="Brand"
                       value={form.brand}
-                      onChange={(e) => handleChange("brand", e.target.value)}
+                      onChange={(e) => handleBrandChange(e.target.value)}
                     />
+
+                    {brandError && (
+                      <small className="text-danger d-block mt-1">
+                        {brandError}
+                      </small>
+                    )}
                   </div>
 
                   <div className="col-md-6">
@@ -181,8 +228,9 @@ export default function AddItem({
                   </div>
                 </div>
 
-                {/* ================= CLASSIFICATION ================= */}
+                {/* CLASSIFICATION */}
                 <label className="form-label fw-bold">Classification</label>
+
                 <div className="row g-2 mb-3">
                   <div className="col-md-6">
                     <input
@@ -208,9 +256,10 @@ export default function AddItem({
                   </div>
                 </div>
 
-                {/* ================= FINANCE ================= */}
+                {/* FINANCE */}
                 <label className="form-label fw-bold">Finance</label>
-                <div className="row g-2 mb-3">
+
+                <div className="row g-2">
                   <div className="col-md-4">
                     <input
                       type="number"
