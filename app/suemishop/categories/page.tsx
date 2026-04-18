@@ -29,14 +29,16 @@ export default function CategoriesListPage() {
   const [pageSize, setPageSize] = useState(50);
   const [totalCount, setTotalCount] = useState(0);
 
-  const fetchCategories = async () => {
-    const from = (page - 1) * pageSize;
-    const to = from + pageSize - 1;
+  const fetchCategories = async (resetPage = false) => {
+    if (resetPage) setPage(1);
+
+    const from = resetPage ? 0 : (page - 1) * pageSize;
+    const to = resetPage ? pageSize - 1 : from + pageSize - 1;
 
     let query = supabase
       .from("categories")
       .select("*", { count: "exact" })
-      .order("created_at", { ascending: false })
+      .order("updated_at", { ascending: false })
       .range(from, to);
 
     if (searchTerm.trim()) {
@@ -130,7 +132,6 @@ export default function CategoriesListPage() {
         />
       </div>
 
-      {/* TABLE (NO onDelete anymore) */}
       <CategoryTable
         data={categories}
         selectedIds={selectedCategories}
@@ -141,6 +142,7 @@ export default function CategoriesListPage() {
         totalCount={totalCount}
         onPageChange={setPage}
         onPageSizeChange={setPageSize}
+        onRefresh={fetchCategories}
       />
     </div>
   );

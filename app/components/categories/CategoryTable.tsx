@@ -30,6 +30,9 @@ interface Props {
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
 
+  // 🔥 IMPORTANT: refresh callback from parent
+  onRefresh: () => void;
+
   showView?: boolean;
   showEdit?: boolean;
   showDelete?: boolean;
@@ -48,6 +51,7 @@ export default function CategoryTable({
   totalCount,
   onPageChange,
   onPageSizeChange,
+  onRefresh,
   showView = true,
   showEdit = true,
   showDelete = true,
@@ -62,16 +66,12 @@ export default function CategoryTable({
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
-  /* =========================
-     Button Style (BLACK OUTLINE)
-  ========================= */
   const baseBtn: React.CSSProperties = {
     border: "1px solid #111827",
     background: "transparent",
     color: "#111827",
     padding: "4px 8px",
     borderRadius: "6px",
-    transition: "0.2s",
     cursor: "pointer",
   };
 
@@ -123,13 +123,16 @@ export default function CategoryTable({
 
                   <td>{row.description}</td>
 
-                  {/* ACTIONS */}
                   <td className="text-center">
                     <div className="d-flex justify-content-center gap-2">
                       {/* VIEW */}
                       {showView && (
                         <button
                           style={baseBtn}
+                          onClick={() => {
+                            setSelectedCategory(row);
+                            setViewOpen(true);
+                          }}
                           onMouseOver={(e) =>
                             Object.assign(
                               e.currentTarget.style,
@@ -139,10 +142,6 @@ export default function CategoryTable({
                           onMouseOut={(e) =>
                             Object.assign(e.currentTarget.style, baseBtn)
                           }
-                          onClick={() => {
-                            setSelectedCategory(row);
-                            setViewOpen(true);
-                          }}
                         >
                           👁
                         </button>
@@ -152,6 +151,10 @@ export default function CategoryTable({
                       {showEdit && (
                         <button
                           style={baseBtn}
+                          onClick={() => {
+                            setSelectedCategory(row);
+                            setEditOpen(true);
+                          }}
                           onMouseOver={(e) =>
                             Object.assign(
                               e.currentTarget.style,
@@ -161,10 +164,6 @@ export default function CategoryTable({
                           onMouseOut={(e) =>
                             Object.assign(e.currentTarget.style, baseBtn)
                           }
-                          onClick={() => {
-                            setSelectedCategory(row);
-                            setEditOpen(true);
-                          }}
                         >
                           ✏️
                         </button>
@@ -174,6 +173,10 @@ export default function CategoryTable({
                       {showDelete && (
                         <button
                           style={baseBtn}
+                          onClick={() => {
+                            setSelectedCategory(row);
+                            setDeleteOpen(true);
+                          }}
                           onMouseOver={(e) =>
                             Object.assign(
                               e.currentTarget.style,
@@ -183,10 +186,6 @@ export default function CategoryTable({
                           onMouseOut={(e) =>
                             Object.assign(e.currentTarget.style, baseBtn)
                           }
-                          onClick={() => {
-                            setSelectedCategory(row);
-                            setDeleteOpen(true);
-                          }}
                         >
                           🗑
                         </button>
@@ -245,12 +244,14 @@ export default function CategoryTable({
         show={editOpen}
         category={selectedCategory}
         onClose={() => setEditOpen(false)}
+        onSuccess={onRefresh}
       />
 
       <DeleteCategory
         show={deleteOpen}
         category={selectedCategory}
         onClose={() => setDeleteOpen(false)}
+        onSuccess={onRefresh}
       />
     </div>
   );

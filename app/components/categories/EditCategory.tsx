@@ -10,6 +10,7 @@ interface Props {
   category: Category | null;
   onClose: () => void;
   onSuccess?: () => void;
+  onRefresh?: () => void;
 }
 
 export default function EditCategory({
@@ -38,7 +39,10 @@ export default function EditCategory({
 
       const { error } = await supabase
         .from("categories")
-        .update({ description: description.trim() })
+        .update({
+          description: description.trim(),
+          updated_at: new Date().toISOString(),
+        })
         .eq("id", category.id);
 
       if (error) throw error;
