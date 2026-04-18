@@ -389,30 +389,29 @@ export default function SoldItemsPage() {
       )}
 
       {/* Summary Widget for non-Superadmin */}
-      {user?.role?.name !== "Superadmin" && (
-        <div className="mb-4">
-          <div className="bg-white shadow-sm rounded-4 p-4 border d-flex align-items-center justify-content-between">
-            <div>
-              <h5 className="mb-1 text-secondary">Total Cleaned Bags</h5>
-              <h2 className="fw-bold mb-0 text-success">
-                {items
-                  .filter((i) => i.prepared_by?.trim() === user?.name?.trim())
-                  .reduce(
-                    (sum, i) => sum + (parseFloat(i.quantity || "0") || 0),
-                    0,
-                  )
-                  .toLocaleString()}
-              </h2>
-            </div>
-            <div
-              className="rounded-circle bg-success bg-opacity-10 d-flex align-items-center justify-content-center"
-              style={{ width: "60px", height: "60px" }}
-            >
-              <i className="bi bi-bag-check-fill text-success fs-3"></i>
-            </div>
+      <div className="mb-4">
+        <div className="bg-white shadow-sm rounded-4 p-4 border d-flex align-items-center justify-content-between">
+          <div>
+            <h5 className="mb-1 text-secondary">Total Cleaned Bags</h5>
+            <h2 className="fw-bold mb-0 text-success">
+              {items
+                .filter((i) => i.prepared_by?.trim() === user?.name?.trim())
+                .reduce(
+                  (sum, i) => sum + (parseFloat(i.quantity || "0") || 0),
+                  0,
+                )
+                .toLocaleString()}
+            </h2>
+          </div>
+          <div
+            className="rounded-circle bg-success bg-opacity-10 d-flex align-items-center justify-content-center"
+            style={{ width: "60px", height: "60px" }}
+          >
+            <i className="bi bi-bag-check-fill text-success fs-3"></i>
           </div>
         </div>
-      )}
+      </div>
+
       <ItemTable
         data={items}
         columns={tableColumns}
