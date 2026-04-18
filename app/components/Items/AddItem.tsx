@@ -204,7 +204,6 @@ export default function AddItem({
                       value={form.brand}
                       onChange={(e) => handleBrandChange(e.target.value)}
                     />
-
                     {brandError && (
                       <small className="text-danger d-block mt-1">
                         {brandError}
@@ -220,7 +219,6 @@ export default function AddItem({
                       maxLength={4}
                       onChange={(e) => handleOrderIdChange(e.target.value)}
                     />
-
                     {orderIdError && (
                       <small className="text-danger d-block mt-1">
                         {orderIdError}
