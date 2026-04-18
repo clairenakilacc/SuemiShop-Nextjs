@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 
+import AddItem from "../../components/items/AddItem";
 import SearchBar from "../../components/SearchBar";
 import ConfirmDelete from "../../components/ConfirmDelete";
 // import { DataTable, Column } from "../../components/DataTable";
-import ItemTable, { ItemColumn } from "../../components/Items/ItemTable";
+import ItemTable, { ItemColumn } from "../../components/items/ItemTable";
 
 import BulkEdit from "../../components/BulkEdit";
 import DateRangePicker from "../../components/DateRangePicker";
@@ -63,7 +64,6 @@ export default function SoldItemsPage() {
     startDate: null,
     endDate: null,
   });
-  const [showAddModal, setShowAddModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(100);
@@ -242,20 +242,9 @@ export default function SoldItemsPage() {
       {/* Toolbar */}
       <div className="mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
         <div className="d-flex flex-wrap align-items-center gap-2">
-          <button
-            className="btn btn-success"
-            onClick={() => setShowAddModal(true)}
-          >
-            Add Item
-          </button>
-          <AddItemModal
-            isOpen={showAddModal}
-            onClose={() => setShowAddModal(false)}
-            onSuccess={fetchItems}
-          />
-
           {user?.role?.name === "Superadmin" && (
             <>
+              <AddItem onSuccess={fetchItems} />
               <BulkEdit
                 table="items"
                 selectedIds={selectedItems}
@@ -387,30 +376,6 @@ export default function SoldItemsPage() {
           <DateRangePicker onChange={setDateRange} />
         </div>
       )}
-
-      {/* Summary Widget for non-Superadmin */}
-      <div className="mb-4">
-        <div className="bg-white shadow-sm rounded-4 p-4 border d-flex align-items-center justify-content-between">
-          <div>
-            <h5 className="mb-1 text-secondary">Total Cleaned Bags</h5>
-            <h2 className="fw-bold mb-0 text-success">
-              {items
-                .filter((i) => i.prepared_by?.trim() === user?.name?.trim())
-                .reduce(
-                  (sum, i) => sum + (parseFloat(i.quantity || "0") || 0),
-                  0,
-                )
-                .toLocaleString()}
-            </h2>
-          </div>
-          <div
-            className="rounded-circle bg-success bg-opacity-10 d-flex align-items-center justify-content-center"
-            style={{ width: "60px", height: "60px" }}
-          >
-            <i className="bi bi-bag-check-fill text-success fs-3"></i>
-          </div>
-        </div>
-      </div>
 
       <ItemTable
         data={items}
