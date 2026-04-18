@@ -19,6 +19,7 @@ export default function CategoriesListPage() {
     id: string;
     description: string;
     created_at: string | null;
+    updated_at: string | null;
   }
 
   const [categories, setCategories] = useState<Category[]>([]);
