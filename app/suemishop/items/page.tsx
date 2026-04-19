@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 
 import AddItem from "../../components/items/AddItem";
 import ImportItem from "../../components/items/ImportItem";
+import ExportButton from "../../components/ExportButton";
 
 import SearchBar from "../../components/SearchBar";
 import DeleteSelected from "../../components/DeleteSelected";
@@ -14,7 +15,6 @@ import BulkEdit from "../../components/BulkEdit";
 import DateRangePicker from "../../components/DateRangePicker";
 
 import ImportButton from "../../components/ImportButton";
-import ExportButton from "../../components/ExportButton";
 
 import { dateNoTimezone } from "../../utils/validator";
 
@@ -206,6 +206,71 @@ export default function SoldItemsPage() {
           {/* <ImportButton table="items" onSuccess={fetchItems} />
 
           <ExportButton data={items} filename="items.csv" /> */}
+          <ExportButton
+            data={items}
+            headersMap={{
+              "Created At": (row: any) => {
+                if (!row.created_at) return "";
+                const d = new Date(row.created_at);
+                return `${(d.getMonth() + 1).toString().padStart(2, "0")}-${d
+                  .getDate()
+                  .toString()
+                  .padStart(2, "0")}-${d.getFullYear().toString().slice(-2)}`;
+              },
+
+              "Updated At": (row: any) => {
+                if (!row.updated_at) return "";
+                const d = new Date(row.updated_at);
+                return `${(d.getMonth() + 1).toString().padStart(2, "0")}-${d
+                  .getDate()
+                  .toString()
+                  .padStart(2, "0")}-${d.getFullYear().toString().slice(-2)}`;
+              },
+
+              "Created By": (row: any) =>
+                users.find((u) => u.id === row.created_by)?.name || "",
+
+              "Updated By": (row: any) =>
+                users.find((u) => u.id === row.updated_by)?.name || "",
+
+              "Prepared By": (row: any) =>
+                users.find((u) => u.id === row.prepared_by)?.name || "",
+
+              "Live Seller": (row: any) =>
+                users.find((u) => u.id === row.live_seller)?.name || "",
+
+              "Date Shipped": (row: any) =>
+                row.date_shipped
+                  ? new Date(row.date_shipped).toLocaleDateString()
+                  : "",
+
+              "Date Returned": (row: any) =>
+                row.date_returned
+                  ? new Date(row.date_returned).toLocaleDateString()
+                  : "",
+
+              Brand: "brand",
+              "Order ID": "order_id",
+
+              Category: (row: any) =>
+                categories.find((c) => String(c.id) === String(row.category))
+                  ?.description || "",
+
+              "Mined From": "mined_from",
+
+              "Shopee Commission": "shopee_commission",
+              "Selling Price": "selling_price",
+              Capital: "capital",
+              "Order Income": "order_income",
+              Discount: "discount",
+              "Commission Rate": "commission_rate",
+              Quantity: "quantity",
+              "Final Price": "final_price",
+
+              "Is Returned": (row: any) => (row.is_returned ? "Yes" : "No"),
+            }}
+            filename="items.csv"
+          />
           <DeleteSelected
             selectedCount={selectedItems.length}
             confirmMessage={

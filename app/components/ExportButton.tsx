@@ -3,12 +3,14 @@
 import * as XLSX from "xlsx";
 import toast from "react-hot-toast";
 
-export interface ExportButtonProps<T> {
+export interface ExportButtonProps<T = any> {
   data: T[];
-  headersMap: Record<string, keyof T | ((row: T) => any)>;
+  headersMap: Record<string, keyof T | string | ((row: T) => any)>;
   filename?: string;
-}
 
+  usersMap?: Record<number, string>;
+  categoriesMap?: Record<number, string>;
+}
 export default function ExportButton<T>({
   data,
   headersMap,
@@ -27,7 +29,7 @@ export default function ExportButton<T>({
         for (const [header, accessor] of Object.entries(headersMap)) {
           let value;
           if (typeof accessor === "function") value = accessor(row);
-          else value = row[accessor];
+          else value = (row as Record<string, any>)[accessor as string];
 
           // Keep everything as string
           mappedRow[header] = value ?? "";
