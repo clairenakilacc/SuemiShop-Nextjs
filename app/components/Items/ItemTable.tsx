@@ -1,9 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
+import { supabase } from "@/lib/supabase";
+
 import ViewItem from "../../components/items/ViewItem";
 import EditItem from "../../components/items/EditItem";
 import DeleteItem from "../../components/items/DeleteItem";
+import ReturnedModal from "../../components/items/ReturnedModal";
+
+import { computeItemFinance } from "@/utils/helpers/finance";
 
 /* =========================
    Item Type
@@ -16,7 +21,7 @@ export interface Item {
 
   created_by?: number | null;
   updated_by?: number | null;
-  prepared_by?: number | null; // 👈 USER ID (IMPORTANT FIX)
+  prepared_by?: number | null;
   live_seller?: number | null;
 
   date_shipped?: string | null;
@@ -56,10 +61,9 @@ interface Props {
   onPageSizeChange: (size: number) => void;
 
   categories: { id: string; description: string }[];
-  // 👇 ADD USERS (IMPORTANT)
   users: { id: number; name: string }[];
 
-  onRefresh: () => void;
+  onRefresh: (page?: number) => void;
   selectable?: boolean;
 }
 
@@ -79,27 +83,82 @@ export default function ItemTable({
   onRefresh,
   selectable = true,
   categories = [],
-  users = [], // 👈 FIX
+  users = [],
 }: Props) {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+
+  const [editingCommission, setEditingCommission] = useState<{
+    [key: string]: string;
+  }>({});
+
+  const [savingCommission, setSavingCommission] = useState<{
+    [key: string]: boolean;
+  }>({});
+
+  const [savedMap, setSavedMap] = useState<{ [key: string]: boolean }>({});
 
   const [viewOpen, setViewOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
+  const [returnItem, setReturnItem] = useState<Item | null>(null);
+  const [returnOpen, setReturnOpen] = useState(false);
+
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
-  const getUserName = (id?: number | null) => {
-    if (!id) return "-";
-    return users.find((u) => u.id === id)?.name || "-";
+  /* =========================
+     HELPERS
+  ========================= */
+  const getUserName = (id?: number | null) =>
+    users.find((u) => u.id === id)?.name || "-";
+
+  const getCategoryName = (id?: number | null) =>
+    categories.find((c) => String(c.id) === String(id))?.description || "-";
+
+  /* =========================
+     COMMISSION UPDATE
+  ========================= */
+  const updateCommission = async (row: Item, value: string) => {
+    const shoppee_commission = Number(value || 0);
+
+    const finance = computeItemFinance({
+      ...row,
+      shoppee_commission,
+    });
+
+    setSavingCommission((prev) => ({ ...prev, [row.id]: true }));
+
+    const { error } = await supabase
+      .from("items")
+      .update({
+        shoppee_commission,
+        order_income: finance.order_income,
+        commission_rate: finance.commission_rate,
+      })
+      .eq("id", row.id);
+
+    setSavingCommission((prev) => ({ ...prev, [row.id]: false }));
+
+    if (!error) await onRefresh(page);
+    else console.error(error);
   };
 
-  const getCategoryName = (id?: number | null) => {
-    if (!id) return "-";
+  /* =========================
+     RETURN TOGGLE
+  ========================= */
+  const handleToggleReturn = async (row: Item) => {
+    const newValue = !row.is_returned;
 
-    return (
-      categories.find((c) => String(c.id) === String(id))?.description || "-"
-    );
+    const { error } = await supabase
+      .from("items")
+      .update({
+        is_returned: newValue,
+        date_shipped: newValue ? row.date_shipped : null,
+        date_returned: newValue ? row.date_returned : null,
+      })
+      .eq("id", row.id);
+
+    if (!error) await onRefresh();
   };
 
   const btnStyle: React.CSSProperties = {
@@ -111,11 +170,12 @@ export default function ItemTable({
     cursor: "pointer",
   };
 
-  const hover = (color: string) => ({
-    background: color,
-    borderColor: color,
-    color: "#fff",
-  });
+  /* =========================
+     PAGINATION LOGIC ONLY (SAFE)
+  ========================= */
+  const start = (page - 1) * pageSize;
+  const end = start + pageSize;
+  const paginatedData = data.slice(start, end);
 
   return (
     <div>
@@ -140,20 +200,21 @@ export default function ItemTable({
               <th>Order ID</th>
               <th>Live Seller</th>
               <th>Selling Price</th>
-
+              <th>Shoppee Commission</th>
+              <th>Returned</th>
               <th className="text-center">Action</th>
             </tr>
           </thead>
 
           <tbody>
-            {data.length === 0 ? (
+            {paginatedData.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-4 text-muted">
+                <td colSpan={10} className="text-center py-4 text-muted">
                   No items found.
                 </td>
               </tr>
             ) : (
-              data.map((row) => (
+              paginatedData.map((row) => (
                 <tr key={row.id}>
                   <td className="text-center">
                     {selectable && (
@@ -173,7 +234,110 @@ export default function ItemTable({
                   <td>{row.selling_price ?? 0}</td>
 
                   <td>
-                    <div className="d-flex justify-content-center gap-2">
+                    <div className="d-flex align-items-center gap-2">
+                      <input
+                        type="number"
+                        defaultValue={row.shoppee_commission ?? ""}
+                        onChange={() => {
+                          // 👇 reset "Saved" once user edits again
+                          setSavedMap((prev) => ({
+                            ...prev,
+                            [row.id]: false,
+                          }));
+                        }}
+                        onKeyDown={async (e) => {
+                          if (e.key === "Enter") {
+                            const value = Number(
+                              (e.target as HTMLInputElement).value || 0,
+                            );
+
+                            const finance = computeItemFinance({
+                              ...row,
+                              shoppee_commission: value,
+                            });
+
+                            const { error } = await supabase
+                              .from("items")
+                              .update({
+                                shoppee_commission: value,
+                                order_income: finance.order_income,
+                                commission_rate: finance.commission_rate,
+                              })
+                              .eq("id", row.id);
+
+                            if (!error) {
+                              await onRefresh();
+
+                              setSavedMap((prev) => ({
+                                ...prev,
+                                [row.id]: true,
+                              }));
+                            } else {
+                              console.error(error);
+                            }
+                          }
+                        }}
+                        onBlur={async (e) => {
+                          const value = Number(e.target.value || 0);
+
+                          const finance = computeItemFinance({
+                            ...row,
+                            shoppee_commission: value,
+                          });
+
+                          const { error } = await supabase
+                            .from("items")
+                            .update({
+                              shoppee_commission: value,
+                              order_income: finance.order_income,
+                              commission_rate: finance.commission_rate,
+                            })
+                            .eq("id", row.id);
+
+                          if (!error) {
+                            await onRefresh();
+
+                            setSavedMap((prev) => ({
+                              ...prev,
+                              [row.id]: true,
+                            }));
+                          } else {
+                            console.error(error);
+                          }
+                        }}
+                        style={{
+                          width: "100px",
+                          border: "1px solid #ccc",
+                          borderRadius: "4px",
+                          padding: "2px 6px",
+                        }}
+                      />
+
+                      {/* ALWAYS SHOW IF SAVED */}
+                      {savedMap[row.id] && (
+                        <span
+                          style={{
+                            fontSize: "12px",
+                            color: "green",
+                            fontWeight: 600,
+                          }}
+                        >
+                          Saved
+                        </span>
+                      )}
+                    </div>
+                  </td>
+
+                  <td className="text-center">
+                    <input
+                      type="checkbox"
+                      checked={!!row.is_returned}
+                      onChange={() => handleToggleReturn(row)}
+                    />
+                  </td>
+
+                  <td>
+                    <div className="d-flex gap-2 justify-content-center">
                       <button
                         style={btnStyle}
                         onClick={() => {
@@ -212,16 +376,15 @@ export default function ItemTable({
         </table>
       </div>
 
-      {/* PAGINATION */}
+      {/* PAGINATION UI */}
       <div className="d-flex justify-content-between mt-3 flex-wrap gap-2">
         <div>
           Show{" "}
           <select
-            className="form-select d-inline-block w-auto"
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
           >
-            {[10, 20, 50, 100].map((n) => (
+            {[10, 20, 30].map((n) => (
               <option key={n} value={n}>
                 {n}
               </option>
@@ -230,23 +393,21 @@ export default function ItemTable({
         </div>
 
         <div>
-          {Array.from({ length: totalPages }, (_, i) => i + 1)
-            .slice(Math.max(0, page - 3), Math.min(totalPages, page + 2))
-            .map((p) => (
-              <button
-                key={p}
-                className={`btn btn-sm mx-1 ${
-                  p === page ? "btn-primary" : "btn-outline-secondary"
-                }`}
-                onClick={() => onPageChange(p)}
-              >
-                {p}
-              </button>
-            ))}
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+            <button
+              key={p}
+              className={`btn btn-sm mx-1 ${
+                p === page ? "btn-primary" : "btn-outline-secondary"
+              }`}
+              onClick={() => onPageChange(p)}
+            >
+              {p}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* MODALS */}
+      {/* MODALS (UNCHANGED - SAFE) */}
       <ViewItem
         show={viewOpen}
         item={selectedItem}
@@ -266,6 +427,13 @@ export default function ItemTable({
         show={deleteOpen}
         item={selectedItem}
         onClose={() => setDeleteOpen(false)}
+        onSuccess={onRefresh}
+      />
+
+      <ReturnedModal
+        show={returnOpen}
+        item={returnItem}
+        onClose={() => setReturnOpen(false)}
         onSuccess={onRefresh}
       />
     </div>

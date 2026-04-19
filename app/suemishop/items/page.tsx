@@ -98,64 +98,69 @@ export default function SoldItemsPage() {
   /* =========================
      FETCH ITEMS
   ========================= */
-  const fetchItems = useCallback(async () => {
-    const from = (page - 1) * pageSize;
-    const to = from + pageSize - 1;
+  const fetchItems = useCallback(
+    async (overridePage?: number) => {
+      const currentPage = overridePage ?? page;
 
-    let query = supabase
-      .from("items")
-      .select(
-        `
+      const from = (currentPage - 1) * pageSize;
+      const to = from + pageSize - 1;
+
+      let query = supabase
+        .from("items")
+        .select(
+          `
         *,
         prepared_user:users!items_prepared_by_fkey(id, name),
         seller_user:users!items_live_seller_fkey(id, name),
         category_data:categories!items_category_fkey(id, description)
       `,
-        { count: "exact" },
-      )
-      .order("updated_at", { ascending: false })
-      .range(from, to);
+          { count: "exact" },
+        )
+        .order("updated_at", { ascending: false })
+        .range(from, to);
 
-    /* DATE FILTER */
-    if (dateRange.startDate && dateRange.endDate) {
-      const start = new Date(dateRange.startDate);
-      const end = new Date(dateRange.endDate);
-      end.setHours(23, 59, 59, 999);
+      /* DATE FILTER */
+      if (dateRange.startDate && dateRange.endDate) {
+        const start = new Date(dateRange.startDate);
+        const end = new Date(dateRange.endDate);
+        end.setHours(23, 59, 59, 999);
 
-      query = query
-        .gte("created_at", start.toISOString())
-        .lte("created_at", end.toISOString());
-    }
+        query = query
+          .gte("created_at", start.toISOString())
+          .lte("created_at", end.toISOString());
+      }
 
-    /* SEARCH SAFE */
-    if (searchTerm.trim()) {
-      const term = `%${searchTerm}%`;
+      /* SEARCH SAFE */
+      if (searchTerm.trim()) {
+        const term = `%${searchTerm}%`;
 
-      query = query.or(`brand.ilike.${term},order_id.ilike.${term}`);
-    }
+        query = query.or(`brand.ilike.${term},order_id.ilike.${term}`);
+      }
 
-    const { data, error, count } = await query;
+      const { data, error, count } = await query;
 
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
 
-    const mapped: Item[] = (data || []).map((i: any) => ({
-      ...i,
-      created_at: i.created_at ? dateNoTimezone(i.created_at) : null,
-      updated_at: i.updated_at ? dateNoTimezone(i.updated_at) : null,
-      date_shipped: i.date_shipped ? dateNoTimezone(i.date_shipped) : null,
-      date_returned: i.date_returned ? dateNoTimezone(i.date_returned) : null,
-    }));
+      const mapped: Item[] = (data || []).map((i: any) => ({
+        ...i,
+        created_at: i.created_at ? dateNoTimezone(i.created_at) : null,
+        updated_at: i.updated_at ? dateNoTimezone(i.updated_at) : null,
+        date_shipped: i.date_shipped ? dateNoTimezone(i.date_shipped) : null,
+        date_returned: i.date_returned ? dateNoTimezone(i.date_returned) : null,
+      }));
 
-    setItems(mapped);
-    setTotalCount(count || 0);
-  }, [page, pageSize, searchTerm, dateRange]);
+      setItems(mapped);
+      setTotalCount(count || 0);
+    },
+    [page, pageSize, searchTerm, dateRange],
+  );
 
   useEffect(() => {
-    fetchItems();
-  }, [fetchItems]);
+    fetchItems(page);
+  }, [page, pageSize, searchTerm, dateRange]);
 
   /* =========================
      SELECT LOGIC
@@ -237,7 +242,9 @@ export default function SoldItemsPage() {
         totalCount={totalCount}
         onPageChange={setPage}
         onPageSizeChange={setPageSize}
-        onRefresh={fetchItems}
+        onRefresh={async () => {
+          await fetchItems();
+        }}
         users={users}
         categories={categories}
       />

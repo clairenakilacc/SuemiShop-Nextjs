@@ -87,6 +87,16 @@ body {
   background-color: #0d0c0c !important;
   color: #fff !important;
 }
+/* 
+Spin for Shoppee Commission - Item Table */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* add button color*/
 .btn-add {

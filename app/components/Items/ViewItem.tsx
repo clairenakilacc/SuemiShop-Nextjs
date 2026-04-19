@@ -151,7 +151,9 @@ export default function ViewItem({
 
                   <tr>
                     <th className="py-2 px-3">Commission Rate</th>
-                    <td className="py-2 px-3">{item.commission_rate ?? 0}%</td>
+                    <td className="py-2 px-3">
+                      {(item.commission_rate ?? 0).toFixed(2)}%
+                    </td>{" "}
                   </tr>
 
                   <tr>
@@ -172,12 +174,30 @@ export default function ViewItem({
 
                   <tr>
                     <th className="py-2 px-3">Date Shipped</th>
-                    <td className="py-2 px-3">{item.date_shipped || "-"}</td>
+                    <td className="py-2 px-3">
+                      {item.date_shipped
+                        ? new Date(item.date_shipped).toLocaleDateString(
+                            "en-CA",
+                            {
+                              timeZone: "Asia/Manila",
+                            },
+                          )
+                        : "-"}
+                    </td>
                   </tr>
 
                   <tr>
                     <th className="py-2 px-3">Date Returned</th>
-                    <td className="py-2 px-3">{item.date_returned || "-"}</td>
+                    <td className="py-2 px-3">
+                      {item.date_returned
+                        ? new Date(item.date_returned).toLocaleDateString(
+                            "en-CA",
+                            {
+                              timeZone: "Asia/Manila",
+                            },
+                          )
+                        : "-"}
+                    </td>
                   </tr>
 
                   <tr className="table-dark">
@@ -188,7 +208,12 @@ export default function ViewItem({
                     <th className="py-2 px-3">Created At</th>
                     <td className="py-2 px-3">
                       {item.created_at
-                        ? new Date(item.created_at).toLocaleString()
+                        ? new Date(item.created_at).toLocaleDateString(
+                            "en-CA",
+                            {
+                              timeZone: "Asia/Manila",
+                            },
+                          )
                         : "-"}
                     </td>
                   </tr>
@@ -197,7 +222,12 @@ export default function ViewItem({
                     <th className="py-2 px-3">Updated At</th>
                     <td className="py-2 px-3">
                       {item.updated_at
-                        ? new Date(item.updated_at).toLocaleString()
+                        ? new Date(item.updated_at).toLocaleDateString(
+                            "en-CA",
+                            {
+                              timeZone: "Asia/Manila",
+                            },
+                          )
                         : "-"}
                     </td>
                   </tr>

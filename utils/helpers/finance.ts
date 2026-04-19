@@ -7,7 +7,6 @@ export function computeItemFinance(item: any) {
 
   const order_income = final_price - shoppee_commission;
 
-  // 👇 derive commission rate from actual commission amount
   const commission_rate =
     final_price > 0 ? (shoppee_commission / final_price) * 100 : 0;
 
