@@ -4,6 +4,42 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { computeItemFinance } from "@/utils/helpers/finance";
 
+import {
+  validateBrand,
+  validateOrderId,
+  validateLiveSeller,
+  validateCategory,
+  validateMinedFrom,
+  validateSellingPrice,
+  validateCapital,
+  validateQuantity,
+} from "@/utils/validators/items";
+
+/* =========================
+   TYPES
+========================= */
+type FormType = {
+  brand: string;
+  order_id: string;
+  category: string;
+  mined_from: string;
+  live_seller: string;
+  selling_price: string;
+  capital: string;
+  quantity: string;
+  discount: string;
+  shopee_commission: string;
+  commission_rate: string;
+};
+
+type ErrorsType = Partial<Record<keyof FormType, string | null>>;
+
+type ValidatorFn =
+  | ((value: string) => string | null)
+  | ((value: string) => Promise<string | null>);
+
+type ValidatorsType = Partial<Record<keyof FormType, ValidatorFn>>;
+
 interface Props {
   show: boolean;
   item: any;
@@ -14,15 +50,10 @@ interface Props {
 export default function EditItem({ show, item, onClose, onSuccess }: Props) {
   const [loading, setLoading] = useState(false);
 
-  const [categories, setCategories] = useState<
-    { id: number; description: string }[]
-  >([]);
-
-  const [livesellers, setLivesellers] = useState<
-    { id: number; name: string }[]
-  >([]);
-
-  const [form, setForm] = useState({
+  /* =========================
+     STATE
+  ========================= */
+  const [form, setForm] = useState<FormType>({
     brand: "",
     order_id: "",
     category: "",
@@ -36,8 +67,32 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
     commission_rate: "",
   });
 
+  const [errors, setErrors] = useState<ErrorsType>({});
+
+  const [categories, setCategories] = useState<
+    { id: number; description: string }[]
+  >([]);
+
+  const [livesellers, setLivesellers] = useState<
+    { id: number; name: string }[]
+  >([]);
+
   /* =========================
-     LOAD ITEM DATA
+     VALIDATORS
+  ========================= */
+  const validators: ValidatorsType = {
+    brand: validateBrand,
+    order_id: validateOrderId,
+    live_seller: validateLiveSeller,
+    category: validateCategory,
+    mined_from: validateMinedFrom,
+    selling_price: validateSellingPrice,
+    capital: validateCapital,
+    quantity: validateQuantity,
+  };
+
+  /* =========================
+     LOAD ITEM
   ========================= */
   useEffect(() => {
     if (item) {
@@ -54,11 +109,13 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
         shopee_commission: String(item.shopee_commission ?? ""),
         commission_rate: String(item.commission_rate ?? ""),
       });
+
+      setErrors({});
     }
   }, [item]);
 
   /* =========================
-     FETCH RELATIONS
+     FETCH DATA
   ========================= */
   useEffect(() => {
     const fetchData = async () => {
@@ -83,17 +140,50 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
   /* =========================
      HANDLE CHANGE
   ========================= */
-  const handleChange = (key: string, value: string) => {
+  const handleChange = async (key: keyof FormType, value: string) => {
     setForm((prev) => ({
       ...prev,
       [key]: value,
     }));
+
+    const validator = validators[key];
+    if (!validator) return;
+
+    const error = await validator(value);
+
+    setErrors((prev) => ({
+      ...prev,
+      [key]: error,
+    }));
   };
 
   /* =========================
-     SUBMIT UPDATE
+     VALIDATE ALL
+  ========================= */
+  const validateAll = async () => {
+    const newErrors: ErrorsType = {};
+
+    for (const key of Object.keys(validators) as (keyof FormType)[]) {
+      const validator = validators[key];
+      if (!validator) continue;
+
+      const error = await validator(form[key]);
+
+      if (error) newErrors[key] = error;
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
+
+  /* =========================
+     SUBMIT
   ========================= */
   const handleSubmit = async () => {
+    const isValid = await validateAll();
+    if (!isValid) return;
+
     setLoading(true);
 
     const finance = computeItemFinance({
@@ -114,7 +204,6 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
       quantity: Number(form.quantity),
       discount: Number(form.discount || 0),
 
-      // recompute finance
       shopee_commission: finance.shopee_commission,
       commission_rate: finance.commission_rate,
       final_price: finance.final_price,
@@ -158,30 +247,41 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
             {/* BASIC */}
             <label className="fw-bold">Basic Info</label>
             <div className="row g-2 mb-3">
+              {/* BRAND */}
               <div className="col-md-6">
-                <label className="form-label ">Brand</label>
+                <label className="form-label">Brand</label>
                 <input
-                  className="form-control"
+                  className={`form-control ${errors.brand ? "is-invalid" : ""}`}
                   value={form.brand}
                   onChange={(e) => handleChange("brand", e.target.value)}
-                  placeholder="Brand"
                 />
+                {errors.brand && (
+                  <div className="invalid-feedback">{errors.brand}</div>
+                )}
               </div>
 
+              {/* ORDER ID */}
               <div className="col-md-6">
-                <label className="form-label ">ORDER ID</label>
+                <label className="form-label">Order ID</label>
                 <input
-                  className="form-control"
+                  className={`form-control ${
+                    errors.order_id ? "is-invalid" : ""
+                  }`}
                   value={form.order_id}
                   onChange={(e) => handleChange("order_id", e.target.value)}
-                  placeholder="Order ID"
                 />
+                {errors.order_id && (
+                  <div className="invalid-feedback">{errors.order_id}</div>
+                )}
               </div>
 
+              {/* LIVE SELLER */}
               <div className="col-md-6">
-                <label className="form-label ">Live Seller</label>
+                <label className="form-label">Live Seller</label>
                 <select
-                  className="form-select"
+                  className={`form-select ${
+                    errors.live_seller ? "is-invalid" : ""
+                  }`}
                   value={form.live_seller}
                   onChange={(e) => handleChange("live_seller", e.target.value)}
                 >
@@ -192,16 +292,21 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
                     </option>
                   ))}
                 </select>
+                {errors.live_seller && (
+                  <div className="invalid-feedback">{errors.live_seller}</div>
+                )}
               </div>
             </div>
 
             {/* CLASSIFICATION */}
-            <label className="fw-bold ">Classification</label>
+            <label className="fw-bold">Classification</label>
             <div className="row g-2 mb-3">
               <div className="col-md-6">
-                <label className="form-label ">Category</label>
+                <label className="form-label">Category</label>
                 <select
-                  className="form-select"
+                  className={`form-select ${
+                    errors.category ? "is-invalid" : ""
+                  }`}
                   value={form.category}
                   onChange={(e) => handleChange("category", e.target.value)}
                 >
@@ -212,12 +317,17 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
                     </option>
                   ))}
                 </select>
+                {errors.category && (
+                  <div className="invalid-feedback">{errors.category}</div>
+                )}
               </div>
 
               <div className="col-md-6">
-                <label className="form-label ">Mined From</label>
+                <label className="form-label">Mined From</label>
                 <select
-                  className="form-select"
+                  className={`form-select ${
+                    errors.mined_from ? "is-invalid" : ""
+                  }`}
                   value={form.mined_from}
                   onChange={(e) => handleChange("mined_from", e.target.value)}
                 >
@@ -225,55 +335,45 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
                   <option value="Shopee">Shopee</option>
                   <option value="Facebook">Facebook</option>
                 </select>
+                {errors.mined_from && (
+                  <div className="invalid-feedback">{errors.mined_from}</div>
+                )}
               </div>
             </div>
 
             {/* FINANCE */}
             <label className="fw-bold">Finance</label>
             <div className="row g-2">
-              <div className="col-md-4">
-                <label className="form-label ">Capital</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={form.capital}
-                  onChange={(e) => handleChange("capital", e.target.value)}
-                  placeholder="Capital"
-                />
-              </div>
+              {(
+                [
+                  ["capital", "Capital"],
+                  ["selling_price", "Selling Price"],
+                  ["quantity", "Quantity"],
+                ] as [keyof FormType, string][]
+              ).map(([key, label]) => (
+                <div className="col-md-4" key={key}>
+                  <label className="form-label">{label}</label>
+                  <input
+                    type="number"
+                    className={`form-control ${
+                      errors[key] ? "is-invalid" : ""
+                    }`}
+                    value={form[key]}
+                    onChange={(e) => handleChange(key, e.target.value)}
+                  />
+                  {errors[key] && (
+                    <div className="invalid-feedback">{errors[key]}</div>
+                  )}
+                </div>
+              ))}
 
               <div className="col-md-4">
-                <label className="form-label ">Selling Price</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={form.selling_price}
-                  onChange={(e) =>
-                    handleChange("selling_price", e.target.value)
-                  }
-                  placeholder="Selling Price"
-                />
-              </div>
-
-              <div className="col-md-4">
-                <label className="form-label ">Quantity</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={form.quantity}
-                  onChange={(e) => handleChange("quantity", e.target.value)}
-                  placeholder="Quantity"
-                />
-              </div>
-
-              <div className="col-md-4">
-                <label className="form-label ">Discount</label>
+                <label className="form-label">Discount</label>
                 <input
                   type="number"
                   className="form-control"
                   value={form.discount}
                   onChange={(e) => handleChange("discount", e.target.value)}
-                  placeholder="Discount"
                 />
               </div>
             </div>
@@ -284,8 +384,12 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
               Cancel
             </button>
 
-            <button className="btn btn-edit" onClick={handleSubmit}>
-              Edit
+            <button
+              className="btn btn-edit"
+              onClick={handleSubmit}
+              disabled={loading}
+            >
+              {loading ? "Saving..." : "Edit"}
             </button>
           </div>
         </div>
