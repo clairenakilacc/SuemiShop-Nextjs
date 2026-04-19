@@ -10,7 +10,7 @@ export interface Item {
   prepared_by?: string;
   brand?: string;
   order_id?: string;
-  shoppee_commission?: string;
+  shopee_commission?: string;
   selling_price?: string;
   is_returned?: string;
   quantity?: string;
@@ -31,7 +31,11 @@ interface ViewItemModalProps {
   onClose: () => void;
 }
 
-export default function ViewItemModal({ isOpen, itemId, onClose }: ViewItemModalProps) {
+export default function ViewItemModal({
+  isOpen,
+  itemId,
+  onClose,
+}: ViewItemModalProps) {
   const [item, setItem] = useState<Item | null>(null);
 
   useEffect(() => {
@@ -61,7 +65,7 @@ export default function ViewItemModal({ isOpen, itemId, onClose }: ViewItemModal
     { label: "Quantity", value: item.quantity },
     { label: "Capital", value: item.capital },
     { label: "Selling Price", value: item.selling_price },
-    { label: "Shoppee Commission", value: item.shoppee_commission },
+    { label: "Shopee Commission", value: item.shopee_commission },
     { label: "Discount", value: item.discount },
     { label: "Is Returned?", value: item.is_returned },
     { label: "Date Shipped", value: item.date_shipped },
@@ -83,13 +87,14 @@ export default function ViewItemModal({ isOpen, itemId, onClose }: ViewItemModal
       style={{ background: "rgba(0,0,0,0.5)" }}
     >
       <div className="modal-dialog modal-dialog-centered modal-xl">
-        <div
-          className="modal-content"
-          style={{ borderRadius: "8px" }}
-        >
+        <div className="modal-content" style={{ borderRadius: "8px" }}>
           <div className="modal-header bg-light">
             <h5 className="modal-title">View Item</h5>
-            <button type="button" className="btn-close" onClick={onClose}></button>
+            <button
+              type="button"
+              className="btn-close"
+              onClick={onClose}
+            ></button>
           </div>
 
           <div
@@ -98,57 +103,60 @@ export default function ViewItemModal({ isOpen, itemId, onClose }: ViewItemModal
           >
             <table className="table table-bordered mb-0">
               <tbody>
-                {displayFields.reduce<React.ReactNode[]>((acc, field, idx, arr) => {
-                  // Every 2 fields → 4 columns
-                  if (idx % 2 === 0) {
-                    const nextField = arr[idx + 1];
-                    acc.push(
-                      <tr key={idx}>
-                        {/* First Label */}
-                        <td
-                          style={{
-                            backgroundColor: "#f0f0f0",
-                            fontWeight: 500,
-                            width: "20%",
-                            textAlign: "left",
-                          }}
-                        >
-                          {field.label}
-                        </td>
-                        {/* First Value */}
-                        <td style={{ width: "30%", textAlign: "left" }}>
-                          {formatValue(field.value)}
-                        </td>
+                {displayFields.reduce<React.ReactNode[]>(
+                  (acc, field, idx, arr) => {
+                    // Every 2 fields → 4 columns
+                    if (idx % 2 === 0) {
+                      const nextField = arr[idx + 1];
+                      acc.push(
+                        <tr key={idx}>
+                          {/* First Label */}
+                          <td
+                            style={{
+                              backgroundColor: "#f0f0f0",
+                              fontWeight: 500,
+                              width: "20%",
+                              textAlign: "left",
+                            }}
+                          >
+                            {field.label}
+                          </td>
+                          {/* First Value */}
+                          <td style={{ width: "30%", textAlign: "left" }}>
+                            {formatValue(field.value)}
+                          </td>
 
-                        {nextField ? (
-                          <>
-                            {/* Second Label */}
-                            <td
-                              style={{
-                                backgroundColor: "#f0f0f0",
-                                fontWeight: 500,
-                                width: "20%",
-                                textAlign: "left",
-                              }}
-                            >
-                              {nextField.label}
-                            </td>
-                            {/* Second Value */}
-                            <td style={{ width: "30%", textAlign: "left" }}>
-                              {formatValue(nextField.value)}
-                            </td>
-                          </>
-                        ) : (
-                          <>
-                            <td style={{ width: "20%" }}></td>
-                            <td style={{ width: "30%" }}></td>
-                          </>
-                        )}
-                      </tr>
-                    );
-                  }
-                  return acc;
-                }, [])}
+                          {nextField ? (
+                            <>
+                              {/* Second Label */}
+                              <td
+                                style={{
+                                  backgroundColor: "#f0f0f0",
+                                  fontWeight: 500,
+                                  width: "20%",
+                                  textAlign: "left",
+                                }}
+                              >
+                                {nextField.label}
+                              </td>
+                              {/* Second Value */}
+                              <td style={{ width: "30%", textAlign: "left" }}>
+                                {formatValue(nextField.value)}
+                              </td>
+                            </>
+                          ) : (
+                            <>
+                              <td style={{ width: "20%" }}></td>
+                              <td style={{ width: "30%" }}></td>
+                            </>
+                          )}
+                        </tr>,
+                      );
+                    }
+                    return acc;
+                  },
+                  [],
+                )}
               </tbody>
             </table>
           </div>

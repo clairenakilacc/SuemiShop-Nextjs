@@ -113,7 +113,7 @@ create table public.items (
   category bigint,
   mined_from text default '',
 
-  shoppee_commission double precision default 0,
+  shopee_commission double precision default 0,
   selling_price double precision default 0,
   capital double precision default 0,
   order_income double precision default 0,

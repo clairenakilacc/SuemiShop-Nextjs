@@ -61,7 +61,7 @@ export default function AddItem({
     capital: "",
     quantity: "",
     discount: "",
-    shoppee_commission: "",
+    shopee_commission: "",
     commission_rate: "",
     is_returned: "false",
   });
@@ -211,7 +211,7 @@ export default function AddItem({
     const finance = computeItemFinance({
       selling_price: form.selling_price,
       discount: form.discount,
-      shoppee_commission: form.shoppee_commission,
+      shopee_commission: form.shopee_commission,
     });
 
     /* =========================
@@ -233,7 +233,7 @@ export default function AddItem({
       discount: Number(form.discount || 0),
 
       // 💡 store computed finance values (source of truth)
-      shoppee_commission: finance.shoppee_commission,
+      shopee_commission: finance.shopee_commission,
       commission_rate: finance.commission_rate,
       final_price: finance.final_price,
       order_income: finance.order_income,
@@ -261,7 +261,7 @@ export default function AddItem({
       capital: "",
       quantity: "",
       discount: "",
-      shoppee_commission: "",
+      shopee_commission: "",
       commission_rate: "",
       is_returned: "false",
     });
@@ -379,7 +379,7 @@ export default function AddItem({
                       onChange={(e) => handleMinedFromChange(e.target.value)}
                     >
                       <option value="">Mined From</option>
-                      <option value="Shoppee">Shoppee</option>
+                      <option value="Shopee">Shopee</option>
                       <option value="Facebook">Facebook</option>
                     </select>
                     <div className="invalid-feedback">{minedFromError}</div>

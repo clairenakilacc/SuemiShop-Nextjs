@@ -33,7 +33,7 @@ export interface Item {
   category?: number | null;
   mined_from?: string | null;
 
-  shoppee_commission?: number | null;
+  shopee_commission?: number | null;
   selling_price?: number | null;
   capital?: number | null;
   order_income?: number | null;
@@ -139,6 +139,34 @@ export default function ItemTable({
     cursor: "pointer",
   };
 
+  //for saved commission
+  const saveCommission = async (row: Item, value: number) => {
+    const finance = computeItemFinance({
+      ...row,
+      shopee_commission: value,
+    });
+
+    const { error } = await supabase
+      .from("items")
+      .update({
+        shopee_commission: value,
+        order_income: finance.order_income,
+        commission_rate: finance.commission_rate,
+      })
+      .eq("id", row.id);
+
+    if (!error) {
+      await onRefresh(page);
+
+      setSavedMap((prev) => ({
+        ...prev,
+        [row.id]: true,
+      }));
+    } else {
+      console.error(error);
+    }
+  };
+
   /* =========================
      PAGINATION
   ========================= */
@@ -168,7 +196,7 @@ export default function ItemTable({
               <th>Order ID</th>
               <th>Live Seller</th>
               <th>Selling Price</th>
-              <th>Shoppee Commission</th>
+              <th>Shopee Commission</th>
               <th>Returned</th>
               <th className="text-center">Action</th>
             </tr>
@@ -204,33 +232,28 @@ export default function ItemTable({
                   <td>
                     <input
                       type="number"
-                      defaultValue={row.shoppee_commission ?? ""}
+                      defaultValue={row.shopee_commission ?? ""}
+                      onChange={() => {
+                        // kapag nag-edit ulit → mawala "Saved"
+                        setSavedMap((prev) => ({
+                          ...prev,
+                          [row.id]: false,
+                        }));
+                      }}
                       onKeyDown={async (e) => {
                         if (e.key === "Enter") {
                           const value = Number(
                             (e.target as HTMLInputElement).value || 0,
                           );
-
-                          const finance = computeItemFinance({
-                            ...row,
-                            shoppee_commission: value,
-                          });
-
-                          const { error } = await supabase
-                            .from("items")
-                            .update({
-                              shoppee_commission: value,
-                              order_income: finance.order_income,
-                              commission_rate: finance.commission_rate,
-                            })
-                            .eq("id", row.id);
-
-                          if (!error) await onRefresh(page);
+                          await saveCommission(row, value);
                         }
+                      }}
+                      onBlur={async (e) => {
+                        const value = Number(e.target.value || 0);
+                        await saveCommission(row, value);
                       }}
                       style={{ width: "100px" }}
                     />
-
                     {savedMap[row.id] && (
                       <span style={{ fontSize: 12, color: "green" }}>
                         Saved

@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase";
  */
 export const mapRoleNameToId = (
   roles: Role[],
-  roleName: string
+  roleName: string,
 ): string | undefined => {
   const role = roles.find((r) => r.name === roleName);
   if (!role) {
@@ -21,7 +21,7 @@ export const mapRoleNameToId = (
  * Remove commas and parse string/number to float
  */
 export const parseNumber = (
-  val: string | number | null | undefined
+  val: string | number | null | undefined,
 ): number => {
   if (val === null || val === undefined) return 0;
   if (typeof val === "number") return val;
@@ -56,7 +56,7 @@ export const formatDate = (dateStr?: string): string => {
  */
 export const applyDiscount = (
   selling_price: string,
-  discount: string
+  discount: string,
 ): string => {
   const sp = parseNumber(selling_price);
   const dc = parseNumber(discount);
@@ -68,10 +68,10 @@ export const applyDiscount = (
  */
 export const calculateOrderIncome = (
   selling_price: string,
-  shoppee_commission: string
+  shopee_commission: string,
 ): string => {
   const sp = parseNumber(selling_price);
-  const sc = parseNumber(shoppee_commission);
+  const sc = parseNumber(shopee_commission);
   return (sp - sc).toFixed(2);
 };
 
@@ -80,10 +80,10 @@ export const calculateOrderIncome = (
  */
 export const calculateCommissionRate = (
   selling_price: string,
-  shoppee_commission: string
+  shopee_commission: string,
 ): string => {
   const sp = parseNumber(selling_price);
-  const sc = parseNumber(shoppee_commission);
+  const sc = parseNumber(shopee_commission);
   if (sp === 0) return "0.00";
   return ((sc / sp) * 100).toFixed(2); // e.g., 60 / 1000 => 6.00
 };
@@ -127,15 +127,15 @@ export const parseExcelDate = (value: any): string | undefined => {
 export const saveCalculatedFields = async (item: {
   id: string;
   selling_price: string;
-  shoppee_commission: string;
+  shopee_commission: string;
 }) => {
   const order_income = calculateOrderIncome(
     item.selling_price,
-    item.shoppee_commission
+    item.shopee_commission,
   );
   const commission_rate = calculateCommissionRate(
     item.selling_price,
-    item.shoppee_commission
+    item.shopee_commission,
   );
 
   const { error } = await supabase
@@ -173,7 +173,7 @@ export const dateNoTimezone = (timestamp?: string) => {
 
 //the text are parsed to number, in dashboard statwidget
 export const textToNumber = (
-  val: string | number | null | undefined
+  val: string | number | null | undefined,
 ): number => {
   if (val === null || val === undefined) return 0;
   if (typeof val === "number") return val;
@@ -207,7 +207,7 @@ export const sumQuantity = (items: { quantity?: string }[]): number => {
  */
 export const validateRequired = (
   value: string | null | undefined,
-  fieldName: string
+  fieldName: string,
 ): string => {
   if (!value || value.trim() === "") {
     return `${fieldName} is required`;
@@ -221,7 +221,7 @@ export const validateRequired = (
  */
 export const validateItemForm = (
   item: Record<string, any>,
-  fields: { key: string; label: string; required?: boolean }[]
+  fields: { key: string; label: string; required?: boolean }[],
 ): boolean => {
   for (const f of fields) {
     if (!f.required) continue;
@@ -239,7 +239,7 @@ export const validateItemForm = (
  */
 export const calculateInventoryTotal = (
   quantity: string,
-  price: string
+  price: string,
 ): string => {
   const q = parseNumber(quantity);
   const p = parseNumber(price);

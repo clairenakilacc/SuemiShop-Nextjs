@@ -13,7 +13,7 @@ export interface Item {
   prepared_by?: string;
   brand?: string;
   order_id?: string;
-  shoppee_commission?: string;
+  shopee_commission?: string;
   selling_price?: string;
   is_returned?: string;
   quantity?: string;
@@ -54,7 +54,7 @@ export default function EditItemModal({
   const [loggedUser, setLoggedUser] = useState<string>("");
   const [categories, setCategories] = useState<string[]>([]);
   const [employees, setEmployees] = useState<{ id: string; name: string }[]>(
-    []
+    [],
   );
   const [liveSellers, setLiveSellers] = useState<
     { id: string; name: string }[]
@@ -139,7 +139,7 @@ export default function EditItemModal({
       key: "mined_from",
       label: "Mined From",
       type: "select",
-      options: ["Facebook", "Shoppee"],
+      options: ["Facebook", "Shopee"],
       required: true,
     },
     {
@@ -203,8 +203,8 @@ export default function EditItemModal({
           : "",
     },
     {
-      key: "shoppee_commission",
-      label: "Shoppee Commission",
+      key: "shopee_commission",
+      label: "Shopee Commission",
       type: "float",
       required: true,
       validate: (v) =>

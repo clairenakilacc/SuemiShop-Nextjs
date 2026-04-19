@@ -32,7 +32,7 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
     capital: "",
     quantity: "",
     discount: "",
-    shoppee_commission: "",
+    shopee_commission: "",
     commission_rate: "",
   });
 
@@ -51,7 +51,7 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
         capital: String(item.capital ?? ""),
         quantity: String(item.quantity ?? ""),
         discount: String(item.discount ?? ""),
-        shoppee_commission: String(item.shoppee_commission ?? ""),
+        shopee_commission: String(item.shopee_commission ?? ""),
         commission_rate: String(item.commission_rate ?? ""),
       });
     }
@@ -99,7 +99,7 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
     const finance = computeItemFinance({
       selling_price: form.selling_price,
       discount: form.discount,
-      shoppee_commission: form.shoppee_commission,
+      shopee_commission: form.shopee_commission,
     });
 
     const payload = {
@@ -115,7 +115,7 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
       discount: Number(form.discount || 0),
 
       // recompute finance
-      shoppee_commission: finance.shoppee_commission,
+      shopee_commission: finance.shopee_commission,
       commission_rate: finance.commission_rate,
       final_price: finance.final_price,
       order_income: finance.order_income,
@@ -217,7 +217,7 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
                   onChange={(e) => handleChange("mined_from", e.target.value)}
                 >
                   <option value="">Mined From</option>
-                  <option value="Shoppee">Shoppee</option>
+                  <option value="Shopee">Shopee</option>
                   <option value="Facebook">Facebook</option>
                 </select>
               </div>
@@ -272,9 +272,9 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
                 <input
                   type="number"
                   className="form-control"
-                  value={form.shoppee_commission}
+                  value={form.shopee_commission}
                   onChange={(e) =>
-                    handleChange("shoppee_commission", e.target.value)
+                    handleChange("shopee_commission", e.target.value)
                   }
                   placeholder="Shopee Commission"
                 />

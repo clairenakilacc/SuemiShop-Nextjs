@@ -138,10 +138,8 @@ export default function ViewItem({
                   </tr>
 
                   <tr>
-                    <th className="py-2 px-3">Shoppee Commission</th>
-                    <td className="py-2 px-3">
-                      {item.shoppee_commission ?? 0}
-                    </td>
+                    <th className="py-2 px-3">Shopee Commission</th>
+                    <td className="py-2 px-3">{item.shopee_commission ?? 0}</td>
                   </tr>
 
                   <tr>
@@ -153,7 +151,7 @@ export default function ViewItem({
                     <th className="py-2 px-3">Commission Rate</th>
                     <td className="py-2 px-3">
                       {(item.commission_rate ?? 0).toFixed(2)}%
-                    </td>{" "}
+                    </td>
                   </tr>
 
                   <tr>
