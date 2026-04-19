@@ -56,7 +56,6 @@ interface Props {
   onPageSizeChange: (size: number) => void;
 
   categories: { id: string; description: string }[];
-
   // 👇 ADD USERS (IMPORTANT)
   users: { id: number; name: string }[];
 
@@ -95,6 +94,14 @@ export default function ItemTable({
     return users.find((u) => u.id === id)?.name || "-";
   };
 
+  const getCategoryName = (id?: number | null) => {
+    if (!id) return "-";
+
+    return (
+      categories.find((c) => String(c.id) === String(id))?.description || "-"
+    );
+  };
+
   const btnStyle: React.CSSProperties = {
     border: "1px solid #111827",
     background: "transparent",
@@ -129,6 +136,7 @@ export default function ItemTable({
 
               <th>Prepared By</th>
               <th>Brand</th>
+              <th>Category</th>
               <th>Order ID</th>
               <th>Live Seller</th>
               <th>Selling Price</th>
@@ -156,13 +164,14 @@ export default function ItemTable({
                       />
                     )}
                   </td>
-                  {/* data */}
-                  <td>{getUserName(row.prepared_by)}</td> {/* 👈 FIXED */}
+
+                  <td>{getUserName(row.prepared_by)}</td>
                   <td>{row.brand ?? "-"}</td>
+                  <td>{getCategoryName(row.category)}</td>
                   <td>{row.order_id ?? "-"}</td>
                   <td>{getUserName(row.live_seller)}</td>
                   <td>{row.selling_price ?? 0}</td>
-                  {/* actions */}
+
                   <td>
                     <div className="d-flex justify-content-center gap-2">
                       <button
@@ -171,12 +180,6 @@ export default function ItemTable({
                           setSelectedItem(row);
                           setViewOpen(true);
                         }}
-                        onMouseOver={(e) =>
-                          Object.assign(e.currentTarget.style, hover("#0d6efd"))
-                        }
-                        onMouseOut={(e) =>
-                          Object.assign(e.currentTarget.style, btnStyle)
-                        }
                       >
                         👁
                       </button>
@@ -187,12 +190,6 @@ export default function ItemTable({
                           setSelectedItem(row);
                           setEditOpen(true);
                         }}
-                        onMouseOver={(e) =>
-                          Object.assign(e.currentTarget.style, hover("#f59e0b"))
-                        }
-                        onMouseOut={(e) =>
-                          Object.assign(e.currentTarget.style, btnStyle)
-                        }
                       >
                         ✏️
                       </button>
@@ -203,12 +200,6 @@ export default function ItemTable({
                           setSelectedItem(row);
                           setDeleteOpen(true);
                         }}
-                        onMouseOver={(e) =>
-                          Object.assign(e.currentTarget.style, hover("#ef4444"))
-                        }
-                        onMouseOut={(e) =>
-                          Object.assign(e.currentTarget.style, btnStyle)
-                        }
                       >
                         🗑
                       </button>
@@ -260,6 +251,7 @@ export default function ItemTable({
         show={viewOpen}
         item={selectedItem}
         categories={categories}
+        users={users}
         onClose={() => setViewOpen(false)}
       />
 

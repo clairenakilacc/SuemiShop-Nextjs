@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { computeItemFinance } from "@/utils/helpers/finance";
 import {
   validateBrand,
   validateOrderId,
@@ -207,6 +208,12 @@ export default function AddItem({
       return;
     }
 
+    const finance = computeItemFinance({
+      selling_price: form.selling_price,
+      discount: form.discount,
+      shoppee_commission: form.shoppee_commission,
+    });
+
     /* =========================
        FIXED PAYLOAD (BIGINT SAFE)
     ========================= */
@@ -224,8 +231,12 @@ export default function AddItem({
       capital: Number(form.capital),
       quantity: Number(form.quantity),
       discount: Number(form.discount || 0),
-      shoppee_commission: Number(form.shoppee_commission || 0),
-      commission_rate: Number(form.commission_rate || 0),
+
+      // 💡 store computed finance values (source of truth)
+      shoppee_commission: finance.shoppee_commission,
+      commission_rate: finance.commission_rate,
+      final_price: finance.final_price,
+      order_income: finance.order_income,
 
       is_returned: false,
     };

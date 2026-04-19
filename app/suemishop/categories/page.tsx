@@ -30,11 +30,16 @@ export default function CategoriesListPage() {
   const [pageSize, setPageSize] = useState(50);
   const [totalCount, setTotalCount] = useState(0);
 
-  const fetchCategories = async (resetPage = false) => {
+  const handleRefresh = async (resetPage = false) => {
     if (resetPage) setPage(1);
+    await fetchCategories(resetPage);
+  };
 
-    const from = resetPage ? 0 : (page - 1) * pageSize;
-    const to = resetPage ? pageSize - 1 : from + pageSize - 1;
+  const fetchCategories = async (resetPage = false) => {
+    const currentPage = resetPage ? 1 : page;
+
+    const from = (currentPage - 1) * pageSize;
+    const to = from + pageSize - 1;
 
     let query = supabase
       .from("categories")
@@ -53,10 +58,11 @@ export default function CategoriesListPage() {
       return;
     }
 
-    setCategories((data as Category[]) || []);
+    setCategories(data || []);
     setTotalCount(count || 0);
   };
 
+  //
   useEffect(() => {
     fetchCategories();
   }, [page, pageSize, searchTerm]);
@@ -80,9 +86,9 @@ export default function CategoriesListPage() {
       {/* TOOLBAR */}
       <div className="mb-3 d-flex justify-content-between flex-wrap gap-2">
         <div className="d-flex gap-2 flex-wrap">
-          <AddCategory onSuccess={fetchCategories} />
+          <AddCategory onSuccess={() => handleRefresh(true)} />
 
-          <ImportCategory onSuccess={fetchCategories} />
+          <ImportCategory onSuccess={() => handleRefresh(true)} />
 
           <ExportButton
             data={categories}

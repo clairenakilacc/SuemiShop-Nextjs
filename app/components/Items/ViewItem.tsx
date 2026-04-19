@@ -2,16 +2,42 @@
 
 import React from "react";
 import type { Item } from "./ItemTable";
+import { computeItemFinance } from "@/utils/helpers/finance";
 
 interface Props {
   show: boolean;
   item: Item | null;
   categories: { id: string; description: string }[];
+  users: { id: number; name: string }[];
+
   onClose: () => void;
 }
 
-export default function ViewItem({ show, item, onClose }: Props) {
+export default function ViewItem({
+  show,
+  item,
+  users,
+  categories,
+  onClose,
+}: Props) {
   if (!show || !item) return null;
+
+  //finance computation
+  const finance = computeItemFinance(item);
+
+  //category
+  const getCategoryName = (id?: number | null) => {
+    if (!id) return "-";
+    return (
+      categories.find((c) => String(c.id) === String(id))?.description || "-"
+    );
+  };
+
+  //user name
+  const getUserName = (id?: number | null) => {
+    if (!id) return "-";
+    return users.find((u) => u.id === id)?.name || "-";
+  };
 
   return (
     <div
@@ -37,7 +63,7 @@ export default function ViewItem({ show, item, onClose }: Props) {
                 }}
               >
                 <tbody>
-                  <tr className="table-light">
+                  <tr className="table-dark">
                     <th colSpan={2}>Basic Information</th>
                   </tr>
 
@@ -55,7 +81,9 @@ export default function ViewItem({ show, item, onClose }: Props) {
 
                   <tr>
                     <th className="py-2 px-3">Category</th>
-                    <td className="py-2 px-3">{item.category ?? "-"}</td>
+                    <td className="py-2 px-3">
+                      {getCategoryName(item.category)}
+                    </td>
                   </tr>
 
                   <tr>
@@ -65,27 +93,38 @@ export default function ViewItem({ show, item, onClose }: Props) {
                     </td>
                   </tr>
 
-                  <tr className="table-light">
+                  <tr className="table-dark">
                     <th colSpan={2}>People</th>
                   </tr>
 
                   <tr>
+                    <th className="py-2 px-3">Created By</th>
+                    <td className="py-2 px-3">
+                      {getUserName(item.created_by)}
+                    </td>
+                  </tr>
+
+                  <tr>
                     <th className="py-2 px-3">Prepared By</th>
-                    <td className="py-2 px-3">{item.prepared_by ?? "-"}</td>
+                    <td className="py-2 px-3">
+                      {getUserName(item.prepared_by)}
+                    </td>
                   </tr>
 
                   <tr>
                     <th className="py-2 px-3">Live Seller</th>
-                    <td className="py-2 px-3">{item.live_seller ?? "-"}</td>
+                    <td className="py-2 px-3">
+                      {getUserName(item.live_seller)}
+                    </td>
                   </tr>
 
-                  <tr className="table-light">
+                  <tr className="table-dark">
                     <th colSpan={2}>Financial</th>
                   </tr>
 
                   <tr>
-                    <th className="py-2 px-3">Selling Price</th>
-                    <td className="py-2 px-3">{item.selling_price ?? 0}</td>
+                    <th className="py-2 px-3">Quantity</th>
+                    <td className="py-2 px-3">{item.quantity ?? 0}</td>
                   </tr>
 
                   <tr>
@@ -94,13 +133,20 @@ export default function ViewItem({ show, item, onClose }: Props) {
                   </tr>
 
                   <tr>
-                    <th className="py-2 px-3">Discount</th>
-                    <td className="py-2 px-3">{item.discount ?? 0}</td>
+                    <th className="py-2 px-3">Selling Price</th>
+                    <td className="py-2 px-3">{item.selling_price ?? 0}</td>
                   </tr>
 
                   <tr>
-                    <th className="py-2 px-3">Quantity</th>
-                    <td className="py-2 px-3">{item.quantity ?? 0}</td>
+                    <th className="py-2 px-3">Shoppee Commission</th>
+                    <td className="py-2 px-3">
+                      {item.shoppee_commission ?? 0}
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <th className="py-2 px-3">Discount</th>
+                    <td className="py-2 px-3">{item.discount ?? 0}</td>
                   </tr>
 
                   <tr>
@@ -110,10 +156,10 @@ export default function ViewItem({ show, item, onClose }: Props) {
 
                   <tr>
                     <th className="py-2 px-3">Order Income</th>
-                    <td className="py-2 px-3">{item.order_income ?? 0}</td>
+                    <td>{finance.order_income}</td>
                   </tr>
 
-                  <tr className="table-light">
+                  <tr className="table-dark">
                     <th colSpan={2}>Status</th>
                   </tr>
 
@@ -134,7 +180,7 @@ export default function ViewItem({ show, item, onClose }: Props) {
                     <td className="py-2 px-3">{item.date_returned || "-"}</td>
                   </tr>
 
-                  <tr className="table-light">
+                  <tr className="table-dark">
                     <th colSpan={2}>System</th>
                   </tr>
 

@@ -120,6 +120,7 @@ create table public.items (
   discount double precision default 0,
   commission_rate double precision default 0,
   quantity double precision default 0,
+  final_price double precision default 0,
 
   is_returned boolean default false
 );

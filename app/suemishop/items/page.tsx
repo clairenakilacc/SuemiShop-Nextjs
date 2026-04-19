@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 
@@ -8,7 +8,6 @@ import AddItem from "../../components/items/AddItem";
 import SearchBar from "../../components/SearchBar";
 import ConfirmDelete from "../../components/ConfirmDelete";
 import ItemTable from "../../components/items/ItemTable";
-
 import BulkEdit from "../../components/BulkEdit";
 import DateRangePicker from "../../components/DateRangePicker";
 import ImportButton from "../../components/ImportButton";
@@ -17,7 +16,7 @@ import ExportButton from "../../components/ExportButton";
 import { dateNoTimezone } from "../../utils/validator";
 
 /* =========================
-   ITEM TYPE (DB uses IDs)
+   TYPES
 ========================= */
 interface Item {
   id: string;
@@ -25,72 +24,81 @@ interface Item {
   created_at: string | null;
   updated_at: string | null;
 
-  prepared_by: number | null; // USER ID
+  prepared_by: number | null;
   live_seller: number | null;
 
   brand: string | null;
   order_id: string | null;
 
-  shoppee_commission: number | null;
+  category: number | null;
+
   selling_price: number | null;
   capital: number | null;
-  order_income: number | null;
-  discount: number | null;
-  commission_rate: number | null;
   quantity: number | null;
-
-  category: number | null;
-  mined_from: string | null;
 
   date_shipped: string | null;
   date_returned: string | null;
 
   is_returned: boolean | null;
+
+  /* JOINED DATA */
+  prepared_user?: { id: number; name: string } | null;
+  seller_user?: { id: number; name: string } | null;
+  category_data?: { id: number; description: string } | null;
 }
 
-/* =========================
-   USER TYPE (FIXED)
-========================= */
 interface User {
   id: number;
   name: string;
 }
 
+interface Category {
+  id: string;
+  description: string;
+}
+
+/* =========================
+   PAGE
+========================= */
 export default function SoldItemsPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [dateRange, setDateRange] = useState<{
-    startDate: string | null;
-    endDate: string | null;
-  }>({
-    startDate: null,
-    endDate: null,
-  });
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(100);
   const [totalCount, setTotalCount] = useState(0);
 
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [dateRange, setDateRange] = useState<{
+    startDate: string | null;
+    endDate: string | null;
+  }>({ startDate: null, endDate: null });
+
   /* =========================
-     FETCH USERS
+     FETCH USERS + CATEGORIES
   ========================= */
   useEffect(() => {
-    const fetchUsers = async () => {
-      const { data } = await supabase.from("users").select("id, name");
-      setUsers(data || []);
+    const fetchMeta = async () => {
+      const [{ data: usersData }, { data: catData }] = await Promise.all([
+        supabase.from("users").select("id, name"),
+        supabase.from("categories").select("id, description"),
+      ]);
+
+      setUsers(usersData || []);
+      setCategories(catData || []);
     };
 
-    fetchUsers();
+    fetchMeta();
   }, []);
 
   /* =========================
      FETCH ITEMS
   ========================= */
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
 
@@ -98,15 +106,17 @@ export default function SoldItemsPage() {
       .from("items")
       .select(
         `
-    *,
-    prepared_user:users!items_prepared_by_fkey(id, name),
-    seller_user:users!items_live_seller_fkey(id, name),
-    category_data:categories!items_category_fkey(id, description)
-  `,
+        *,
+        prepared_user:users!items_prepared_by_fkey(id, name),
+        seller_user:users!items_live_seller_fkey(id, name),
+        category_data:categories!items_category_fkey(id, description)
+      `,
+        { count: "exact" },
       )
       .order("updated_at", { ascending: false })
       .range(from, to);
 
+    /* DATE FILTER */
     if (dateRange.startDate && dateRange.endDate) {
       const start = new Date(dateRange.startDate);
       const end = new Date(dateRange.endDate);
@@ -117,12 +127,11 @@ export default function SoldItemsPage() {
         .lte("created_at", end.toISOString());
     }
 
+    /* SEARCH SAFE */
     if (searchTerm.trim()) {
       const term = `%${searchTerm}%`;
 
-      query = query.or(
-        `brand.ilike.${term},order_id.ilike.${term},prepared_by.ilike.${term},live_seller.ilike.${term}`,
-      );
+      query = query.or(`brand.ilike.${term},order_id.ilike.${term}`);
     }
 
     const { data, error, count } = await query;
@@ -142,11 +151,11 @@ export default function SoldItemsPage() {
 
     setItems(mapped);
     setTotalCount(count || 0);
-  };
+  }, [page, pageSize, searchTerm, dateRange]);
 
   useEffect(() => {
     fetchItems();
-  }, [page, pageSize, searchTerm, dateRange]);
+  }, [fetchItems]);
 
   /* =========================
      SELECT LOGIC
@@ -162,19 +171,12 @@ export default function SoldItemsPage() {
   };
 
   /* =========================
-     USER NAME RESOLVER
-  ========================= */
-  const getUserName = (id: number | null) => {
-    if (!id) return "-";
-    return users.find((u) => u.id === id)?.name || "-";
-  };
-
-  /* =========================
      UI
   ========================= */
   return (
     <div className="container my-5">
       <Toaster />
+
       <h3 className="mb-4">Items</h3>
 
       {/* TOOLBAR */}
@@ -182,58 +184,21 @@ export default function SoldItemsPage() {
         <div className="d-flex flex-wrap gap-2">
           <AddItem onSuccess={fetchItems} />
 
-          <BulkEdit
+          {/* <BulkEdit
             table="items"
             selectedIds={selectedItems}
             onSuccess={fetchItems}
             columns={2}
-            fields={[
-              { key: "brand", label: "Brand", type: "text" },
-              { key: "order_id", label: "Order ID", type: "text" },
-              { key: "selling_price", label: "Selling Price", type: "number" },
-              { key: "quantity", label: "Quantity", type: "number" },
-              { key: "capital", label: "Capital", type: "number" },
-              { key: "discount", label: "Discount", type: "text" },
-              {
-                key: "is_returned",
-                label: "Is Returned",
-                type: "select",
-                options: ["true", "false"],
-              },
-            ]}
-          />
+          /> */}
 
-          <ImportButton
-            table="items"
-            onSuccess={fetchItems}
-            headersMap={{
-              Brand: "brand",
-              "Order ID": "order_id",
-              "Live Seller": "live_seller",
-              "Selling Price": "selling_price",
-              Quantity: "quantity",
-              Capital: "capital",
-              Discount: "discount",
-            }}
-          />
+          {/* <ImportButton table="items" onSuccess={fetchItems} />
 
-          <ExportButton
-            data={items}
-            filename="items.csv"
-            headersMap={{
-              Prepared: "prepared_by",
-              Brand: "brand",
-              "Order ID": "order_id",
-              "Live Seller": "live_seller",
-              "Selling Price": "selling_price",
-            }}
-          />
+          <ExportButton data={items} filename="items.csv" /> */}
 
           <ConfirmDelete
             confirmMessage="Delete selected items?"
             onConfirm={async () => {
               await supabase.from("items").delete().in("id", selectedItems);
-
               setSelectedItems([]);
               fetchItems();
             }}
@@ -252,7 +217,7 @@ export default function SoldItemsPage() {
 
           <button
             className="btn btn-light"
-            onClick={() => setShowDatePicker(!showDatePicker)}
+            onClick={() => setShowDatePicker((p) => !p)}
           >
             📅
           </button>
@@ -274,7 +239,7 @@ export default function SoldItemsPage() {
         onPageSizeChange={setPageSize}
         onRefresh={fetchItems}
         users={users}
-        categories={[]}
+        categories={categories}
       />
     </div>
   );
