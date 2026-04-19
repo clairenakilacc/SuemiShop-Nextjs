@@ -5,11 +5,14 @@ import toast, { Toaster } from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 
 import AddItem from "../../components/items/AddItem";
+import ImportItem from "../../components/items/ImportItem";
+
 import SearchBar from "../../components/SearchBar";
 import DeleteSelected from "../../components/DeleteSelected";
 import ItemTable from "../../components/items/ItemTable";
 import BulkEdit from "../../components/BulkEdit";
 import DateRangePicker from "../../components/DateRangePicker";
+
 import ImportButton from "../../components/ImportButton";
 import ExportButton from "../../components/ExportButton";
 
@@ -69,7 +72,7 @@ export default function SoldItemsPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(100);
+  const [pageSize, setPageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
 
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -188,18 +191,21 @@ export default function SoldItemsPage() {
       <div className="mb-3 d-flex flex-wrap justify-content-between gap-2">
         <div className="d-flex flex-wrap gap-2">
           <AddItem onSuccess={fetchItems} />
-
+          <ImportItem
+            onSuccess={() => {
+              fetchItems();
+              toast.success("List refreshed");
+            }}
+          />{" "}
           {/* <BulkEdit
             table="items"
             selectedIds={selectedItems}
             onSuccess={fetchItems}
             columns={2}
           /> */}
-
           {/* <ImportButton table="items" onSuccess={fetchItems} />
 
           <ExportButton data={items} filename="items.csv" /> */}
-
           <DeleteSelected
             selectedCount={selectedItems.length}
             confirmMessage={

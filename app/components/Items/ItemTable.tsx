@@ -198,7 +198,7 @@ export default function ItemTable({
               <th>Live Seller</th>
               <th>Selling Price</th>
               <th>Shopee Commission</th>
-              <th>Returned</th>
+              <th>Is Returned</th>
               <th className="text-center">Action</th>
             </tr>
           </thead>
