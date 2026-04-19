@@ -129,6 +129,79 @@ Spin for Shopee Commission - Item Table */
 }
 
 /* =========================
+   ACTION BUTTON SYSTEM
+========================= */
+
+.action-btn {
+  border: 1px solid #111827;
+  background: transparent;
+  color: #111827;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* default hover text behavior */
+.action-btn:hover {
+  color: #fff;
+}
+
+/* VIEW */
+.action-btn.view:hover {
+  background: #d40d56;
+  border-color: #d40d56;
+}
+
+/* EDIT */
+.action-btn.edit:hover {
+  background: #f472b6;
+  border-color: #f472b6;
+}
+
+/* DELETE */
+.action-btn.delete:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+/* optional: disabled state */
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+/* =========================
+   VIEW TABLE SYSTEM
+========================= */
+
+.view-table {
+  border-collapse: separate;
+  border-spacing: 0 8px;
+}
+
+/* cells */
+.view-table th,
+.view-table td {
+  padding: 8px 12px;
+  vertical-align: middle;
+}
+
+/* section header rows */
+.view-section-header {
+  background: #111827;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.view-section-header th {
+  padding: 10px 12px;
+  border: none !important;
+}
+/* =========================
    🌸 STEADY ROSE BUTTON (NO BLINK FIX)
 ========================= */
 

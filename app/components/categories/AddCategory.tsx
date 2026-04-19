@@ -19,8 +19,8 @@ export default function AddCategory({
   const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [touched, setTouched] = useState(false);
 
-  // ✅ LIVE VALIDATION (ASYNC SAFE)
   const handleChange = async (value: string) => {
     setDescription(value);
 
@@ -28,10 +28,10 @@ export default function AddCategory({
     setError(result);
   };
 
-  // ✅ SUBMIT
   const handleSubmit = async () => {
-    const validationError = await validateCategoryDescription(description);
+    setTouched(true);
 
+    const validationError = await validateCategoryDescription(description);
     setError(validationError);
 
     if (validationError) return;
@@ -41,7 +41,6 @@ export default function AddCategory({
 
       const value = description.trim();
 
-      // 🔥 duplicate check
       const { data: existing, error: checkError } = await supabase
         .from("categories")
         .select("id")
@@ -57,7 +56,6 @@ export default function AddCategory({
         return;
       }
 
-      // 🔥 insert
       const { error } = await supabase
         .from("categories")
         .insert([{ description: value }]);
@@ -67,10 +65,10 @@ export default function AddCategory({
         return;
       }
 
-      // reset
       setDescription("");
       setError(null);
       setShowModal(false);
+      setTouched(false);
       onSuccess();
     } catch (err: any) {
       setError(err.message || "Failed to add category");
@@ -96,7 +94,6 @@ export default function AddCategory({
         >
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content rounded-3 overflow-hidden">
-              {/* HEADER */}
               <div className="modal-header bg-light">
                 <h5 className="modal-title">Add Category</h5>
                 <button
@@ -105,29 +102,28 @@ export default function AddCategory({
                     setShowModal(false);
                     setError(null);
                     setDescription("");
+                    setTouched(false);
                   }}
                 />
               </div>
 
-              {/* BODY */}
               <div className="modal-body">
                 <label className="form-label">Description</label>
 
                 <input
                   type="text"
-                  className={`form-control ${error ? "is-invalid" : ""}`}
+                  className={`form-control ${error && touched ? "is-invalid" : ""}`}
                   placeholder="Enter category name"
                   value={description}
                   onChange={(e) => handleChange(e.target.value)}
+                  onBlur={() => setTouched(true)}
                 />
 
-                {/* 🔥 ERROR UNDER INPUT */}
-                {error && (
+                {error && touched && (
                   <small className="text-danger d-block mt-1">{error}</small>
                 )}
               </div>
 
-              {/* FOOTER */}
               <div className="modal-footer">
                 <button
                   className="btn btn-secondary"
@@ -135,6 +131,7 @@ export default function AddCategory({
                     setShowModal(false);
                     setError(null);
                     setDescription("");
+                    setTouched(false);
                   }}
                   disabled={loading}
                 >
@@ -144,9 +141,9 @@ export default function AddCategory({
                 <button
                   className="btn btn-add"
                   onClick={handleSubmit}
-                  disabled={loading || !!error || !description.trim()}
+                  disabled={loading}
                 >
-                  Save
+                  Add
                 </button>
               </div>
             </div>

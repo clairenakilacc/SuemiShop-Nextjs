@@ -159,6 +159,7 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
             <label className="fw-bold">Basic Info</label>
             <div className="row g-2 mb-3">
               <div className="col-md-6">
+                <label className="form-label ">Brand</label>
                 <input
                   className="form-control"
                   value={form.brand}
@@ -287,7 +288,7 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
               Cancel
             </button>
 
-            <button className="btn btn-primary" onClick={handleSubmit}>
+            <button className="btn btn-edit" onClick={handleSubmit}>
               {loading ? "Saving..." : "Update"}
             </button>
           </div>

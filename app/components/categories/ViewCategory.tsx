@@ -29,11 +29,16 @@ export default function ViewCategory({ show, category, onClose }: Props) {
             <button className="btn-close" onClick={onClose} />
           </div>
 
-          {/* BODY TABLE */}
+          {/* BODY */}
           <div className="modal-body">
             <div className="table-responsive">
-              <table className="table table-bordered mb-0">
+              <table className="table mb-0 view-table">
                 <tbody>
+                  {/* SECTION HEADER (GLOBAL STYLE) */}
+                  <tr className="view-section-header">
+                    <th colSpan={2}>Category Information</th>
+                  </tr>
+
                   <tr>
                     <th>Description</th>
                     <td className="text-capitalize">{category.description}</td>
@@ -47,6 +52,7 @@ export default function ViewCategory({ show, category, onClose }: Props) {
                         : "N/A"}
                     </td>
                   </tr>
+
                   <tr>
                     <th>Updated At</th>
                     <td>

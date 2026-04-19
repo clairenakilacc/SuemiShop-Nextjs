@@ -66,21 +66,6 @@ export default function CategoryTable({
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
-  const baseBtn: React.CSSProperties = {
-    border: "1px solid #111827",
-    background: "transparent",
-    color: "#111827",
-    padding: "4px 8px",
-    borderRadius: "6px",
-    cursor: "pointer",
-  };
-
-  const hoverStyle = (color: string) => ({
-    background: color,
-    borderColor: color,
-    color: "#fff",
-  });
-
   return (
     <div>
       {/* TABLE */}
@@ -123,25 +108,17 @@ export default function CategoryTable({
 
                   <td>{row.description}</td>
 
+                  {/* ACTIONS */}
                   <td className="text-center">
                     <div className="d-flex justify-content-center gap-2">
                       {/* VIEW */}
                       {showView && (
                         <button
-                          style={baseBtn}
+                          className="action-btn view"
                           onClick={() => {
                             setSelectedCategory(row);
                             setViewOpen(true);
                           }}
-                          onMouseOver={(e) =>
-                            Object.assign(
-                              e.currentTarget.style,
-                              hoverStyle("#d40d56"),
-                            )
-                          }
-                          onMouseOut={(e) =>
-                            Object.assign(e.currentTarget.style, baseBtn)
-                          }
                         >
                           👁
                         </button>
@@ -150,20 +127,11 @@ export default function CategoryTable({
                       {/* EDIT */}
                       {showEdit && (
                         <button
-                          style={baseBtn}
+                          className="action-btn edit"
                           onClick={() => {
                             setSelectedCategory(row);
                             setEditOpen(true);
                           }}
-                          onMouseOver={(e) =>
-                            Object.assign(
-                              e.currentTarget.style,
-                              hoverStyle("#f472b6"),
-                            )
-                          }
-                          onMouseOut={(e) =>
-                            Object.assign(e.currentTarget.style, baseBtn)
-                          }
                         >
                           ✏️
                         </button>
@@ -172,20 +140,11 @@ export default function CategoryTable({
                       {/* DELETE */}
                       {showDelete && (
                         <button
-                          style={baseBtn}
+                          className="action-btn delete"
                           onClick={() => {
                             setSelectedCategory(row);
                             setDeleteOpen(true);
                           }}
-                          onMouseOver={(e) =>
-                            Object.assign(
-                              e.currentTarget.style,
-                              hoverStyle("#ef4444"),
-                            )
-                          }
-                          onMouseOut={(e) =>
-                            Object.assign(e.currentTarget.style, baseBtn)
-                          }
                         >
                           🗑
                         </button>

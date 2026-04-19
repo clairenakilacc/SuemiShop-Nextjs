@@ -163,16 +163,17 @@ export default function ItemTable({
         [row.id]: true,
       }));
     } else {
-      console.error(error);
+      if (error) {
+        console.error("Supabase error message:", error.message);
+        console.error("Supabase error full:", error);
+      }
     }
   };
 
   /* =========================
      PAGINATION
   ========================= */
-  const start = (page - 1) * pageSize;
-  const end = start + pageSize;
-  const paginatedData = data.slice(start, end);
+  const paginatedData = data;
 
   return (
     <div>
