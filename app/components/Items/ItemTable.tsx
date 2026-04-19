@@ -277,7 +277,7 @@ export default function ItemTable({
                   <td>
                     <div className="d-flex gap-2 justify-content-center">
                       <button
-                        style={btnStyle}
+                        className="action-btn view"
                         onClick={() => {
                           setSelectedItem(row);
                           setViewOpen(true);
@@ -287,7 +287,7 @@ export default function ItemTable({
                       </button>
 
                       <button
-                        style={btnStyle}
+                        className="action-btn edit"
                         onClick={() => {
                           setSelectedItem(row);
                           setEditOpen(true);
@@ -297,7 +297,7 @@ export default function ItemTable({
                       </button>
 
                       <button
-                        style={btnStyle}
+                        className="action-btn delete"
                         onClick={() => {
                           setSelectedItem(row);
                           setDeleteOpen(true);
