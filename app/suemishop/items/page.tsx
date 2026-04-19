@@ -203,9 +203,6 @@ export default function SoldItemsPage() {
             onSuccess={fetchItems}
             columns={2}
           /> */}
-          {/* <ImportButton table="items" onSuccess={fetchItems} />
-
-          <ExportButton data={items} filename="items.csv" /> */}
           <ExportButton
             data={items}
             table="items"
