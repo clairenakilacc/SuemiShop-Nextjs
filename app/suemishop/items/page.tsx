@@ -208,7 +208,7 @@ export default function SoldItemsPage() {
           <ExportButton data={items} filename="items.csv" /> */}
           <ExportButton
             data={items}
-            table="items" // 🔥 EXPORT ALL FROM DB
+            table="items"
             headersMap={{
               "Created At": (row: any) => {
                 if (!row.created_at) return "";
