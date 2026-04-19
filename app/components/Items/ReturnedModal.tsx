@@ -16,8 +16,8 @@ export default function ReturnedModal({
   onClose,
   onSuccess,
 }: Props) {
-  const [dateShipped, setDateShipped] = useState("");
-  const [dateReturned, setDateReturned] = useState("");
+  const [dateShipped, setDateShipped] = useState(item?.date_shipped || "");
+  const [dateReturned, setDateReturned] = useState(item?.date_returned || "");
   const [loading, setLoading] = useState(false);
 
   if (!show || !item) return null;
