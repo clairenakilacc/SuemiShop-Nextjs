@@ -119,7 +119,7 @@ export default function EditCategory({
               onClick={handleUpdate}
               disabled={loading || !isValid}
             >
-              {loading ? "Saving..." : "Save Changes"}
+              Edit
             </button>
           </div>
         </div>

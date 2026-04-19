@@ -169,6 +169,7 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
               </div>
 
               <div className="col-md-6">
+                <label className="form-label ">ORDER ID</label>
                 <input
                   className="form-control"
                   value={form.order_id}
@@ -178,6 +179,7 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
               </div>
 
               <div className="col-md-6">
+                <label className="form-label ">Live Seller</label>
                 <select
                   className="form-select"
                   value={form.live_seller}
@@ -194,9 +196,10 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
             </div>
 
             {/* CLASSIFICATION */}
-            <label className="fw-bold">Classification</label>
+            <label className="fw-bold ">Classification</label>
             <div className="row g-2 mb-3">
               <div className="col-md-6">
+                <label className="form-label ">Category</label>
                 <select
                   className="form-select"
                   value={form.category}
@@ -212,6 +215,7 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
               </div>
 
               <div className="col-md-6">
+                <label className="form-label ">Mined From</label>
                 <select
                   className="form-select"
                   value={form.mined_from}
@@ -228,6 +232,7 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
             <label className="fw-bold">Finance</label>
             <div className="row g-2">
               <div className="col-md-4">
+                <label className="form-label ">Capital</label>
                 <input
                   type="number"
                   className="form-control"
@@ -238,6 +243,7 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
               </div>
 
               <div className="col-md-4">
+                <label className="form-label ">Selling Price</label>
                 <input
                   type="number"
                   className="form-control"
@@ -250,6 +256,7 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
               </div>
 
               <div className="col-md-4">
+                <label className="form-label ">Quantity</label>
                 <input
                   type="number"
                   className="form-control"
@@ -260,24 +267,13 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
               </div>
 
               <div className="col-md-4">
+                <label className="form-label ">Discount</label>
                 <input
                   type="number"
                   className="form-control"
                   value={form.discount}
                   onChange={(e) => handleChange("discount", e.target.value)}
                   placeholder="Discount"
-                />
-              </div>
-
-              <div className="col-md-4">
-                <input
-                  type="number"
-                  className="form-control"
-                  value={form.shopee_commission}
-                  onChange={(e) =>
-                    handleChange("shopee_commission", e.target.value)
-                  }
-                  placeholder="Shopee Commission"
                 />
               </div>
             </div>
@@ -289,7 +285,7 @@ export default function EditItem({ show, item, onClose, onSuccess }: Props) {
             </button>
 
             <button className="btn btn-edit" onClick={handleSubmit}>
-              {loading ? "Saving..." : "Update"}
+              Edit
             </button>
           </div>
         </div>

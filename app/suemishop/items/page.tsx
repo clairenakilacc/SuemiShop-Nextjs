@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 
 import AddItem from "../../components/items/AddItem";
 import SearchBar from "../../components/SearchBar";
-import ConfirmDelete from "../../components/ConfirmDelete";
+import DeleteSelected from "../../components/DeleteSelected";
 import ItemTable from "../../components/items/ItemTable";
 import BulkEdit from "../../components/BulkEdit";
 import DateRangePicker from "../../components/DateRangePicker";
@@ -200,16 +200,29 @@ export default function SoldItemsPage() {
 
           <ExportButton data={items} filename="items.csv" /> */}
 
-          <ConfirmDelete
-            confirmMessage="Delete selected items?"
+          <DeleteSelected
+            selectedCount={selectedItems.length}
+            confirmMessage={
+              selectedItems.length === 0
+                ? "Select record first"
+                : "Delete selected items?"
+            }
             onConfirm={async () => {
-              await supabase.from("items").delete().in("id", selectedItems);
+              if (selectedItems.length === 0) {
+                throw new Error("Select record first");
+              }
+
+              const { error } = await supabase
+                .from("items")
+                .delete()
+                .in("id", selectedItems);
+
+              if (error) throw new Error(error.message);
+
               setSelectedItems([]);
               fetchItems();
             }}
-          >
-            Delete Selected
-          </ConfirmDelete>
+          />
         </div>
 
         <div className="d-flex gap-2">

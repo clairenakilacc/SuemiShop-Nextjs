@@ -50,7 +50,7 @@ export default function ReturnedModal({
       <div className="modal-dialog modal-md modal-dialog-centered">
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className="modal-title">Return Item</h5>
+            <h5 className="modal-title">Returned Item</h5>
             <button className="btn-close" onClick={onClose} />
           </div>
 
@@ -80,7 +80,7 @@ export default function ReturnedModal({
             </button>
 
             <button
-              className="btn btn-primary"
+              className="btn btn-add"
               onClick={handleSubmit}
               disabled={loading}
             >

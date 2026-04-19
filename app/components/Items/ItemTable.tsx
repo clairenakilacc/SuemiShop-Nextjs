@@ -315,10 +315,11 @@ export default function ItemTable({
       </div>
 
       {/* PAGINATION */}
-      <div className="d-flex justify-content-between mt-3">
+      <div className="d-flex justify-content-between mt-3 flex-wrap gap-2">
         <div>
-          Show
+          Show{" "}
           <select
+            className="form-select d-inline-block w-auto"
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
           >
@@ -331,15 +332,19 @@ export default function ItemTable({
         </div>
 
         <div>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-            <button
-              key={p}
-              className={`btn btn-sm mx-1 ${p === page ? "btn-primary" : "btn-outline-secondary"}`}
-              onClick={() => onPageChange(p)}
-            >
-              {p}
-            </button>
-          ))}
+          {Array.from({ length: totalPages }, (_, i) => i + 1)
+            .slice(Math.max(0, page - 3), Math.min(totalPages, page + 2))
+            .map((p) => (
+              <button
+                key={p}
+                className={`btn btn-sm mx-1 ${
+                  p === page ? "btn-primary" : "btn-outline-secondary"
+                }`}
+                onClick={() => onPageChange(p)}
+              >
+                {p}
+              </button>
+            ))}
         </div>
       </div>
 

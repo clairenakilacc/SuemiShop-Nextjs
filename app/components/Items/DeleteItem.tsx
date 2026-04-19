@@ -27,24 +27,33 @@ export default function DeleteItem({ show, item, onClose, onSuccess }: Props) {
   };
 
   return (
-    <div className="modal d-block" style={{ background: "rgba(0,0,0,0.5)" }}>
-      <div className="modal-dialog">
-        <div className="modal-content">
-          <div className="modal-header">
-            <h5>Delete Item</h5>
+    <div
+      className="modal fade show d-block"
+      style={{ background: "rgba(0,0,0,0.5)" }}
+    >
+      <div className="modal-dialog modal-dialog-centered">
+        <div className="modal-content rounded-3 overflow-hidden">
+          {/* HEADER */}
+          <div className="modal-header bg-light">
+            <h5 className="modal-title">Delete Item</h5>
             <button className="btn-close" onClick={onClose} />
           </div>
 
+          {/* BODY */}
           <div className="modal-body">
-            Are you sure you want to delete:
-            <br />
-            <strong>{item.brand || item.order_id || item.id}</strong>?
+            <p>Are you sure you want to delete:</p>
+
+            <div className="alert alert-warning mb-0">
+              <strong>{item.brand || item.order_id || item.id}</strong>
+            </div>
           </div>
 
+          {/* FOOTER */}
           <div className="modal-footer">
             <button className="btn btn-secondary" onClick={onClose}>
               Cancel
             </button>
+
             <button className="btn btn-danger" onClick={handleDelete}>
               Delete
             </button>
