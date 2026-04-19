@@ -1,57 +1,92 @@
 "use client";
 
-import * as XLSX from "xlsx";
 import toast from "react-hot-toast";
+import { supabase } from "@/lib/supabase";
 
 export interface ExportButtonProps<T = any> {
   data: T[];
   headersMap: Record<string, keyof T | string | ((row: T) => any)>;
   filename?: string;
 
-  usersMap?: Record<number, string>;
-  categoriesMap?: Record<number, string>;
+  table?: string; // 🔥 enables export ALL from DB
 }
+
 export default function ExportButton<T>({
   data,
   headersMap,
-  filename = "export.xlsx",
+  filename = "export.csv",
+  table,
 }: ExportButtonProps<T>) {
-  const handleExport = () => {
+  const handleExport = async () => {
     try {
-      if (!data || !data.length) {
+      let source: T[] = data;
+
+      // 🔥 FETCH ALL RECORDS IF TABLE PROVIDED
+      if (table) {
+        const { data: all, error } = await supabase.from(table).select("*");
+
+        if (error) throw error;
+        source = (all as T[]) || [];
+      }
+
+      if (!source.length) {
         toast.error("No data to export");
         return;
       }
 
-      // Map data for export
-      const exportData = data.map((row) => {
-        const mappedRow: Record<string, any> = {};
-        for (const [header, accessor] of Object.entries(headersMap)) {
-          let value;
-          if (typeof accessor === "function") value = accessor(row);
-          else value = (row as Record<string, any>)[accessor as string];
+      // 🔥 BUILD CSV ROWS
+      const headers = Object.keys(headersMap);
 
-          // Keep everything as string
-          mappedRow[header] = value ?? "";
-        }
-        return mappedRow;
+      const escapeCSV = (value: any) => {
+        if (value === null || value === undefined) return "";
+        const str = String(value);
+        return `"${str.replace(/"/g, '""')}"`;
+      };
+
+      const rows = source.map((row: any) =>
+        headers
+          .map((header) => {
+            const accessor = headersMap[header];
+
+            let value: any;
+
+            if (typeof accessor === "function") {
+              value = accessor(row);
+            } else {
+              value = row?.[accessor as string];
+            }
+
+            return escapeCSV(value);
+          })
+          .join(","),
+      );
+
+      const csvContent = [headers.join(","), ...rows].join("\n");
+
+      // 🔥 DOWNLOAD FILE
+      const blob = new Blob([csvContent], {
+        type: "text/csv;charset=utf-8;",
       });
 
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-      XLSX.writeFile(workbook, filename);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
 
-      toast.success("Data exported successfully");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success("CSV exported successfully");
     } catch (err: any) {
       console.error(err);
-      toast.error(err.message || "Failed to export data");
+      toast.error(err.message || "Export failed");
     }
   };
 
   return (
     <button className="btn btn-export" onClick={handleExport}>
-      Export
+      Export CSV
     </button>
   );
 }
