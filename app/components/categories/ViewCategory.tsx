@@ -32,10 +32,15 @@ export default function ViewCategory({ show, category, onClose }: Props) {
           {/* BODY */}
           <div className="modal-body">
             <div className="table-responsive">
-              <table className="table mb-0 view-table">
+              <table
+                className="table table-bordered mb-0"
+                style={{
+                  borderCollapse: "separate",
+                  borderSpacing: "0 8px",
+                }}
+              >
                 <tbody>
-                  {/* SECTION HEADER (GLOBAL STYLE) */}
-                  <tr className="view-section-header">
+                  <tr className="table-dark">
                     <th colSpan={2}>Category Information</th>
                   </tr>
 
@@ -48,8 +53,13 @@ export default function ViewCategory({ show, category, onClose }: Props) {
                     <th>Created At</th>
                     <td>
                       {category.created_at
-                        ? new Date(category.created_at).toLocaleString()
-                        : "N/A"}
+                        ? new Date(category.created_at).toLocaleDateString(
+                            "en-CA",
+                            {
+                              timeZone: "Asia/Manila",
+                            },
+                          )
+                        : "-"}
                     </td>
                   </tr>
 
@@ -57,8 +67,13 @@ export default function ViewCategory({ show, category, onClose }: Props) {
                     <th>Updated At</th>
                     <td>
                       {category.updated_at
-                        ? new Date(category.updated_at).toLocaleString()
-                        : "N/A"}
+                        ? new Date(category.updated_at).toLocaleDateString(
+                            "en-CA",
+                            {
+                              timeZone: "Asia/Manila",
+                            },
+                          )
+                        : "-"}
                     </td>
                   </tr>
                 </tbody>

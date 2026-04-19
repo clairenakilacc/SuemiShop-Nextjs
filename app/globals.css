@@ -177,29 +177,42 @@ Spin for Shopee Commission - Item Table */
 /* =========================
    VIEW TABLE SYSTEM
 ========================= */
+/* =========================
+   VIEW TABLE (MODAL TABLE STYLE)
+========================= */
 
 .view-table {
-  border-collapse: separate;
-  border-spacing: 0 8px;
+  margin-bottom: 0;
 }
 
-/* cells */
+.view-table.table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* clean cell spacing */
 .view-table th,
 .view-table td {
-  padding: 8px 12px;
+  padding: 10px 12px;
   vertical-align: middle;
 }
 
-/* section header rows */
-.view-section-header {
-  background: #111827;
-  color: #ffffff;
-  font-weight: 600;
+/* section header (table-dark equivalent but reusable) */
+.view-table-section {
+  background-color: #212529; /* Bootstrap table-dark */
+  color: #fff;
 }
 
-.view-section-header th {
-  padding: 10px 12px;
-  border: none !important;
+.view-table-section th {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* optional: remove weird outer border rounding issues */
+.view-table-wrapper {
+  overflow: hidden;
+  border-radius: 0.5rem;
 }
 /* =========================
    🌸 STEADY ROSE BUTTON (NO BLINK FIX)

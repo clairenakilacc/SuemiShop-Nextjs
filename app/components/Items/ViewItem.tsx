@@ -59,7 +59,7 @@ export default function ViewItem({
                 className="table table-bordered mb-0"
                 style={{
                   borderCollapse: "separate",
-                  borderSpacing: "0 8px", // 👈 THIS adds vertical spacing between rows
+                  borderSpacing: "0 8px",
                 }}
               >
                 <tbody>
