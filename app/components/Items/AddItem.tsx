@@ -158,6 +158,21 @@ export default function AddItem({
     setMinedFromError(validateMinedFrom(value));
   };
 
+  const handleSellingPriceChange = (value: string) => {
+    handleChange("selling_price", value);
+    setSellingPriceError(validateSellingPrice(value));
+  };
+
+  const handleCapitalChange = (value: string) => {
+    handleChange("capital", value);
+    setCapitalError(validateCapital(value));
+  };
+
+  const handleQuantityChange = (value: string) => {
+    handleChange("quantity", value);
+    setQuantityError(validateQuantity(value));
+  };
+
   /* =========================
      SUBMIT
   ========================= */
@@ -167,11 +182,11 @@ export default function AddItem({
     setLoading(true);
 
     const requiredErrors = {
-      brand: form.brand ? null : "Brand is required",
-      order_id: form.order_id ? null : "Order ID is required",
-      category: form.category ? null : "Category is required",
-      mined_from: form.mined_from ? null : "Mined From is required",
-      live_seller: form.live_seller ? null : "Live Seller is required",
+      brand: await validateBrand(form.brand),
+      order_id: validateOrderId(form.order_id),
+      category: validateCategory(form.category),
+      mined_from: validateMinedFrom(form.mined_from),
+      live_seller: validateLiveSeller(form.live_seller),
       selling_price: validateSellingPrice(form.selling_price),
       capital: validateCapital(form.capital),
       quantity: validateQuantity(form.quantity),
@@ -196,6 +211,8 @@ export default function AddItem({
        FIXED PAYLOAD (BIGINT SAFE)
     ========================= */
     const payload = {
+      created_by: user?.id,
+      updated_by: user?.id,
       prepared_by: Number(form.prepared_by), // user.id
       brand: form.brand,
       order_id: form.order_id,
@@ -290,24 +307,26 @@ export default function AddItem({
                   <div className="col-md-6">
                     <input
                       className={`form-control ${brandError ? "is-invalid" : ""}`}
-                      placeholder="Brand"
                       value={form.brand}
                       onChange={(e) => handleBrandChange(e.target.value)}
+                      placeholder="Brand"
                     />
+                    <div className="invalid-feedback">{brandError}</div>
                   </div>
 
                   <div className="col-md-6">
                     <input
                       className={`form-control ${orderIdError ? "is-invalid" : ""}`}
-                      placeholder="Order ID"
                       value={form.order_id}
                       onChange={(e) => handleOrderIdChange(e.target.value)}
+                      placeholder="ORDER ID"
                     />
+                    <div className="invalid-feedback">{orderIdError}</div>
                   </div>
 
                   <div className="col-md-6">
                     <select
-                      className="form-select"
+                      className={`form-select ${liveSellerError ? "is-invalid" : ""}`}
                       value={form.live_seller}
                       onChange={(e) => handleLiveSellerChange(e.target.value)}
                     >
@@ -318,6 +337,7 @@ export default function AddItem({
                         </option>
                       ))}
                     </select>
+                    <div className="invalid-feedback">{liveSellerError}</div>
                   </div>
                 </div>
 
@@ -327,7 +347,7 @@ export default function AddItem({
                 <div className="row g-2 mb-3">
                   <div className="col-md-6">
                     <select
-                      className="form-select"
+                      className={`form-select ${categoryError ? "is-invalid" : ""}`}
                       value={form.category}
                       onChange={(e) => handleCategoryChange(e.target.value)}
                     >
@@ -338,11 +358,12 @@ export default function AddItem({
                         </option>
                       ))}
                     </select>
+                    <div className="invalid-feedback">{categoryError}</div>
                   </div>
 
                   <div className="col-md-6">
                     <select
-                      className="form-select"
+                      className={`form-select ${minedFromError ? "is-invalid" : ""}`}
                       value={form.mined_from}
                       onChange={(e) => handleMinedFromChange(e.target.value)}
                     >
@@ -350,6 +371,7 @@ export default function AddItem({
                       <option value="Shoppee">Shoppee</option>
                       <option value="Facebook">Facebook</option>
                     </select>
+                    <div className="invalid-feedback">{minedFromError}</div>
                   </div>
                 </div>
 
@@ -360,33 +382,34 @@ export default function AddItem({
                   <div className="col-md-4">
                     <input
                       type="number"
-                      className="form-control"
-                      placeholder="Selling Price"
-                      value={form.selling_price}
-                      onChange={(e) =>
-                        handleChange("selling_price", e.target.value)
-                      }
-                    />
-                  </div>
-
-                  <div className="col-md-4">
-                    <input
-                      type="number"
-                      className="form-control"
-                      placeholder="Capital"
+                      className={`form-control ${capitalError ? "is-invalid" : ""}`}
                       value={form.capital}
-                      onChange={(e) => handleChange("capital", e.target.value)}
+                      onChange={(e) => handleCapitalChange(e.target.value)}
+                      placeholder="Capital"
                     />
+                    <div className="invalid-feedback">{capitalError}</div>
                   </div>
 
                   <div className="col-md-4">
                     <input
                       type="number"
-                      className="form-control"
-                      placeholder="Quantity"
-                      value={form.quantity}
-                      onChange={(e) => handleChange("quantity", e.target.value)}
+                      className={`form-control ${sellingPriceError ? "is-invalid" : ""}`}
+                      value={form.selling_price}
+                      onChange={(e) => handleSellingPriceChange(e.target.value)}
+                      placeholder="Selling Price"
                     />
+                    <div className="invalid-feedback">{sellingPriceError}</div>
+                  </div>
+
+                  <div className="col-md-4">
+                    <input
+                      type="number"
+                      className={`form-control ${quantityError ? "is-invalid" : ""}`}
+                      value={form.quantity}
+                      onChange={(e) => handleQuantityChange(e.target.value)}
+                      placeholder="Quantity"
+                    />
+                    <div className="invalid-feedback">{quantityError}</div>
                   </div>
                 </div>
               </div>

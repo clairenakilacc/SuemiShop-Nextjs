@@ -100,7 +100,7 @@ export default function SoldItemsPage() {
       let query = supabase
         .from("items")
         .select("*", { count: "exact" })
-        .order("timestamp", { ascending: false })
+        .order("updated_at", { ascending: false })
         .range(from, to);
 
       if (user.role?.name !== "Superadmin") {
