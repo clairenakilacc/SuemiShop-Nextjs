@@ -1,207 +1,219 @@
 "use client";
 
-import React, { ReactNode, useMemo, useState } from "react";
+import React, { useState } from "react";
+import ViewItem from "../../components/items/ViewItem";
+import EditItem from "../../components/items/EditItem";
+import DeleteItem from "../../components/items/DeleteItem";
 
-/* ================================
-   Column Type
-================================ */
-export type ItemColumn<T> = {
-  header: string;
-  accessor: keyof T | ((row: T) => ReactNode);
-  center?: boolean;
-};
+/* =========================
+   Item Type
+========================= */
+export interface Item {
+  id: string;
 
-/* ================================
+  created_at?: string | null;
+  updated_at?: string | null;
+
+  created_by?: number | null;
+  updated_by?: number | null;
+  prepared_by?: number | null; // 👈 USER ID (IMPORTANT FIX)
+  live_seller?: number | null;
+
+  date_shipped?: string | null;
+  date_returned?: string | null;
+
+  brand?: string | null;
+  order_id?: string | null;
+
+  category?: number | null;
+  mined_from?: string | null;
+
+  shoppee_commission?: number | null;
+  selling_price?: number | null;
+  capital?: number | null;
+  order_income?: number | null;
+  discount?: number | null;
+  commission_rate?: number | null;
+  quantity?: number | null;
+
+  is_returned?: boolean | null;
+}
+
+/* =========================
    Props
-================================ */
-interface ItemTableProps<T> {
-  data: T[];
-  columns: ItemColumn<T>[];
+========================= */
+interface Props {
+  data: Item[];
 
-  rowKey: keyof T;
+  selectedIds: string[];
+  onToggleSelect: (id: string) => void;
+  onToggleSelectAll: (checked: boolean) => void;
 
-  /* Selection */
-  selectable?: boolean;
-  selectedIds?: string[];
-  onToggleSelect?: (id: string) => void;
-  onToggleSelectAll?: (checked: boolean) => void;
-
-  /* Pagination */
   page: number;
   pageSize: number;
   totalCount: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
+
+  categories: { id: string; description: string }[];
+
+  // 👇 ADD USERS (IMPORTANT)
+  users: { id: number; name: string }[];
+
+  onRefresh: () => void;
+  selectable?: boolean;
 }
 
-/* ================================
+/* =========================
    Component
-================================ */
-export default function ItemTable<T extends Record<string, any>>({
+========================= */
+export default function ItemTable({
   data,
-  columns,
-  rowKey,
-
-  selectable = false,
-  selectedIds = [],
+  selectedIds,
   onToggleSelect,
   onToggleSelectAll,
-
   page,
   pageSize,
   totalCount,
   onPageChange,
   onPageSizeChange,
-}: ItemTableProps<T>) {
-  /* ================================
-     Column Filters
-  ================================= */
-  const [columnFilters, setColumnFilters] = useState<Record<string, string>>(
-    {},
-  );
+  onRefresh,
+  selectable = true,
+  categories = [],
+  users = [], // 👈 FIX
+}: Props) {
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
-  const handleFilterChange = (key: string, value: string) => {
-    setColumnFilters((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const resetFilters = () => {
-    setColumnFilters({});
-  };
-
-  /* ================================
-     Sorting (by timestamp if exists)
-  ================================= */
-  const sortedData = useMemo(() => {
-    if (!data?.length) return [];
-
-    if ("timestamp" in data[0]) {
-      return [...data].sort(
-        (a, b) =>
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
-      );
-    }
-
-    return data;
-  }, [data]);
-
-  /* ================================
-     Filtering
-  ================================= */
-  const filteredData = useMemo(() => {
-    return sortedData.filter((row) =>
-      columns.every((col) => {
-        const filterValue = columnFilters[col.header];
-        if (!filterValue) return true;
-
-        const rawValue =
-          typeof col.accessor === "function"
-            ? col.accessor(row)
-            : row[col.accessor];
-
-        return String(rawValue ?? "")
-          .toLowerCase()
-          .includes(filterValue.toLowerCase());
-      }),
-    );
-  }, [sortedData, columnFilters, columns]);
+  const [viewOpen, setViewOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
-  /* ================================
-     Render
-  ================================= */
+  const getUserName = (id?: number | null) => {
+    if (!id) return "-";
+    return users.find((u) => u.id === id)?.name || "-";
+  };
+
+  const btnStyle: React.CSSProperties = {
+    border: "1px solid #111827",
+    background: "transparent",
+    color: "#111827",
+    padding: "4px 8px",
+    borderRadius: "6px",
+    cursor: "pointer",
+  };
+
+  const hover = (color: string) => ({
+    background: color,
+    borderColor: color,
+    color: "#fff",
+  });
+
   return (
     <div>
-      {/* Top Toolbar */}
-      <div className="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
-        {selectable && selectedIds.length > 0 && (
-          <div className="text-muted small">
-            {selectedIds.length} row{selectedIds.length > 1 ? "s" : ""} selected
-          </div>
-        )}
-
-        <button
-          className="btn btn-sm btn-outline-secondary"
-          onClick={resetFilters}
-        >
-          Reset Filters
-        </button>
-      </div>
-
-      {/* Table */}
+      {/* TABLE */}
       <div className="table-responsive" style={{ maxHeight: "70vh" }}>
-        <table className="table table-bordered table-striped align-middle">
+        <table className="table table-bordered table-striped text-capitalize">
           <thead className="table-light sticky-top">
-            {/* Header Row */}
             <tr>
-              {selectable && (
-                <th className="text-center">
-                  <input
-                    type="checkbox"
-                    checked={
-                      filteredData.length > 0 &&
-                      selectedIds.length === filteredData.length
-                    }
-                    onChange={(e) => onToggleSelectAll?.(e.target.checked)}
-                  />
-                </th>
-              )}
+              <th className="text-center">
+                <input
+                  type="checkbox"
+                  checked={
+                    data.length > 0 && selectedIds.length === data.length
+                  }
+                  onChange={(e) => onToggleSelectAll(e.target.checked)}
+                />
+              </th>
 
-              {columns.map((col, idx) => (
-                <th key={idx} className={`fw-semibold ${col.center ? "text-center" : ""}`}>
-                  {col.header}
-                </th>
-              ))}
-            </tr>
+              <th>Prepared By</th>
+              <th>Brand</th>
+              <th>Order ID</th>
+              <th>Live Seller</th>
+              <th>Selling Price</th>
 
-            {/* Filter Row */}
-            <tr>
-              {selectable && <th />}
-              {columns.map((col, idx) => (
-                <th key={idx}>
-                  <input
-                    type="text"
-                    className="form-control form-control-sm"
-                    placeholder="Filter..."
-                    value={columnFilters[col.header] || ""}
-                    onChange={(e) => handleFilterChange(col.header, e.target.value)}
-                  />
-                </th>
-              ))}
+              <th className="text-center">Action</th>
             </tr>
           </thead>
 
           <tbody>
-            {filteredData.length === 0 ? (
+            {data.length === 0 ? (
               <tr>
-                <td
-                  colSpan={columns.length + (selectable ? 1 : 0)}
-                  className="text-center py-4 text-secondary"
-                >
-                  No records found.
+                <td colSpan={7} className="text-center py-4 text-muted">
+                  No items found.
                 </td>
               </tr>
             ) : (
-              filteredData.map((row) => (
-                <tr key={String(row[rowKey])}>
-                  {selectable && (
-                    <td className="text-center">
+              data.map((row) => (
+                <tr key={row.id}>
+                  <td className="text-center">
+                    {selectable && (
                       <input
                         type="checkbox"
-                        checked={selectedIds.includes(String(row[rowKey]))}
-                        onChange={() => onToggleSelect?.(String(row[rowKey]))}
+                        checked={selectedIds.includes(row.id)}
+                        onChange={() => onToggleSelect(row.id)}
                       />
-                    </td>
-                  )}
+                    )}
+                  </td>
+                  {/* data */}
+                  <td>{getUserName(row.prepared_by)}</td> {/* 👈 FIXED */}
+                  <td>{row.brand ?? "-"}</td>
+                  <td>{row.order_id ?? "-"}</td>
+                  <td>{getUserName(row.live_seller)}</td>
+                  <td>{row.selling_price ?? 0}</td>
+                  {/* actions */}
+                  <td>
+                    <div className="d-flex justify-content-center gap-2">
+                      <button
+                        style={btnStyle}
+                        onClick={() => {
+                          setSelectedItem(row);
+                          setViewOpen(true);
+                        }}
+                        onMouseOver={(e) =>
+                          Object.assign(e.currentTarget.style, hover("#0d6efd"))
+                        }
+                        onMouseOut={(e) =>
+                          Object.assign(e.currentTarget.style, btnStyle)
+                        }
+                      >
+                        👁
+                      </button>
 
-                  {columns.map((col, idx) => {
-                    const value = typeof col.accessor === "function" ? col.accessor(row) : row[col.accessor];
-                    return (
-                      <td key={idx} className={col.center ? "text-center" : ""}>
-                        {value}
-                      </td>
-                    );
-                  })}
+                      <button
+                        style={btnStyle}
+                        onClick={() => {
+                          setSelectedItem(row);
+                          setEditOpen(true);
+                        }}
+                        onMouseOver={(e) =>
+                          Object.assign(e.currentTarget.style, hover("#f59e0b"))
+                        }
+                        onMouseOut={(e) =>
+                          Object.assign(e.currentTarget.style, btnStyle)
+                        }
+                      >
+                        ✏️
+                      </button>
+
+                      <button
+                        style={btnStyle}
+                        onClick={() => {
+                          setSelectedItem(row);
+                          setDeleteOpen(true);
+                        }}
+                        onMouseOver={(e) =>
+                          Object.assign(e.currentTarget.style, hover("#ef4444"))
+                        }
+                        onMouseOut={(e) =>
+                          Object.assign(e.currentTarget.style, btnStyle)
+                        }
+                      >
+                        🗑
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))
             )}
@@ -209,8 +221,8 @@ export default function ItemTable<T extends Record<string, any>>({
         </table>
       </div>
 
-      {/* Pagination */}
-      <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+      {/* PAGINATION */}
+      <div className="d-flex justify-content-between mt-3 flex-wrap gap-2">
         <div>
           Show{" "}
           <select
@@ -218,13 +230,12 @@ export default function ItemTable<T extends Record<string, any>>({
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
           >
-            {[100, 500, 700, 1000].map((n) => (
+            {[10, 20, 50, 100].map((n) => (
               <option key={n} value={n}>
                 {n}
               </option>
             ))}
-          </select>{" "}
-          entries
+          </select>
         </div>
 
         <div>
@@ -233,18 +244,38 @@ export default function ItemTable<T extends Record<string, any>>({
             .map((p) => (
               <button
                 key={p}
-                className={`btn btn-sm mx-1 ${p === page ? "btn-primary" : "btn-outline-secondary"}`}
+                className={`btn btn-sm mx-1 ${
+                  p === page ? "btn-primary" : "btn-outline-secondary"
+                }`}
                 onClick={() => onPageChange(p)}
               >
                 {p}
               </button>
             ))}
         </div>
-
-        <div className="text-muted small">
-          Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, totalCount)} of {totalCount} entries
-        </div>
       </div>
+
+      {/* MODALS */}
+      <ViewItem
+        show={viewOpen}
+        item={selectedItem}
+        categories={categories}
+        onClose={() => setViewOpen(false)}
+      />
+
+      <EditItem
+        show={editOpen}
+        item={selectedItem}
+        onClose={() => setEditOpen(false)}
+        onSuccess={onRefresh}
+      />
+
+      <DeleteItem
+        show={deleteOpen}
+        item={selectedItem}
+        onClose={() => setDeleteOpen(false)}
+        onSuccess={onRefresh}
+      />
     </div>
   );
 }
