@@ -108,7 +108,7 @@ export default function ItemTable({
 
   /* =========================
      RETURN TOGGLE FIX
-  ========================= */
+  ======================== */
   const handleReturnToggle = async (row: Item, checked: boolean) => {
     // UNCHECK → direct update
     if (!checked) {

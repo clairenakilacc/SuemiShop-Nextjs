@@ -137,9 +137,39 @@ export default function SoldItemsPage() {
       if (searchTerm.trim()) {
         const term = `%${searchTerm}%`;
 
-        query = query.or(`brand.ilike.${term},order_id.ilike.${term}`);
+        const { data: userMatches } = await supabase
+          .from("users")
+          .select("id")
+          .ilike("name", `%${searchTerm}%`);
+
+        const { data: categoryMatches } = await supabase
+          .from("categories")
+          .select("id")
+          .ilike("description", `%${searchTerm}%`);
+
+        const userIds = userMatches?.map((u) => u.id) || [];
+        const categoryIds = categoryMatches?.map((c) => c.id) || [];
+
+        query = query.or(
+          [
+            `brand.ilike.${term}`,
+            `order_id.ilike.${term}`,
+            `mined_from.ilike.${term}`,
+
+            userIds.length ? `prepared_by.in.(${userIds.join(",")})` : null,
+
+            userIds.length ? `live_seller.in.(${userIds.join(",")})` : null,
+
+            categoryIds.length
+              ? `category.in.(${categoryIds.join(",")})`
+              : null,
+          ]
+            .filter(Boolean)
+            .join(","),
+        );
       }
 
+      //
       const { data, error, count } = await query;
 
       if (error) {
