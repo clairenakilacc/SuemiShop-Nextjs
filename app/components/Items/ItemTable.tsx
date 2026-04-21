@@ -191,6 +191,7 @@ export default function ItemTable({
                 />
               </th>
 
+              <th>Created At</th>
               <th>Prepared By</th>
               <th>Brand</th>
               <th>Category</th>
@@ -220,6 +221,12 @@ export default function ItemTable({
                       checked={selectedIds.includes(row.id)}
                       onChange={() => onToggleSelect(row.id)}
                     />
+                  </td>
+
+                  <td>
+                    {row.created_at
+                      ? new Date(row.created_at).toLocaleDateString("en-CA")
+                      : "-"}
                   </td>
 
                   <td>{getUserName(row.prepared_by)}</td>
