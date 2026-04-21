@@ -157,7 +157,11 @@ export default function DashboardLayout({
                 <img
                   src="/images/logo2.png"
                   alt="Logo"
-                  style={{ maxWidth: "120px" }}
+                  style={{
+                    maxWidth: "120px",
+                    height: "auto",
+                    display: "block",
+                  }}
                 />
               </Link>
             </div>

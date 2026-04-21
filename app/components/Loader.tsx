@@ -28,7 +28,8 @@ export default function Loader() {
         alt="Loading..."
         width={120}
         height={120}
-        className="img-fluid loader-image"
+        className="loader-image"
+        style={{ width: "120px", height: "auto" }}
         priority
       />
     </div>

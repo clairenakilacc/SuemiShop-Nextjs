@@ -218,7 +218,7 @@ export default function RegisterPage() {
             src="/images/logo2.png"
             alt="Logo"
             className="mx-auto d-block mb-2"
-            style={{ width: "120px", cursor: "pointer" }}
+            style={{ width: "120px", height: "auto", cursor: "pointer" }}
           />
         </Link>
 

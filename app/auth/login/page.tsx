@@ -65,7 +65,7 @@ export default function LoginPage() {
             src="/images/logo2.png"
             alt="Logo"
             width={120}
-            height={50}
+            height={120}
             className="mx-auto d-block"
             style={{ cursor: "pointer" }}
           />
