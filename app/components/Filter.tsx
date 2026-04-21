@@ -27,11 +27,11 @@ export default function Filter({ config, onApply }: Props) {
 
   return (
     <>
-      {/* 🔽 Funnel button */}
-      <button className="btn btn-light" onClick={() => setOpen(true)}>
-        🔽
-      </button>
-
+      {/*Funnel button */}
+      <button
+        className="btn btn-outline-secondary btn-md bi bi-funnel"
+        onClick={() => setOpen(true)}
+      ></button>
       {/* 🧱 BACKDROP */}
       {open && (
         <div
@@ -51,7 +51,8 @@ export default function Filter({ config, onApply }: Props) {
           position: "fixed",
           top: 0,
           right: open ? 0 : "-320px",
-          width: "320px",
+          width: "260px",
+          maxWidth: "85vw",
           height: "100vh",
           background: "#fff",
           boxShadow: "-2px 0 10px rgba(0,0,0,0.15)",
@@ -81,6 +82,7 @@ export default function Filter({ config, onApply }: Props) {
               <input
                 type="date"
                 className="form-control"
+                value={values[f.key] || ""}
                 onChange={(e) => update(f.key, e.target.value)}
               />
             )}
@@ -89,6 +91,7 @@ export default function Filter({ config, onApply }: Props) {
             {f.type === "select" && (
               <select
                 className="form-control"
+                value={values[f.key] || ""}
                 onChange={(e) => update(f.key, e.target.value || null)}
               >
                 <option value="">All</option>
@@ -104,6 +107,7 @@ export default function Filter({ config, onApply }: Props) {
             {f.type === "boolean" && (
               <select
                 className="form-control"
+                value={values[f.key] === undefined ? "" : String(values[f.key])}
                 onChange={(e) => {
                   const val = e.target.value;
 
@@ -124,7 +128,7 @@ export default function Filter({ config, onApply }: Props) {
         {/* 🔘 ACTIONS */}
         <div className="d-flex gap-2 mt-4">
           <button
-            className="btn btn-primary w-100"
+            className="btn btn-add w-100"
             onClick={() => {
               onApply(values);
               setOpen(false);
@@ -133,7 +137,13 @@ export default function Filter({ config, onApply }: Props) {
             Apply
           </button>
 
-          <button className="btn btn-light w-100" onClick={() => setValues({})}>
+          <button
+            className="btn btn-light w-100"
+            onClick={() => {
+              setValues({});
+              onApply({});
+            }}
+          >
             Reset
           </button>
         </div>

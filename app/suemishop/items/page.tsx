@@ -83,6 +83,31 @@ export default function SoldItemsPage() {
   }>({ startDate: null, endDate: null });
 
   const [filters, setFilters] = useState<any>({});
+
+  //FILTER FETCHING ON FK
+  const preparedByOptions = Array.from(
+    new Map(
+      items
+        .filter((i) => i.prepared_by && i.prepared_user)
+        .map((i) => [i.prepared_user!.id, i.prepared_user!]),
+    ).values(),
+  );
+
+  const liveSellerOptions = Array.from(
+    new Map(
+      items
+        .filter((i) => i.live_seller && i.seller_user)
+        .map((i) => [i.seller_user!.id, i.seller_user!]),
+    ).values(),
+  );
+
+  const categoryOptions = Array.from(
+    new Map(
+      items
+        .filter((i) => i.category_data)
+        .map((i) => [i.category_data!.id, i.category_data!]),
+    ).values(),
+  );
   /* =========================
      FETCH USERS + CATEGORIES
   ========================= */
@@ -143,6 +168,13 @@ export default function SoldItemsPage() {
       if (f.prepared_by) query = query.eq("prepared_by", f.prepared_by);
       if (f.live_seller) query = query.eq("live_seller", f.live_seller);
       if (f.category) query = query.eq("category", f.category);
+      if (f.shopee_commission === "with") {
+        query = query.gt("shopee_commission", 0);
+      }
+
+      if (f.shopee_commission === "without") {
+        query = query.or("shopee_commission.is.null,shopee_commission.eq.0");
+      }
       if (f.is_returned !== undefined) {
         query = query.eq("is_returned", f.is_returned);
       }
@@ -392,6 +424,15 @@ export default function SoldItemsPage() {
                   label: c.description,
                   value: c.id,
                 })),
+              },
+              {
+                key: "shopee_commission",
+                label: "Shopee Commission",
+                type: "select",
+                options: [
+                  { label: "With", value: "with" },
+                  { label: "Without", value: "without" },
+                ],
               },
               {
                 key: "is_returned",
