@@ -7,16 +7,10 @@ import { supabase } from "@/lib/supabase";
 import AddItem from "../../components/items/AddItem";
 import ImportItem from "../../components/items/ImportItem";
 import ExportButton from "../../components/ExportButton";
-
 import SearchBar from "../../components/SearchBar";
 import Filter from "../../components/Filter";
 import DeleteSelected from "../../components/DeleteSelected";
 import ItemTable from "../../components/items/ItemTable";
-import BulkEdit from "../../components/BulkEdit";
-import DateRangePicker from "../../components/DateRangePicker";
-
-import ImportButton from "../../components/ImportButton";
-
 import { dateNoTimezone } from "../../utils/validator";
 
 /* =========================
@@ -273,12 +267,6 @@ export default function SoldItemsPage() {
               toast.success("List refreshed");
             }}
           />{" "}
-          {/* <BulkEdit
-            table="items"
-            selectedIds={selectedItems}
-            onSuccess={fetchItems}
-            columns={2}
-          /> */}
           <ExportButton
             data={items}
             table="items"
@@ -377,13 +365,6 @@ export default function SoldItemsPage() {
             onChange={setSearchTerm}
             options={items.map((i) => i.brand || "")}
           />
-          {/* 
-          <button
-            className="btn btn-light"
-            onClick={() => setShowDatePicker((p) => !p)}
-          >
-            📅
-          </button> */}
 
           <Filter
             onApply={(f) => setFilters(f)}
