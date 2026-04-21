@@ -9,6 +9,7 @@ import ImportItem from "../../components/items/ImportItem";
 import ExportButton from "../../components/ExportButton";
 
 import SearchBar from "../../components/SearchBar";
+import Filter from "../../components/Filter";
 import DeleteSelected from "../../components/DeleteSelected";
 import ItemTable from "../../components/items/ItemTable";
 import BulkEdit from "../../components/BulkEdit";
@@ -81,6 +82,7 @@ export default function SoldItemsPage() {
     endDate: string | null;
   }>({ startDate: null, endDate: null });
 
+  const [filters, setFilters] = useState<any>({});
   /* =========================
      FETCH USERS + CATEGORIES
   ========================= */
@@ -123,14 +125,26 @@ export default function SoldItemsPage() {
         .range(from, to);
 
       /* DATE FILTER */
-      if (dateRange.startDate && dateRange.endDate) {
-        const start = new Date(dateRange.startDate);
-        const end = new Date(dateRange.endDate);
+      const f = filters ?? {};
+
+      if (f.created_start) {
+        const start = new Date(f.created_start);
+        const end = f.created_end
+          ? new Date(f.created_end)
+          : new Date(f.created_start);
+
         end.setHours(23, 59, 59, 999);
 
         query = query
           .gte("created_at", start.toISOString())
           .lte("created_at", end.toISOString());
+      }
+
+      if (f.prepared_by) query = query.eq("prepared_by", f.prepared_by);
+      if (f.live_seller) query = query.eq("live_seller", f.live_seller);
+      if (f.category) query = query.eq("category", f.category);
+      if (f.is_returned !== undefined) {
+        query = query.eq("is_returned", f.is_returned);
       }
 
       /* SEARCH SAFE */
@@ -188,12 +202,12 @@ export default function SoldItemsPage() {
       setItems(mapped);
       setTotalCount(count || 0);
     },
-    [page, pageSize, searchTerm, dateRange],
+    [page, pageSize, searchTerm, filters],
   );
 
   useEffect(() => {
     fetchItems(page);
-  }, [page, pageSize, searchTerm, dateRange]);
+  }, [page, pageSize, searchTerm, filters]);
 
   /* =========================
      SELECT LOGIC
@@ -331,17 +345,63 @@ export default function SoldItemsPage() {
             onChange={setSearchTerm}
             options={items.map((i) => i.brand || "")}
           />
-
+          {/* 
           <button
             className="btn btn-light"
             onClick={() => setShowDatePicker((p) => !p)}
           >
             📅
-          </button>
+          </button> */}
+
+          <Filter
+            onApply={(f) => setFilters(f)}
+            config={[
+              {
+                key: "created_start",
+                label: "Start Date",
+                type: "date",
+              },
+              {
+                key: "created_end",
+                label: "End Date",
+                type: "date",
+              },
+              {
+                key: "prepared_by",
+                label: "Prepared By",
+                type: "select",
+                options: users.map((u) => ({
+                  label: u.name,
+                  value: u.id,
+                })),
+              },
+              {
+                key: "live_seller",
+                label: "Live Seller",
+                type: "select",
+                options: users.map((u) => ({
+                  label: u.name,
+                  value: u.id,
+                })),
+              },
+              {
+                key: "category",
+                label: "Category",
+                type: "select",
+                options: categories.map((c) => ({
+                  label: c.description,
+                  value: c.id,
+                })),
+              },
+              {
+                key: "is_returned",
+                label: "Returned",
+                type: "boolean",
+              },
+            ]}
+          />
         </div>
       </div>
-
-      {showDatePicker && <DateRangePicker onChange={setDateRange} />}
 
       {/* TABLE */}
       <ItemTable
