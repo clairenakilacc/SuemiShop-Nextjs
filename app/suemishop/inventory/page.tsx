@@ -7,11 +7,10 @@ import { supabase } from "@/lib/supabase";
 import SearchBar from "../../components/SearchBar";
 import ConfirmDelete from "../../components/ConfirmDelete";
 import BulkEdit from "../../components/BulkEdit";
-import DateRangePicker from "../../components/DateRangePicker";
 import ImportButton from "../../components/ImportButton";
 import ExportButton from "../../components/ExportButton";
 import AddInventoryModal from "../../components/AddInventoryModal";
-import InventoryTable from "../../components/inventories/InventoryTable";
+import InventoryTable from "../../components/inventory/InventoryTable";
 
 import { dateNoTimezone } from "../../utils/validator";
 
@@ -45,12 +44,6 @@ export default function InventoriesPage() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [dateRange, setDateRange] = useState<{
-    startDate: string | null;
-    endDate: string | null;
-  }>({ startDate: null, endDate: null });
-
   const [showAddModal, setShowAddModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
 
@@ -75,10 +68,6 @@ export default function InventoriesPage() {
 
   /* ================= FETCH INVENTORIES ================= */
 
-  useEffect(() => {
-    if (user) fetchItems();
-  }, [user, page, pageSize, searchTerm, dateRange]);
-
   const fetchItems = async () => {
     if (!user) return;
 
@@ -90,16 +79,6 @@ export default function InventoriesPage() {
       .select("*", { count: "exact" })
       .order("created_at", { ascending: false })
       .range(from, to);
-
-    if (dateRange.startDate && dateRange.endDate) {
-      const start = new Date(dateRange.startDate);
-      const end = new Date(dateRange.endDate);
-      end.setHours(23, 59, 59, 999);
-
-      query = query
-        .gte("date_arrived", start.toISOString())
-        .lte("date_arrived", end.toISOString());
-    }
 
     if (searchTerm.trim()) {
       const term = `%${searchTerm.trim()}%`;
@@ -224,21 +203,8 @@ export default function InventoriesPage() {
             value={searchTerm}
             onChange={setSearchTerm}
           />
-
-          <button
-            onClick={() => setShowDatePicker(!showDatePicker)}
-            className="p-2 bg-light border rounded-3"
-          >
-            📅
-          </button>
         </div>
       </div>
-
-      {showDatePicker && (
-        <div className="bg-white p-3 shadow rounded mb-3">
-          <DateRangePicker onChange={setDateRange} />
-        </div>
-      )}
 
       {/* TABLE */}
       <InventoryTable
