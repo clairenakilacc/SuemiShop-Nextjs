@@ -153,7 +153,7 @@ export default function DashboardLayout({
 
           {!collapsed && (
             <div className="d-flex justify-content-center mb-3">
-              <Link href={ROUTES.HOME}>
+              <Link href="">
                 <img
                   src="/images/logo2.png"
                   alt="Logo"
