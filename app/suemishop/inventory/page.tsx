@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 
+import ImportInventory from "../../components/inventory/ImportInventory";
 import SearchBar from "../../components/SearchBar";
 import ConfirmDelete from "../../components/ConfirmDelete";
 import ImportButton from "../../components/ImportButton";
 import ExportButton from "../../components/ExportButton";
 import AddInventory from "../../components/inventory/AddInventory";
+import DeleteSelected from "../../components/DeleteSelected";
 
 import InventoryTable from "../../components/inventory/InventoryTable";
 
@@ -129,16 +131,7 @@ export default function InventoriesPage() {
 
           {user?.role?.name === "Superadmin" && (
             <>
-              <ImportButton
-                table="inventories"
-                headersMap={{
-                  "Date Arrived": "date_arrived",
-                  "Box Number": "box_number",
-                  Supplier: "supplier",
-                  Category: "category",
-                }}
-                onSuccess={fetchItems}
-              />
+              <ImportInventory onSuccess={fetchItems} />
 
               <ExportButton
                 data={items}
