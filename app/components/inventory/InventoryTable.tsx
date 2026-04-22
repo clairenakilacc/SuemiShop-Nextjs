@@ -1,8 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import ConfirmDelete from "../ConfirmDelete";
 import { supabase } from "@/lib/supabase";
+
+import ViewInventory from "./ViewInventory";
+import EditInventory from "./EditInventory";
 
 interface Inventory {
   id?: string;
@@ -16,6 +19,7 @@ interface Inventory {
   total?: string;
   quantity_left?: string;
   total_left?: string;
+  status?: string;
 }
 
 interface Props {
@@ -34,6 +38,9 @@ interface Props {
 
   onRefresh: () => void;
 
+  categories: { id: string; description: string }[];
+  suppliers: { id: string; name: string }[];
+
   isSuperAdmin?: boolean;
 }
 
@@ -48,9 +55,39 @@ export default function InventoryTable({
   onPageChange,
   onPageSizeChange,
   onRefresh,
+  categories,
+  suppliers,
   isSuperAdmin = false,
 }: Props) {
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  const [selectedInventory, setSelectedInventory] = useState<Inventory | null>(
+    null,
+  );
+
+  const [viewOpen, setViewOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+
+  const getStatusBadge = (status?: string) => {
+    const s = status?.toLowerCase() || "instock";
+
+    if (s === "restock") {
+      return (
+        <span
+          className="badge"
+          style={{
+            backgroundColor: "rgba(255,0,0,0.12)",
+            color: "#dc3545",
+            fontWeight: 600,
+          }}
+        >
+          RESTOCK
+        </span>
+      );
+    }
+
+    return <span className="badge bg-success">INSTOCK</span>;
+  };
 
   return (
     <div>
@@ -79,6 +116,7 @@ export default function InventoryTable({
               <th>Total</th>
               <th>Qty Left</th>
               <th>Total Left</th>
+              <th>Status</th>
 
               {isSuperAdmin && <th className="text-center">Action</th>}
             </tr>
@@ -113,23 +151,50 @@ export default function InventoryTable({
                   <td>{row.quantity_left}</td>
                   <td>{row.total_left}</td>
 
+                  <td>{getStatusBadge(row.status)}</td>
+
                   {isSuperAdmin && (
-                    <td className="text-center">
-                      <ConfirmDelete
-                        confirmMessage={`Delete inventory ${row.id}?`}
-                        onConfirm={async () => {
-                          const { error } = await supabase
-                            .from("inventories")
-                            .delete()
-                            .eq("id", row.id!);
+                    <td>
+                      <div className="d-flex justify-content-center gap-2">
+                        {/* VIEW */}
+                        <button
+                          className="action-btn view"
+                          onClick={() => {
+                            setSelectedInventory(row);
+                            setViewOpen(true);
+                          }}
+                        >
+                          👁
+                        </button>
 
-                          if (error) throw error;
+                        {/* EDIT */}
+                        <button
+                          className="action-btn edit"
+                          onClick={() => {
+                            setSelectedInventory(row);
+                            setEditOpen(true);
+                          }}
+                        >
+                          ✏️
+                        </button>
 
-                          onRefresh();
-                        }}
-                      >
-                        🗑
-                      </ConfirmDelete>
+                        {/* DELETE */}
+                        <ConfirmDelete
+                          confirmMessage={`Delete inventory ${row.id}?`}
+                          onConfirm={async () => {
+                            const { error } = await supabase
+                              .from("inventories")
+                              .delete()
+                              .eq("id", row.id!);
+
+                            if (error) throw error;
+
+                            onRefresh();
+                          }}
+                        >
+                          <span className="action-btn delete">🗑</span>
+                        </ConfirmDelete>
+                      </div>
                     </td>
                   )}
                 </tr>
@@ -172,6 +237,22 @@ export default function InventoryTable({
             ))}
         </div>
       </div>
+
+      {/* MODALS */}
+      <ViewInventory
+        show={viewOpen}
+        inventory={selectedInventory}
+        onClose={() => setViewOpen(false)}
+      />
+
+      <EditInventory
+        show={editOpen}
+        inventory={selectedInventory}
+        onClose={() => setEditOpen(false)}
+        onSuccess={onRefresh}
+        categories={categories}
+        suppliers={suppliers}
+      />
     </div>
   );
 }

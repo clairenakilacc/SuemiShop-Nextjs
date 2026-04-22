@@ -9,7 +9,8 @@ import ConfirmDelete from "../../components/ConfirmDelete";
 import BulkEdit from "../../components/BulkEdit";
 import ImportButton from "../../components/ImportButton";
 import ExportButton from "../../components/ExportButton";
-import AddInventoryModal from "../../components/AddInventoryModal";
+import AddInventory from "../../components/inventory/AddInventory";
+
 import InventoryTable from "../../components/inventory/InventoryTable";
 
 import { dateNoTimezone } from "../../utils/validator";
@@ -125,18 +126,7 @@ export default function InventoriesPage() {
       {/* TOOLBAR */}
       <div className="mb-3 d-flex flex-wrap justify-content-between gap-2">
         <div className="d-flex flex-wrap gap-2">
-          <button
-            className="btn btn-success"
-            onClick={() => setShowAddModal(true)}
-          >
-            Add Inventory
-          </button>
-
-          <AddInventoryModal
-            isOpen={showAddModal}
-            onClose={() => setShowAddModal(false)}
-            onSuccess={fetchItems}
-          />
+          <AddInventory onSuccess={fetchItems} />
 
           {user?.role?.name === "Superadmin" && (
             <>

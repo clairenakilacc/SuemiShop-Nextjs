@@ -225,7 +225,7 @@ export default function DashboardLayout({
                   <li>
                     <button
                       className="nav-link text-white btn btn-dark w-100 text-start"
-                      onClick={() => handleNavClick("/suemishop/inventories")}
+                      onClick={() => handleNavClick("/suemishop/inventory")}
                     >
                       Inventories
                     </button>

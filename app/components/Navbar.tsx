@@ -26,7 +26,7 @@ export default function Navbar() {
           <ul className="list-unstyled">
             <li>
               <Link
-                href="/inventories/item"
+                href="/inventory/item"
                 className="block px-4 py-2 hover:bg-rose-300 rounded"
               >
                 Item
@@ -34,7 +34,7 @@ export default function Navbar() {
             </li>
             <li>
               <Link
-                href="/inventories/supplier"
+                href="/inventory/supplier"
                 className="block px-4 py-2 hover:bg-rose-300 rounded"
               >
                 Supplier
