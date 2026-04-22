@@ -86,7 +86,7 @@ export default function ExportButton<T>({
 
   return (
     <button className="btn btn-export" onClick={handleExport}>
-      Export CSV
+      Export
     </button>
   );
 }

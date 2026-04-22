@@ -6,7 +6,6 @@ import { supabase } from "@/lib/supabase";
 
 import SearchBar from "../../components/SearchBar";
 import ConfirmDelete from "../../components/ConfirmDelete";
-import BulkEdit from "../../components/BulkEdit";
 import ImportButton from "../../components/ImportButton";
 import ExportButton from "../../components/ExportButton";
 import AddInventory from "../../components/inventory/AddInventory";
@@ -130,18 +129,6 @@ export default function InventoriesPage() {
 
           {user?.role?.name === "Superadmin" && (
             <>
-              <BulkEdit
-                table="inventories"
-                selectedIds={selectedItems}
-                onSuccess={fetchItems}
-                columns={2}
-                fields={[
-                  { key: "box_number", label: "Box Number", type: "text" },
-                  { key: "supplier", label: "Supplier", type: "text" },
-                  { key: "category", label: "Category", type: "text" },
-                ]}
-              />
-
               <ImportButton
                 table="inventories"
                 headersMap={{
@@ -197,7 +184,7 @@ export default function InventoriesPage() {
       </div>
 
       {/* TABLE */}
-      <InventoryTable
+      {/* <InventoryTable
         data={items}
         selectedIds={selectedItems}
         onToggleSelect={toggleSelectItem}
@@ -209,7 +196,7 @@ export default function InventoriesPage() {
         onPageSizeChange={setPageSize}
         onRefresh={fetchItems}
         isSuperAdmin={user?.role?.name === "Superadmin"}
-      />
+      /> */}
     </div>
   );
 }

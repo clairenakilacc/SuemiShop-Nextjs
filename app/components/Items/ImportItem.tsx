@@ -54,7 +54,7 @@ const KEY_MAP: Record<string, string> = {
 export default function ImportItem({
   onSuccess,
   className = "btn btn-import",
-  buttonText = "Import Items",
+  buttonText = "Import",
 }: ImportItemProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
