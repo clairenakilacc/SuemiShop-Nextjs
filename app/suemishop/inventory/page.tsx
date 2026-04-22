@@ -145,24 +145,29 @@ export default function InventoriesPage() {
                 }}
               />
 
-              <ConfirmDelete
-                confirmMessage="Delete selected inventories?"
+              <DeleteSelected
+                selectedCount={selectedItems.length}
+                confirmMessage={
+                  selectedItems.length === 0
+                    ? "Select record first"
+                    : "Delete selected inventories?"
+                }
                 onConfirm={async () => {
-                  if (!selectedItems.length) throw new Error("No selected");
+                  if (selectedItems.length === 0) {
+                    throw new Error("Select record first");
+                  }
 
                   const { error } = await supabase
                     .from("inventories")
                     .delete()
                     .in("id", selectedItems);
 
-                  if (error) throw error;
+                  if (error) throw new Error(error.message);
 
                   setSelectedItems([]);
                   fetchItems();
                 }}
-              >
-                Delete Selected
-              </ConfirmDelete>
+              />
             </>
           )}
         </div>
