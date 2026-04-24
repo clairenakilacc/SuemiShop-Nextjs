@@ -9,8 +9,14 @@ import {
   validateEmail,
   validatePassword,
   validateRole,
-  validatePhone,
+  validatePhoneNumber,
+  validateSSSNumber,
+  validatePhilHealthNumber,
+  validatePagIbigNumber,
   validateHourlyRate,
+  validateDailyRate,
+  validateIsEmployee,
+  validateIsLiveSeller,
 } from "@/utils/validators/users";
 
 interface AddUserProps {
@@ -44,13 +50,25 @@ export default function AddUser({
     fetchRoles();
   }, []);
 
-  // FIELD ERRORS
+  //2. FIELD ERRORS
   const [nameError, setNameError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [roleError, setRoleError] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [sssNumberError, setSssNumberError] = useState<string | null>(null);
+  const [philhealthNumberError, setPhilhealthNumberError] = useState<
+    string | null
+  >(null);
+  const [pagibigNumberError, setPagibigNumberError] = useState<string | null>(
+    null,
+  );
   const [hourlyRateError, setHourlyRateError] = useState<string | null>(null);
+  const [dailyRateError, setDailyRateError] = useState<string | null>(null);
+  const [isEmployeeError, setIsEmployeeError] = useState<string | null>(null);
+  const [isLiveSellerError, setIsLiveSellerError] = useState<string | null>(
+    null,
+  );
 
   // FORM STATE
   const [form, setForm] = useState({
@@ -59,7 +77,11 @@ export default function AddUser({
     password: "",
     role: "",
     phone_number: "",
+    sss_number: "",
+    philhealth_number: "",
+    pagibig_number: "",
     hourly_rate: "",
+    daily_rate: "",
     is_employee: "false",
     is_live_seller: "false",
   });
@@ -70,14 +92,20 @@ export default function AddUser({
 
   const handleSubmit = async () => {
     setLoading(true);
-
+    //3. ERROR FIELDS
     const errors = {
       name: validateName(form.name),
       email: validateEmail(form.email),
       password: validatePassword(form.password),
       role: validateRole(form.role),
-      phone_number: validatePhone(form.phone_number),
+      phone_number: validatePhoneNumber(form.phone_number),
+      sss_number: validateSSSNumber(form.sss_number),
+      philhealth_number: validatePhilHealthNumber(form.philhealth_number),
+      pagibig_number: validatePagIbigNumber(form.pagibig_number),
       hourly_rate: validateHourlyRate(form.hourly_rate),
+      daily_rate: validateDailyRate(form.daily_rate),
+      is_employee: validateIsEmployee(form.is_employee),
+      is_live_seller: validateIsLiveSeller(form.is_live_seller),
     };
 
     setNameError(errors.name);
@@ -85,7 +113,13 @@ export default function AddUser({
     setPasswordError(errors.password);
     setRoleError(errors.role);
     setPhoneError(errors.phone_number);
+    setSssNumberError(errors.sss_number);
+    setPhilhealthNumberError(errors.philhealth_number);
+    setPagibigNumberError(errors.pagibig_number);
     setHourlyRateError(errors.hourly_rate);
+    setDailyRateError(errors.daily_rate);
+    setIsEmployeeError(errors.is_employee);
+    setIsLiveSellerError(errors.is_live_seller);
 
     const hasError = Object.values(errors).some(Boolean);
     if (hasError) {
@@ -100,7 +134,11 @@ export default function AddUser({
         password: form.password,
         role: Number(form.role),
         phone_number: form.phone_number,
+        sss_number: form.sss_number,
+        philhealth_number: form.philhealth_number,
+        pagibig_number: form.pagibig_number,
         hourly_rate: Number(form.hourly_rate || 0),
+        daily_rate: Number(form.daily_rate || 0),
         is_employee: form.is_employee === "true",
         is_live_seller: form.is_live_seller === "true",
       },
@@ -118,8 +156,12 @@ export default function AddUser({
       password: "",
       role: "",
       phone_number: "",
+      sss_number: "",
+      philhealth_number: "",
+      pagibig_number: "",
       hourly_rate: "",
-      is_employee: "false",
+      daily_rate: "",
+      is_employee: "true",
       is_live_seller: "false",
     });
 
@@ -153,13 +195,19 @@ export default function AddUser({
                 {error && <div className="alert alert-danger">{error}</div>}
 
                 <div className="row g-2">
+                  <label className="form-label fw-bold">Personal Info</label>
+
                   {/* NAME */}
                   <div className="col-md-6">
                     <input
                       className={`form-control ${nameError ? "is-invalid" : ""}`}
                       placeholder="Name"
                       value={form.name}
-                      onChange={(e) => handleChange("name", e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        handleChange("name", value);
+                        setNameError(null);
+                      }}
                     />
                     <div className="invalid-feedback">{nameError}</div>
                   </div>
@@ -237,6 +285,48 @@ export default function AddUser({
                     <div className="invalid-feedback">{phoneError}</div>
                   </div>
 
+                  {/* SSS NUMBER */}
+                  <div className="col-md-6">
+                    <input
+                      className={`form-control ${sssNumberError ? "is-invalid" : ""}`}
+                      placeholder="SSS Number"
+                      value={form.sss_number}
+                      onChange={(e) =>
+                        handleChange("sss_number", e.target.value)
+                      }
+                    />
+                    <div className="invalid-feedback">{sssNumberError}</div>
+                  </div>
+
+                  {/* PHILHEALTH NUMBER */}
+                  <div className="col-md-6">
+                    <input
+                      className={`form-control ${philhealthNumberError ? "is-invalid" : ""}`}
+                      placeholder="PhilHealth Number"
+                      value={form.philhealth_number}
+                      onChange={(e) =>
+                        handleChange("philhealth_number", e.target.value)
+                      }
+                    />
+                    <div className="invalid-feedback">
+                      {philhealthNumberError}
+                    </div>
+                  </div>
+
+                  {/* PAGIBIG NUMBER */}
+                  <div className="col-md-6">
+                    <input
+                      className={`form-control ${pagibigNumberError ? "is-invalid" : ""}`}
+                      placeholder="PagIbig Number"
+                      value={form.pagibig_number}
+                      onChange={(e) =>
+                        handleChange("pagibig_number", e.target.value)
+                      }
+                    />
+                    <div className="invalid-feedback">{pagibigNumberError}</div>
+                  </div>
+
+                  <label className="form-label fw-bold">Rate</label>
                   {/* HOURLY RATE */}
                   <div className="col-md-6">
                     <input
@@ -251,6 +341,21 @@ export default function AddUser({
                     <div className="invalid-feedback">{hourlyRateError}</div>
                   </div>
 
+                  {/* DAILY RATE */}
+                  <div className="col-md-6">
+                    <input
+                      type="number"
+                      className={`form-control ${dailyRateError ? "is-invalid" : ""}`}
+                      placeholder="Daily Rate"
+                      value={form.daily_rate}
+                      onChange={(e) =>
+                        handleChange("daily_rate", e.target.value)
+                      }
+                    />
+                    <div className="invalid-feedback">{dailyRateError}</div>
+                  </div>
+
+                  <label className="form-label fw-bold">Classification</label>
                   {/* EMPLOYEE */}
                   <div className="col-md-6">
                     <select
