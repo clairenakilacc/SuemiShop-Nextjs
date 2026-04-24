@@ -1,5 +1,3 @@
-import UsersClient from "../components/users/UsersClient";
-
 export default function Page() {
-  return <UsersClient />;
+  return <h1>User</h1>;
 }
