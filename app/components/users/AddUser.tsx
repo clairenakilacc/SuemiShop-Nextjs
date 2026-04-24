@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { Eye, EyeOff } from "lucide-react";
 
 import {
   validateName,
@@ -25,8 +26,10 @@ export default function AddUser({
 }: AddUserProps) {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // ✅ PASSWORD TOGGLE (FIXED)
+  const [showPassword, setShowPassword] = useState(false);
 
   // FIELD ERRORS
   const [nameError, setNameError] = useState<string | null>(null);
@@ -52,46 +55,7 @@ export default function AddUser({
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  /* =========================
-     FIELD HANDLERS + VALIDATION
-  ========================= */
-
-  const handleName = (value: string) => {
-    handleChange("name", value);
-    setNameError(validateName(value));
-  };
-
-  const handleEmail = (value: string) => {
-    handleChange("email", value);
-    setEmailError(validateEmail(value));
-  };
-
-  const handlePassword = (value: string) => {
-    handleChange("password", value);
-    setPasswordError(validatePassword(value));
-  };
-
-  const handleRole = (value: string) => {
-    handleChange("role", value);
-    setRoleError(validateRole(value));
-  };
-
-  const handlePhone = (value: string) => {
-    handleChange("phone_number", value);
-    setPhoneError(validatePhone(value));
-  };
-
-  const handleHourlyRate = (value: string) => {
-    handleChange("hourly_rate", value);
-    setHourlyRateError(validateHourlyRate(value));
-  };
-
-  /* =========================
-     SUBMIT
-  ========================= */
-
   const handleSubmit = async () => {
-    setSubmitted(true);
     setLoading(true);
 
     const errors = {
@@ -135,7 +99,6 @@ export default function AddUser({
       return;
     }
 
-    // RESET
     setForm({
       name: "",
       email: "",
@@ -147,15 +110,10 @@ export default function AddUser({
       is_live_seller: "false",
     });
 
-    setSubmitted(false);
-    setShowModal(false);
     setLoading(false);
+    setShowModal(false);
     onSuccess();
   };
-
-  /* =========================
-     UI
-  ========================= */
 
   return (
     <>
@@ -181,71 +139,98 @@ export default function AddUser({
               <div className="modal-body">
                 {error && <div className="alert alert-danger">{error}</div>}
 
-                <label className="form-label fw-bold">User Info</label>
-
-                <div className="row g-2 mb-3">
+                <div className="row g-2">
+                  {/* NAME */}
                   <div className="col-md-6">
                     <input
                       className={`form-control ${nameError ? "is-invalid" : ""}`}
                       placeholder="Name"
                       value={form.name}
-                      onChange={(e) => handleName(e.target.value)}
+                      onChange={(e) => handleChange("name", e.target.value)}
                     />
                     <div className="invalid-feedback">{nameError}</div>
                   </div>
 
+                  {/* EMAIL */}
                   <div className="col-md-6">
                     <input
                       className={`form-control ${emailError ? "is-invalid" : ""}`}
                       placeholder="Email"
                       value={form.email}
-                      onChange={(e) => handleEmail(e.target.value)}
+                      onChange={(e) => handleChange("email", e.target.value)}
                     />
                     <div className="invalid-feedback">{emailError}</div>
                   </div>
 
+                  {/* PASSWORD ✅ FIXED */}
                   <div className="col-md-6">
-                    <input
-                      type="password"
-                      className={`form-control ${passwordError ? "is-invalid" : ""}`}
-                      placeholder="Password"
-                      value={form.password}
-                      onChange={(e) => handlePassword(e.target.value)}
-                    />
-                    <div className="invalid-feedback">{passwordError}</div>
+                    <div className="input-group">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        className={`form-control ${passwordError ? "is-invalid" : ""}`}
+                        placeholder="Password"
+                        value={form.password}
+                        onChange={(e) =>
+                          handleChange("password", e.target.value)
+                        }
+                      />
+
+                      <button
+                        type="button"
+                        className="btn btn-outline-secondary"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                      >
+                        {showPassword ? (
+                          <EyeOff size={16} />
+                        ) : (
+                          <Eye size={16} />
+                        )}
+                      </button>
+                    </div>
+                    <div className="invalid-feedback d-block">
+                      {passwordError}
+                    </div>
                   </div>
 
+                  {/* ROLE */}
                   <div className="col-md-6">
                     <input
                       className={`form-control ${roleError ? "is-invalid" : ""}`}
                       placeholder="Role ID"
                       value={form.role}
-                      onChange={(e) => handleRole(e.target.value)}
+                      onChange={(e) => handleChange("role", e.target.value)}
                     />
                     <div className="invalid-feedback">{roleError}</div>
                   </div>
 
+                  {/* PHONE */}
                   <div className="col-md-6">
                     <input
                       className={`form-control ${phoneError ? "is-invalid" : ""}`}
                       placeholder="Phone Number"
                       value={form.phone_number}
-                      onChange={(e) => handlePhone(e.target.value)}
+                      onChange={(e) =>
+                        handleChange("phone_number", e.target.value)
+                      }
                     />
                     <div className="invalid-feedback">{phoneError}</div>
                   </div>
 
+                  {/* HOURLY RATE */}
                   <div className="col-md-6">
                     <input
                       type="number"
                       className={`form-control ${hourlyRateError ? "is-invalid" : ""}`}
                       placeholder="Hourly Rate"
                       value={form.hourly_rate}
-                      onChange={(e) => handleHourlyRate(e.target.value)}
+                      onChange={(e) =>
+                        handleChange("hourly_rate", e.target.value)
+                      }
                     />
                     <div className="invalid-feedback">{hourlyRateError}</div>
                   </div>
 
+                  {/* EMPLOYEE */}
                   <div className="col-md-6">
                     <select
                       className="form-select"
@@ -259,6 +244,7 @@ export default function AddUser({
                     </select>
                   </div>
 
+                  {/* LIVE SELLER */}
                   <div className="col-md-6">
                     <select
                       className="form-select"
