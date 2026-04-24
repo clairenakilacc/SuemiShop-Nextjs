@@ -26,7 +26,7 @@ export default function DashboardLayout({
   const router = useRouter();
   const pathname = usePathname();
 
-  // ✅ ROLE MAP (fix for role_id)
+  // ✅ ROLE MAP (fix for role)
   const ROLE_MAP: Record<number, string> = {
     1: "Superadmin",
     2: "Admin",
@@ -68,7 +68,7 @@ export default function DashboardLayout({
         setUserName(user.name || "Unknown User");
 
         // ✅ FIX ROLE
-        setRoleName(ROLE_MAP[user.role_id] || "");
+        setRoleName(ROLE_MAP[user.role] || "");
       } catch (err) {
         console.error("User fetch error:", err);
         router.push(ROUTES.HOME);

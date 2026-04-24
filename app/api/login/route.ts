@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
   if (!email || !password) {
     return NextResponse.json(
       { error: "Email and password required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
     id: user.id,
     name: user.name,
     email: user.email,
-    role_id: user.role_id,
+    role: user.role,
   };
   const signedData = signData(userSafe);
 

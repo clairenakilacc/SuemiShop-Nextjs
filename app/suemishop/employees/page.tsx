@@ -21,7 +21,7 @@ interface User {
   name: string;
   email: string;
   password?: string;
-  role_id: string;
+  role: string;
   role_name?: string;
   phone_number?: string; // ✅ added
   sss_number?: string;
@@ -48,7 +48,7 @@ export default function EmployeesListPage() {
     email: "",
     password: "",
     phone_number: "",
-    role_id: "",
+    role: "",
     sss_number: "",
     philhealth_number: "",
     pagibig_number: "",
@@ -85,7 +85,7 @@ export default function EmployeesListPage() {
     if (error) return toast.error(error.message);
     const mapped = (data || []).map((u) => ({
       ...u,
-      role_name: roles.find((r) => r.id === u.role_id)?.name || "",
+      role_name: roles.find((r) => r.id === u.role)?.name || "",
     }));
     setUsers(mapped);
   };
@@ -107,7 +107,7 @@ export default function EmployeesListPage() {
   });
 
   const handleSubmit = async (userData: User) => {
-    if (!userData.role_id) return toast.error("Please select a role");
+    if (!userData.role) return toast.error("Please select a role");
     const cleanData = sanitizeUserData(userData);
 
     // ✅ Hash the password if present
@@ -270,7 +270,7 @@ export default function EmployeesListPage() {
                 options: ["Yes", "No"],
               },
               {
-                key: "role_id",
+                key: "role",
                 label: "Role",
                 type: "select",
                 options: roles.map((r) => ({ label: r.name, value: r.id })),
@@ -308,7 +308,7 @@ export default function EmployeesListPage() {
                 options: ["Yes", "No"],
               },
               {
-                key: "role_id",
+                key: "role",
                 label: "Role",
                 type: "select",
                 options: roles.map((r) => ({ label: r.name, value: r.id })),

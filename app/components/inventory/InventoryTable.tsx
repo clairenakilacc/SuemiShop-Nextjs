@@ -38,6 +38,7 @@ interface Props {
   selectedIds: number[];
   onToggleSelect: (id: number) => void;
   onToggleSelectAll: (checked: boolean) => void;
+  loading: boolean;
 
   page: number;
   pageSize: number;

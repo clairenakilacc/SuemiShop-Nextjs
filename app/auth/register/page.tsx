@@ -184,7 +184,7 @@ export default function RegisterPage() {
           password: hashedPassword,
           address: form.address,
           phone_number: form.phone_number,
-          role_id: shopperRoleId,
+          role: shopperRoleId,
         },
       ]);
 

@@ -3,9 +3,9 @@ import { supabase } from "@/lib/supabase";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
-  const { name, email, password, role_id } = await req.json();
+  const { name, email, password, role } = await req.json();
 
-  if (!name || !email || !password || !role_id) {
+  if (!name || !email || !password || !role) {
     return NextResponse.json({ error: "All fields required" }, { status: 400 });
   }
 
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       name,
       email,
       password: hashedPassword,
-      role_id,
+      role,
     },
   ]);
 

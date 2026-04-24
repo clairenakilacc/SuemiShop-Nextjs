@@ -1,36 +1,3 @@
-// import { NextRequest, NextResponse } from "next/server";
-// import { supabase } from "@/lib/supabase";
-
-// export async function GET(req: NextRequest) {
-//   const cookie = req.cookies.get("user");
-//   if (!cookie) {
-//     return NextResponse.json({ user: null }, { status: 200 });
-//   }
-
-//   try {
-//     const user = JSON.parse(cookie.value);
-
-//     // Fetch role info from Supabase
-//     const { data: roleData, error } = await supabase
-//       .from("roles")
-//       .select("name")
-//       .eq("id", user.role_id)
-//       .single();
-
-//     if (error) {
-//       console.error("Supabase role fetch error:", error.message);
-//       return NextResponse.json({ user: { ...user, role: null } });
-//     }
-
-//     return NextResponse.json({
-//       user: { ...user, role: roleData ? { name: roleData.name } : null },
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     return NextResponse.json({ user: null }, { status: 200 });
-//   }
-// }
-
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import crypto from "crypto";
@@ -62,8 +29,8 @@ export async function GET(req: NextRequest) {
   try {
     // ✅ FIXED: Changed "profiles" to "users"
     const { data: userData, error: userError } = await supabase
-      .from("users")  // ← CHANGED FROM "profiles" TO "users"
-      .select("id, name, email, address, phone_number, role_id") 
+      .from("users") // ← CHANGED FROM "profiles" TO "users"
+      .select("id, name, email, address, phone_number, role")
       .eq("id", decodedUser.id)
       .single();
 
@@ -78,15 +45,15 @@ export async function GET(req: NextRequest) {
     const { data: roleData } = await supabase
       .from("roles")
       .select("name")
-      .eq("id", userData.role_id)
+      .eq("id", userData.role)
       .single();
 
     // PAGSAMAHIN PARA LUMABAS ANG ADDRESS AT PHONE SA SCREEN
     return NextResponse.json({
-      user: { 
-        ...decodedUser, 
-        ...userData, 
-        role: roleData ? { name: roleData.name } : null 
+      user: {
+        ...decodedUser,
+        ...userData,
+        role: roleData ? { name: roleData.name } : null,
       },
     });
   } catch (err) {
