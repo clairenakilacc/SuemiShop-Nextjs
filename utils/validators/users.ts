@@ -40,11 +40,32 @@ export const validateName = (value: string): string | null => {
   return null;
 };
 
-export const validateEmail = (value: string) => {
-  if (!value.trim()) return null; // optional field
+export const validateEmail = (value: string): string | null => {
+  const trimmed = value.trim();
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(value)) return "Invalid email format";
+  if (!trimmed) return null; // optional field
+
+  // must be gmail only
+  if (!trimmed.endsWith("@gmail.com")) {
+    return "Email must be @gmail.com";
+  }
+
+  const localPart = trimmed.replace("@gmail.com", "");
+
+  // only letters, numbers, and dots allowed
+  if (!/^[a-zA-Z0-9.]+$/.test(localPart)) {
+    return "Only letters, numbers, and dots are allowed";
+  }
+
+  // no consecutive dots
+  if (localPart.includes("..")) {
+    return "No consecutive dots allowed";
+  }
+
+  // cannot start or end with dot
+  if (localPart.startsWith(".") || localPart.endsWith(".")) {
+    return "Dot cannot be at start or end";
+  }
 
   return null;
 };
