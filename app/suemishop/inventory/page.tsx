@@ -6,8 +6,6 @@ import { supabase } from "@/lib/supabase";
 
 import ImportInventory from "../../components/inventory/ImportInventory";
 import SearchBar from "../../components/SearchBar";
-import ConfirmDelete from "../../components/ConfirmDelete";
-import ImportButton from "../../components/ImportButton";
 import ExportButton from "../../components/ExportButton";
 import AddInventory from "../../components/inventory/AddInventory";
 import DeleteSelected from "../../components/DeleteSelected";
@@ -18,18 +16,31 @@ import { dateNoTimezone } from "../../utils/validator";
 
 /* ================= TYPES ================= */
 
-interface Inventory {
-  id?: string;
-  created_at?: string;
-  date_arrived?: string;
-  box_number?: string;
-  supplier?: string;
-  category?: string;
-  quantity?: string;
-  price?: string;
-  total?: string;
-  quantity_left?: string;
-  total_left?: string;
+export interface Inventory {
+  id: number;
+
+  created_at: string;
+  updated_at: string;
+
+  date_arrived?: string | null;
+
+  box_number?: string | null;
+  supplier?: number | null;
+  category?: number | null;
+
+  quantity: number;
+  price: number;
+  total: number;
+
+  quantity_left: number;
+  total_left: number;
+
+  status: string;
+}
+
+interface Category {
+  id: number;
+  description: string;
 }
 
 interface User {
@@ -43,14 +54,15 @@ interface User {
 
 export default function InventoriesPage() {
   const [items, setItems] = useState<Inventory[]>([]);
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [showAddModal, setShowAddModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
 
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
+  const [pageSize, setPageSize] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
 
   /* ================= FETCH USER ================= */
@@ -65,14 +77,13 @@ export default function InventoriesPage() {
         setUser(null);
       }
     };
+
     fetchUser();
   }, []);
 
   /* ================= FETCH INVENTORIES ================= */
 
   const fetchItems = async () => {
-    if (!user) return;
-
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
 
@@ -84,9 +95,11 @@ export default function InventoriesPage() {
 
     if (searchTerm.trim()) {
       const term = `%${searchTerm.trim()}%`;
-      query = query.or(
-        `box_number.ilike.${term},supplier.ilike.${term},category.ilike.${term}`,
-      );
+
+      query = query.or(`
+        box_number.ilike.${term},
+        status.ilike.${term}
+      `);
     }
 
     const { data, error, count } = await query;
@@ -96,25 +109,84 @@ export default function InventoriesPage() {
       return;
     }
 
-    const mapped = (data || []).map((i) => ({
-      ...i,
+    const mapped: Inventory[] = (data || []).map((i: any) => ({
+      id: i.id,
       created_at: i.created_at ? dateNoTimezone(i.created_at) : "",
-      date_arrived: i.date_arrived ? dateNoTimezone(i.date_arrived) : "",
+      updated_at: i.updated_at ? dateNoTimezone(i.updated_at) : "",
+
+      date_arrived: i.date_arrived ? dateNoTimezone(i.date_arrived) : null,
+
+      box_number: i.box_number ?? null,
+      supplier: i.supplier ?? null,
+      category: i.category ?? null,
+
+      quantity: Number(i.quantity || 0),
+      price: Number(i.price || 0),
+      total: Number(i.total || 0),
+
+      quantity_left: Number(i.quantity_left || 0),
+      total_left: Number(i.total_left || 0),
+
+      status: i.status || "",
     }));
 
     setItems(mapped);
     setTotalCount(count || 0);
   };
 
+  /* ================= FETCH CATEGORIES ================= */
+
+  const fetchCategories = async () => {
+    const { data, error } = await supabase
+      .from("categories")
+      .select("id, description");
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    setCategories(data || []);
+  };
+
+  /* ================= AUTO FETCH ================= */
+
+  useEffect(() => {
+    if (!user) return;
+
+    fetchItems();
+    fetchCategories();
+  }, [user, page, pageSize, searchTerm]);
+
   /* ================= SELECT ================= */
 
-  const toggleSelectItem = (id: string) =>
+  const toggleSelectItem = (id: number) => {
     setSelectedItems((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
+  };
 
-  const toggleSelectAll = (checked: boolean) =>
-    setSelectedItems(checked ? items.map((i) => i.id!) : []);
+  const toggleSelectAll = (checked: boolean) => {
+    setSelectedItems(checked ? items.map((i) => i.id) : []);
+  };
+
+  /* ================= DELETE ================= */
+
+  const handleDeleteSelected = async () => {
+    if (selectedItems.length === 0) {
+      throw new Error("Select record first");
+    }
+
+    const { error } = await supabase
+      .from("inventories")
+      .delete()
+      .in("id", selectedItems);
+
+    if (error) throw new Error(error.message);
+
+    setSelectedItems([]);
+    fetchItems();
+  };
 
   /* ================= RENDER ================= */
 
@@ -124,7 +196,6 @@ export default function InventoriesPage() {
 
       <h3 className="mb-4">Inventories</h3>
 
-      {/* TOOLBAR */}
       <div className="mb-3 d-flex flex-wrap justify-content-between gap-2">
         <div className="d-flex flex-wrap gap-2">
           <AddInventory onSuccess={fetchItems} />
@@ -140,8 +211,10 @@ export default function InventoriesPage() {
                   "Created At": "created_at",
                   "Date Arrived": "date_arrived",
                   "Box Number": "box_number",
-                  Supplier: "supplier",
-                  Category: "category",
+                  Quantity: "quantity",
+                  Price: "price",
+                  Total: "total",
+                  Status: "status",
                 }}
               />
 
@@ -152,37 +225,20 @@ export default function InventoriesPage() {
                     ? "Select record first"
                     : "Delete selected inventories?"
                 }
-                onConfirm={async () => {
-                  if (selectedItems.length === 0) {
-                    throw new Error("Select record first");
-                  }
-
-                  const { error } = await supabase
-                    .from("inventories")
-                    .delete()
-                    .in("id", selectedItems);
-
-                  if (error) throw new Error(error.message);
-
-                  setSelectedItems([]);
-                  fetchItems();
-                }}
+                onConfirm={handleDeleteSelected}
               />
             </>
           )}
         </div>
 
-        <div className="d-flex gap-2">
-          <SearchBar
-            placeholder="Search inventories..."
-            value={searchTerm}
-            onChange={setSearchTerm}
-          />
-        </div>
+        <SearchBar
+          placeholder="Search inventories..."
+          value={searchTerm}
+          onChange={setSearchTerm}
+        />
       </div>
 
-      {/* TABLE */}
-      {/* <InventoryTable
+      <InventoryTable
         data={items}
         selectedIds={selectedItems}
         onToggleSelect={toggleSelectItem}
@@ -192,9 +248,9 @@ export default function InventoriesPage() {
         totalCount={totalCount}
         onPageChange={setPage}
         onPageSizeChange={setPageSize}
+        categories={categories}
         onRefresh={fetchItems}
-        isSuperAdmin={user?.role?.name === "Superadmin"}
-      /> */}
+      />
     </div>
   );
 }

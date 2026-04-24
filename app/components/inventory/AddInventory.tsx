@@ -32,8 +32,11 @@ export default function AddInventory({
   const [quantity, setQuantity] = useState("");
   const [price, setPrice] = useState("");
 
-  const total = Number(quantity || 0) * Number(price || 0);
+  const safeQuantity = Number(quantity);
+  const safePrice = Number(price);
 
+  const total =
+    !isNaN(safeQuantity) && !isNaN(safePrice) ? safeQuantity * safePrice : 0;
   /* ================= DROPDOWN ================= */
 
   const [suppliers, setSuppliers] = useState<any[]>([]);
@@ -209,7 +212,6 @@ export default function AddInventory({
                     {dateError}
                   </small>
                 )}
-
                 {/* BOX */}
                 <label className="form-label mt-3">Box Number</label>
                 <input
@@ -221,7 +223,6 @@ export default function AddInventory({
                 {boxError && touched.box && (
                   <small className="text-danger d-block mt-1">{boxError}</small>
                 )}
-
                 {/* SUPPLIER */}
                 <label className="form-label mt-3">Supplier</label>
                 <select
@@ -242,7 +243,6 @@ export default function AddInventory({
                     {supplierError}
                   </small>
                 )}
-
                 {/* CATEGORY */}
                 <label className="form-label mt-3">Category</label>
                 <select
@@ -263,7 +263,6 @@ export default function AddInventory({
                     {categoryError}
                   </small>
                 )}
-
                 {/* QUANTITY */}
                 <label className="form-label mt-3">Quantity</label>
                 <input
@@ -277,7 +276,6 @@ export default function AddInventory({
                     {quantityError}
                   </small>
                 )}
-
                 {/* PRICE */}
                 <label className="form-label mt-3">Price</label>
                 <input
@@ -291,10 +289,13 @@ export default function AddInventory({
                     {priceError}
                   </small>
                 )}
-
                 {/* TOTAL */}
                 <label className="form-label mt-3">Total</label>
-                <input className="form-control" value={total} disabled />
+                <input
+                  className="form-control"
+                  value={isNaN(total) ? "" : total}
+                  disabled
+                />{" "}
               </div>
 
               <div className="modal-footer">

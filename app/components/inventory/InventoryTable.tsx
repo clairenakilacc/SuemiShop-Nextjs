@@ -1,49 +1,59 @@
 "use client";
 
 import React, { useState } from "react";
-import ConfirmDelete from "../ConfirmDelete";
 import { supabase } from "@/lib/supabase";
 
-import ViewInventory from "./ViewInventory";
-import EditInventory from "./EditInventory";
+import ViewItem from "../../components/items/ViewItem";
+import EditItem from "../../components/items/EditItem";
+import DeleteItem from "../../components/items/DeleteItem";
 
-interface Inventory {
-  id?: string;
-  created_at?: string | null;
+/* =========================
+   Inventory Type
+========================= */
+export interface Inventory {
+  id: number;
+
+  created_at: string;
+  updated_at: string;
+
   date_arrived?: string | null;
-  box_number?: string;
-  supplier?: string;
-  category?: string;
-  quantity?: string;
-  price?: string;
-  total?: string;
-  quantity_left?: string;
-  total_left?: string;
-  status?: string;
+
+  box_number?: string | null;
+  supplier?: number | null;
+  category?: number | null;
+
+  quantity: number;
+  price: number;
+  total: number;
+
+  quantity_left: number;
+  total_left: number;
+
+  status: string;
 }
 
 interface Props {
   data: Inventory[];
-  selectedIds: string[];
 
-  onToggleSelect: (id: string) => void;
+  selectedIds: number[];
+  onToggleSelect: (id: number) => void;
   onToggleSelectAll: (checked: boolean) => void;
 
   page: number;
   pageSize: number;
   totalCount: number;
-
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
 
-  onRefresh: () => void;
+  categories: { id: number; description: string }[];
 
-  categories: { id: string; description: string }[];
-  suppliers: { id: string; name: string }[];
-
-  isSuperAdmin?: boolean;
+  onRefresh: (page?: number) => void;
+  selectable?: boolean;
 }
 
+/* =========================
+   Component
+========================= */
 export default function InventoryTable({
   data,
   selectedIds,
@@ -55,43 +65,15 @@ export default function InventoryTable({
   onPageChange,
   onPageSizeChange,
   onRefresh,
-  categories,
-  suppliers,
-  isSuperAdmin = false,
+  categories = [],
 }: Props) {
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
-  const [selectedInventory, setSelectedInventory] = useState<Inventory | null>(
-    null,
-  );
-
-  const [viewOpen, setViewOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
-
-  const getStatusBadge = (status?: string) => {
-    const s = status?.toLowerCase() || "instock";
-
-    if (s === "restock") {
-      return (
-        <span
-          className="badge"
-          style={{
-            backgroundColor: "rgba(255,0,0,0.12)",
-            color: "#dc3545",
-            fontWeight: 600,
-          }}
-        >
-          RESTOCK
-        </span>
-      );
-    }
-
-    return <span className="badge bg-success">INSTOCK</span>;
-  };
+  const getCategoryName = (id?: number | null) =>
+    categories.find((c) => c.id === id)?.description || "-";
 
   return (
     <div>
-      {/* TABLE */}
       <div className="table-responsive" style={{ maxHeight: "70vh" }}>
         <table className="table table-bordered table-striped text-capitalize">
           <thead className="table-light sticky-top">
@@ -106,97 +88,54 @@ export default function InventoryTable({
                 />
               </th>
 
-              <th>Created</th>
               <th>Date Arrived</th>
-              <th>Box</th>
-              <th>Supplier</th>
+              <th>Box #</th>
               <th>Category</th>
-              <th>Qty</th>
+              <th>Quantity</th>
               <th>Price</th>
               <th>Total</th>
               <th>Qty Left</th>
               <th>Total Left</th>
               <th>Status</th>
-
-              {isSuperAdmin && <th className="text-center">Action</th>}
             </tr>
           </thead>
 
           <tbody>
             {data.length === 0 ? (
               <tr>
-                <td colSpan={12} className="text-center py-4 text-muted">
-                  No inventories found.
+                <td colSpan={10} className="text-center py-4 text-muted">
+                  No inventory found.
                 </td>
               </tr>
             ) : (
               data.map((row) => (
                 <tr key={row.id}>
+                  {/* SELECT */}
                   <td className="text-center">
                     <input
                       type="checkbox"
-                      checked={selectedIds.includes(row.id!)}
-                      onChange={() => onToggleSelect(row.id!)}
+                      checked={selectedIds.includes(row.id)}
+                      onChange={() => onToggleSelect(row.id)}
                     />
                   </td>
 
-                  <td>{row.created_at || ""}</td>
-                  <td>{row.date_arrived || ""}</td>
-                  <td>{row.box_number}</td>
-                  <td>{row.supplier}</td>
-                  <td>{row.category}</td>
+                  <td>
+                    {row.date_arrived
+                      ? new Date(row.date_arrived).toLocaleDateString("en-CA")
+                      : "-"}
+                  </td>
+
+                  <td>{row.box_number ?? "-"}</td>
+                  <td>{getCategoryName(row.category)}</td>
+
                   <td>{row.quantity}</td>
                   <td>{row.price}</td>
                   <td>{row.total}</td>
+
                   <td>{row.quantity_left}</td>
                   <td>{row.total_left}</td>
 
-                  <td>{getStatusBadge(row.status)}</td>
-
-                  {isSuperAdmin && (
-                    <td>
-                      <div className="d-flex justify-content-center gap-2">
-                        {/* VIEW */}
-                        <button
-                          className="action-btn view"
-                          onClick={() => {
-                            setSelectedInventory(row);
-                            setViewOpen(true);
-                          }}
-                        >
-                          👁
-                        </button>
-
-                        {/* EDIT */}
-                        <button
-                          className="action-btn edit"
-                          onClick={() => {
-                            setSelectedInventory(row);
-                            setEditOpen(true);
-                          }}
-                        >
-                          ✏️
-                        </button>
-
-                        {/* DELETE */}
-                        <ConfirmDelete
-                          confirmMessage={`Delete inventory ${row.id}?`}
-                          onConfirm={async () => {
-                            const { error } = await supabase
-                              .from("inventories")
-                              .delete()
-                              .eq("id", row.id!);
-
-                            if (error) throw error;
-
-                            onRefresh();
-                          }}
-                        >
-                          <span className="action-btn delete">🗑</span>
-                        </ConfirmDelete>
-                      </div>
-                    </td>
-                  )}
+                  <td>{row.status}</td>
                 </tr>
               ))
             )}
@@ -213,7 +152,7 @@ export default function InventoryTable({
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
           >
-            {[20, 50, 100].map((n) => (
+            {[10, 20, 30].map((n) => (
               <option key={n} value={n}>
                 {n}
               </option>
@@ -237,22 +176,6 @@ export default function InventoryTable({
             ))}
         </div>
       </div>
-
-      {/* MODALS */}
-      <ViewInventory
-        show={viewOpen}
-        inventory={selectedInventory}
-        onClose={() => setViewOpen(false)}
-      />
-
-      <EditInventory
-        show={editOpen}
-        inventory={selectedInventory}
-        onClose={() => setEditOpen(false)}
-        onSuccess={onRefresh}
-        categories={categories}
-        suppliers={suppliers}
-      />
     </div>
   );
 }
