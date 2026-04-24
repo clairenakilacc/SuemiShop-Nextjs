@@ -108,7 +108,7 @@ export default function AddCategory({
               </div>
 
               <div className="modal-body">
-                <label className="form-label">Description</label>
+                <label className="form-label fw-bold">Details</label>
 
                 <input
                   type="text"
