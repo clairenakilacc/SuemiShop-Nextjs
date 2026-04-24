@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -28,8 +28,21 @@ export default function AddUser({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // ✅ PASSWORD TOGGLE (FIXED)
+  // 1. PASSWORD TOGGLE (FIXED)
   const [showPassword, setShowPassword] = useState(false);
+
+  //1. ROLE
+  const [roles, setRoles] = useState<{ id: number; name: string }[]>([]);
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      const { data } = await supabase.from("roles").select("id, name");
+
+      setRoles(data || []);
+    };
+
+    fetchRoles();
+  }, []);
 
   // FIELD ERRORS
   const [nameError, setNameError] = useState<string | null>(null);
@@ -194,12 +207,20 @@ export default function AddUser({
 
                   {/* ROLE */}
                   <div className="col-md-6">
-                    <input
-                      className={`form-control ${roleError ? "is-invalid" : ""}`}
-                      placeholder="Role ID"
+                    <select
+                      className={`form-select ${roleError ? "is-invalid" : ""}`}
                       value={form.role}
                       onChange={(e) => handleChange("role", e.target.value)}
-                    />
+                    >
+                      <option value="">Select Role</option>
+
+                      {roles.map((role) => (
+                        <option key={role.id} value={role.id}>
+                          {role.name}
+                        </option>
+                      ))}
+                    </select>
+
                     <div className="invalid-feedback">{roleError}</div>
                   </div>
 

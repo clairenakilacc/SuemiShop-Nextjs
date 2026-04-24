@@ -1,3 +1,4 @@
+//NAME VALIDATION
 export const validateName = (value: string): string | null => {
   const trimmed = value.trim();
 
@@ -40,6 +41,7 @@ export const validateName = (value: string): string | null => {
   return null;
 };
 
+//EMAIL VALIDATION
 export const validateEmail = (value: string): string | null => {
   const trimmed = value.trim();
 
@@ -70,12 +72,14 @@ export const validateEmail = (value: string): string | null => {
   return null;
 };
 
+//PASSWORD VALIDATION
 export const validatePassword = (value: string) => {
   if (!value) return "Password is required";
   if (value.length < 6) return "Password must be at least 6 characters";
   return null;
 };
 
+//ROLE VALIDATION
 export const validateRole = (value: string) => {
   if (!value) return "Role is required";
   return null;
