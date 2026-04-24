@@ -39,7 +39,7 @@ interface Role {
   name: string;
 }
 
-export default function EmployeesListPage() {
+export default function UsersListPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
@@ -398,7 +398,7 @@ export default function EmployeesListPage() {
               "Is Live Seller": "is_live_seller",
               Role: "role_name",
             }}
-            filename="employees.xlsx"
+            filename="users.xlsx"
           />
           <ConfirmDelete
             confirmMessage="Are you sure you want to delete selected users?"
