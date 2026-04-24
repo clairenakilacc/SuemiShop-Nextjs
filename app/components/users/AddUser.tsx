@@ -10,6 +10,7 @@ import {
   validatePassword,
   validateRole,
   validatePhoneNumber,
+  validateAddress,
   validateSSSNumber,
   validatePhilHealthNumber,
   validatePagIbigNumber,
@@ -56,6 +57,7 @@ export default function AddUser({
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [roleError, setRoleError] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [addressError, setAddressError] = useState<string | null>(null);
   const [sssNumberError, setSssNumberError] = useState<string | null>(null);
   const [philhealthNumberError, setPhilhealthNumberError] = useState<
     string | null
@@ -77,6 +79,7 @@ export default function AddUser({
     password: "",
     role: "",
     phone_number: "",
+    address: "",
     sss_number: "",
     philhealth_number: "",
     pagibig_number: "",
@@ -99,6 +102,7 @@ export default function AddUser({
       password: validatePassword(form.password),
       role: validateRole(form.role),
       phone_number: validatePhoneNumber(form.phone_number),
+      address: validateAddress(form.address),
       sss_number: validateSSSNumber(form.sss_number),
       philhealth_number: validatePhilHealthNumber(form.philhealth_number),
       pagibig_number: validatePagIbigNumber(form.pagibig_number),
@@ -113,6 +117,7 @@ export default function AddUser({
     setPasswordError(errors.password);
     setRoleError(errors.role);
     setPhoneError(errors.phone_number);
+    setAddressError(errors.address);
     setSssNumberError(errors.sss_number);
     setPhilhealthNumberError(errors.philhealth_number);
     setPagibigNumberError(errors.pagibig_number);
@@ -134,6 +139,7 @@ export default function AddUser({
         password: form.password,
         role: Number(form.role),
         phone_number: form.phone_number,
+        address: form.address,
         sss_number: form.sss_number,
         philhealth_number: form.philhealth_number,
         pagibig_number: form.pagibig_number,
@@ -156,13 +162,14 @@ export default function AddUser({
       password: "",
       role: "",
       phone_number: "",
+      address: "",
       sss_number: "",
       philhealth_number: "",
       pagibig_number: "",
       hourly_rate: "",
       daily_rate: "",
       is_employee: "true",
-      is_live_seller: "false",
+      is_live_seller: "true",
     });
 
     setLoading(false);
@@ -203,11 +210,7 @@ export default function AddUser({
                       className={`form-control ${nameError ? "is-invalid" : ""}`}
                       placeholder="Name"
                       value={form.name}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        handleChange("name", value);
-                        setNameError(null);
-                      }}
+                      onChange={(e) => handleChange("name", e.target.value)}
                     />
                     <div className="invalid-feedback">{nameError}</div>
                   </div>
@@ -285,6 +288,17 @@ export default function AddUser({
                     <div className="invalid-feedback">{phoneError}</div>
                   </div>
 
+                  {/* ADDRESS */}
+                  <div className="col-md-6">
+                    <input
+                      className={`form-control ${addressError ? "is-invalid" : ""}`}
+                      placeholder="Address"
+                      value={form.address}
+                      onChange={(e) => handleChange("address", e.target.value)}
+                    />
+                    <div className="invalid-feedback">{addressError}</div>
+                  </div>
+
                   {/* SSS NUMBER */}
                   <div className="col-md-6">
                     <input
@@ -359,29 +373,37 @@ export default function AddUser({
                   {/* EMPLOYEE */}
                   <div className="col-md-6">
                     <select
-                      className="form-select"
+                      className={`form-select ${isEmployeeError ? "is-invalid" : ""}`}
                       value={form.is_employee}
-                      onChange={(e) =>
-                        handleChange("is_employee", e.target.value)
-                      }
+                      onChange={(e) => {
+                        handleChange("is_employee", e.target.value);
+                        setIsEmployeeError(null);
+                      }}
                     >
-                      <option value="false">Not Employee</option>
+                      <option value="">Select Employee Status</option>
                       <option value="true">Employee</option>
+                      <option value="false">Not Employee</option>
                     </select>
+
+                    <div className="invalid-feedback">{isEmployeeError}</div>
                   </div>
 
                   {/* LIVE SELLER */}
                   <div className="col-md-6">
                     <select
-                      className="form-select"
+                      className={`form-select ${isLiveSellerError ? "is-invalid" : ""}`}
                       value={form.is_live_seller}
-                      onChange={(e) =>
-                        handleChange("is_live_seller", e.target.value)
-                      }
+                      onChange={(e) => {
+                        handleChange("is_live_seller", e.target.value);
+                        setIsLiveSellerError(null);
+                      }}
                     >
-                      <option value="false">Not Live Seller</option>
+                      <option value="">Select Live Seller Status</option>
                       <option value="true">Live Seller</option>
+                      <option value="false">Not Live Seller</option>
                     </select>
+
+                    <div className="invalid-feedback">{isLiveSellerError}</div>
                   </div>
                 </div>
               </div>

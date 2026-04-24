@@ -97,6 +97,19 @@ export const validatePhoneNumber = (value: string): string | null => {
   return null;
 };
 
+//ADDRESS VALIDATION
+export const validateAddress = (value: string): string | null => {
+  const trimmed = value.trim();
+
+  if (!trimmed) return "Address is required";
+
+  if (trimmed.length < 5) return "Address is too short";
+
+  if (trimmed.length > 100) return "Address is too long";
+
+  return null;
+};
+
 //SSS NUMBER VALIDATION
 export const validateSSSNumber = (value: string): string | null => {
   const trimmed = value.trim();
