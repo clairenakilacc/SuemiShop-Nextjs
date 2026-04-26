@@ -17,7 +17,7 @@ export default function RolesListPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
+  const [pageSize, setPageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
 
   const fetchRoles = async () => {

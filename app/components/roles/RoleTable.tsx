@@ -102,7 +102,7 @@ export default function RoleTable({
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
           >
-            {[10, 20, 30, 50].map((n) => (
+            {[10, 20, 30].map((n) => (
               <option key={n} value={n}>
                 {n}
               </option>
