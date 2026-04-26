@@ -75,7 +75,7 @@ export default function AddUser({
     pagibig_number: "",
     hourly_rate: "",
     daily_rate: "",
-    is_employee: "false",
+    is_employee: "true",
     is_live_seller: "false",
   });
 
