@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import toast, { Toaster } from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 
 import SearchBar from "../../components/SearchBar";
 import Filter from "../../components/Filter";
 import ExportButton from "../../components/ExportButton";
+import DeleteSelected from "../../components/DeleteSelected";
 
 import InventoryTable from "../../components/inventory/InventoryTable";
+import AddInventory from "../../components/inventory/AddInventory";
 
 import type { Inventory } from "@/app/types/inventory";
 
@@ -17,11 +18,9 @@ export default function InventoriesPage() {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   const [searchTerm, setSearchTerm] = useState("");
-
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
-
   const [filters, setFilters] = useState<any>({});
 
   const fetchInventories = async () => {
@@ -34,36 +33,14 @@ export default function InventoriesPage() {
       .order("created_at", { ascending: false })
       .range(from, to);
 
-    // DATE FILTER
-    const f = filters ?? {};
-
-    if (f.created_start) {
-      const start = new Date(f.created_start);
-      const end = f.created_end
-        ? new Date(f.created_end)
-        : new Date(f.created_start);
-
-      end.setHours(23, 59, 59, 999);
-
-      query = query
-        .gte("created_at", start.toISOString())
-        .lte("created_at", end.toISOString());
-    }
-
-    // SEARCH
-    if (searchTerm.trim()) {
-      query = query.ilike("box_number", `%${searchTerm}%`);
-    }
+    if (searchTerm) query = query.ilike("box_number", `%${searchTerm}%`);
 
     const { data, error, count } = await query;
 
-    if (error) {
-      toast.error(error.message);
-      return;
+    if (!error) {
+      setInventories(data || []);
+      setTotalCount(count || 0);
     }
-
-    setInventories(data || []);
-    setTotalCount(count || 0);
   };
 
   useEffect(() => {
@@ -71,49 +48,76 @@ export default function InventoriesPage() {
   }, [page, pageSize, searchTerm, filters]);
 
   const toggleSelect = (id: number) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    setSelectedIds((p) =>
+      p.includes(id) ? p.filter((x) => x !== id) : [...p, id],
     );
   };
 
-  const toggleSelectAll = (checked: boolean) => {
+  const toggleAll = (checked: boolean) => {
     setSelectedIds(checked ? inventories.map((i) => i.id) : []);
   };
 
   return (
     <div className="container my-5">
-      <Toaster />
-
-      <h3 className="mb-4">Inventory Management</h3>
+      <h3>Inventory Management</h3>
 
       {/* TOOLBAR */}
       <div className="mb-3 d-flex justify-content-between flex-wrap gap-2">
-        <div className="d-flex gap-2 flex-wrap">
+        {/* LEFT SIDE ACTIONS */}
+        <div className="d-flex gap-2 flex-wrap align-items-center">
+          <AddInventory onSuccess={fetchInventories} />
+
           <ExportButton
             data={inventories}
             headersMap={{
               "Box Number": "box_number",
+              Supplier: "supplier_id",
+              Category: "category_id",
               Quantity: "quantity",
               Price: "price",
               Total: "total",
-              "Quantity Left": "quantity_left",
+              "Qty Left": "quantity_left",
               "Total Left": "total_left",
             }}
             filename="inventories.csv"
           />
+
+          <DeleteSelected
+            selectedCount={selectedIds.length}
+            confirmMessage={
+              selectedIds.length === 0
+                ? "Select record first"
+                : "Delete selected inventories?"
+            }
+            onConfirm={async () => {
+              if (!selectedIds.length) {
+                throw new Error("Select record first");
+              }
+
+              const { error } = await supabase
+                .from("inventories")
+                .delete()
+                .in("id", selectedIds);
+
+              if (error) throw new Error(error.message);
+
+              setSelectedIds([]);
+              fetchInventories();
+            }}
+          />
         </div>
 
-        {/* SEARCH + FILTER */}
+        {/* RIGHT SIDE SEARCH + FILTER */}
         <div className="d-flex gap-2">
           <SearchBar
-            placeholder="Search box number..."
             value={searchTerm}
             onChange={setSearchTerm}
+            placeholder="Search box number..."
             options={inventories.map((i) => i.box_number || "")}
           />
 
           <Filter
-            onApply={(f) => setFilters(f)}
+            onApply={setFilters}
             config={[
               { key: "created_start", label: "Start Date", type: "date" },
               { key: "created_end", label: "End Date", type: "date" },
@@ -121,13 +125,11 @@ export default function InventoriesPage() {
           />
         </div>
       </div>
-
-      {/* TABLE */}
       <InventoryTable
         data={inventories}
         selectedIds={selectedIds}
         onToggleSelect={toggleSelect}
-        onToggleSelectAll={toggleSelectAll}
+        onToggleSelectAll={toggleAll}
         page={page}
         pageSize={pageSize}
         totalCount={totalCount}
