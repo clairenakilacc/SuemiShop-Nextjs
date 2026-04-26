@@ -226,6 +226,7 @@ export default function EditUser({
               <label className="form-label fw-bold">Government IDs</label>
 
               <div className="col-md-6">
+                <label className="form-label">SSS Number</label>
                 <input
                   className="form-control"
                   placeholder="SSS Number"
@@ -235,6 +236,7 @@ export default function EditUser({
               </div>
 
               <div className="col-md-6">
+                <label className="form-label">PhilHealth Number</label>
                 <input
                   className="form-control"
                   placeholder="PhilHealth Number"
@@ -246,6 +248,7 @@ export default function EditUser({
               </div>
 
               <div className="col-md-6">
+                <label className="form-label">PagIBIG Number</label>
                 <input
                   className="form-control"
                   placeholder="Pag-IBIG Number"
@@ -259,6 +262,7 @@ export default function EditUser({
               <label className="form-label fw-bold">Rate</label>
 
               <div className="col-md-6">
+                <label className="form-label">Hourly Rate</label>
                 <input
                   type="number"
                   className="form-control"
@@ -269,6 +273,7 @@ export default function EditUser({
               </div>
 
               <div className="col-md-6">
+                <label className="form-label">Daily Rate</label>
                 <input
                   type="number"
                   className="form-control"
