@@ -178,13 +178,15 @@ export default function EditUser({
                     value={form.password}
                     onChange={(e) => handleChange("password", e.target.value)}
                   />
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary"
-                    onClick={() => setShowPassword((p) => !p)}
+                  <span
+                    className="input-group-text"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => setShowPassword((prev) => !prev)}
                   >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
+                    <i
+                      className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}
+                    />
+                  </span>
                 </div>
               </div>
 

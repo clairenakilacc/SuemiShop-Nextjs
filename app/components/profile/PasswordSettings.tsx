@@ -1,6 +1,6 @@
 "use client";
+
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
 import ChangePasswordModal from "../../components/profile/ChangePasswordModal";
 
 interface PasswordSettingsProps {
@@ -35,28 +35,22 @@ export default function PasswordSettings({ user }: PasswordSettingsProps) {
           />
 
           <label className="form-label">New Password</label>
+
           <div className="input-group mb-3">
             <input
               type={showNewPass ? "text" : "password"}
               className="form-control"
               disabled
               placeholder="***********"
-              style={{ borderRight: "none", backgroundColor: "#f8f9fa" }}
+              style={{ backgroundColor: "#f8f9fa" }}
             />
+
             <span
-              className="input-group-text bg-white"
-              style={{
-                cursor: "pointer",
-                borderLeft: "none",
-                borderColor: "#ced4da",
-              }}
-              onClick={() => setShowNewPass(!showNewPass)}
+              className="input-group-text"
+              style={{ cursor: "pointer" }}
+              onClick={() => setShowNewPass((prev) => !prev)}
             >
-              {showNewPass ? (
-                <EyeOff size={18} className="text-muted" />
-              ) : (
-                <Eye size={18} className="text-muted" />
-              )}
+              <i className={`bi ${showNewPass ? "bi-eye-slash" : "bi-eye"}`} />
             </span>
           </div>
 

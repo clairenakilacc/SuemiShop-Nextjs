@@ -252,17 +252,15 @@ export default function AddUser({
                         }
                       />
 
-                      <button
-                        type="button"
-                        className="btn btn-outline-secondary"
+                      <span
+                        className="input-group-text"
+                        style={{ cursor: "pointer" }}
                         onClick={() => setShowPassword((prev) => !prev)}
                       >
-                        {showPassword ? (
-                          <EyeOff size={16} />
-                        ) : (
-                          <Eye size={16} />
-                        )}
-                      </button>
+                        <i
+                          className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}
+                        />
+                      </span>
                     </div>
                     <div className="invalid-feedback d-block">
                       {errors.password}

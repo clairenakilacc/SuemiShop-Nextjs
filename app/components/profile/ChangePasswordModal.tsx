@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import Modal from "./Modal";
 
@@ -17,11 +16,11 @@ export default function ChangePasswordModal({
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
   const handleUpdate = async () => {
-    // Client-side validation
     if (!newPassword || !confirmPassword) {
       toast.error("Please fill in all fields");
       return;
@@ -44,19 +43,18 @@ export default function ChangePasswordModal({
         body: JSON.stringify({ newPassword }),
       });
 
-      const data = await res.json().catch(() => null); // fallback if JSON parsing fails
+      const data = await res.json().catch(() => null);
 
       if (!res.ok) {
         toast.error(data?.error || `Server error: ${res.status}`);
       } else {
-        toast.success(data?.message || "Profile updated successfully! 🚀");
+        toast.success(data?.message || "Password updated successfully!");
         setNewPassword("");
         setConfirmPassword("");
         onClose();
       }
     } catch (err: any) {
-      console.error("Unexpected error:", err);
-      toast.error("Something went wrong: " + (err.message || "Unknown error"));
+      toast.error(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -70,24 +68,23 @@ export default function ChangePasswordModal({
           <label className="form-label fw-medium text-dark small">
             New Password
           </label>
-          <div
-            className="input-group border rounded"
-            style={{ overflow: "hidden" }}
-          >
+
+          <div className="input-group">
             <input
               type={showNew ? "text" : "password"}
-              className="form-control border-0 shadow-none"
+              className="form-control"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Enter new password (min 6 characters)"
+              placeholder="Enter new password"
             />
-            <button
-              className="btn bg-white border-0"
-              type="button"
-              onClick={() => setShowNew(!showNew)}
+
+            <span
+              className="input-group-text"
+              style={{ cursor: "pointer" }}
+              onClick={() => setShowNew((prev) => !prev)}
             >
-              {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
+              <i className={`bi ${showNew ? "bi-eye-slash" : "bi-eye"}`} />
+            </span>
           </div>
         </div>
 
@@ -96,24 +93,23 @@ export default function ChangePasswordModal({
           <label className="form-label fw-medium text-dark small">
             Confirm New Password
           </label>
-          <div
-            className="input-group border rounded"
-            style={{ overflow: "hidden" }}
-          >
+
+          <div className="input-group">
             <input
               type={showConfirm ? "text" : "password"}
-              className="form-control border-0 shadow-none"
+              className="form-control"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Confirm new password"
             />
-            <button
-              className="btn bg-white border-0"
-              type="button"
-              onClick={() => setShowConfirm(!showConfirm)}
+
+            <span
+              className="input-group-text"
+              style={{ cursor: "pointer" }}
+              onClick={() => setShowConfirm((prev) => !prev)}
             >
-              {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
+              <i className={`bi ${showConfirm ? "bi-eye-slash" : "bi-eye"}`} />
+            </span>
           </div>
         </div>
       </div>
@@ -122,12 +118,13 @@ export default function ChangePasswordModal({
       <div className="d-flex justify-content-end gap-2 mt-4 pt-3">
         <button
           onClick={onClose}
-          className="btn  px-4 small"
-          disabled={loading}
+          className="btn px-4 small"
           style={{ backgroundColor: "lightgrey", borderRadius: "6px" }}
+          disabled={loading}
         >
           Cancel
         </button>
+
         <button
           onClick={handleUpdate}
           disabled={loading}
