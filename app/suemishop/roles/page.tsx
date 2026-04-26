@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
+
 import AddRole from "../../components/roles/AddRole";
 import ExportButton from "../../components/ExportButton";
 import DeleteSelected from "../../components/DeleteSelected";
 import SearchBar from "../../components/SearchBar";
+import Filter from "../../components/Filter";
 import RoleTable from "../../components/roles/RoleTable";
 
 import type { Role } from "@/app/types/role";
@@ -20,6 +22,8 @@ export default function RolesListPage() {
   const [pageSize, setPageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
 
+  const [filters, setFilters] = useState<any>({});
+
   const fetchRoles = async () => {
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
@@ -30,6 +34,23 @@ export default function RolesListPage() {
       .order("created_at", { ascending: false })
       .range(from, to);
 
+    // 🔥 CREATED_AT FILTER
+    const f = filters ?? {};
+
+    if (f.created_start) {
+      const start = new Date(f.created_start);
+      const end = f.created_end
+        ? new Date(f.created_end)
+        : new Date(f.created_start);
+
+      end.setHours(23, 59, 59, 999);
+
+      query = query
+        .gte("created_at", start.toISOString())
+        .lte("created_at", end.toISOString());
+    }
+
+    // SEARCH
     if (searchTerm.trim()) {
       query = query.ilike("name", `%${searchTerm}%`);
     }
@@ -44,7 +65,7 @@ export default function RolesListPage() {
 
   useEffect(() => {
     fetchRoles();
-  }, [page, pageSize, searchTerm]);
+  }, [page, pageSize, searchTerm, filters]);
 
   const toggleSelectRole = (id: number) => {
     setSelectedRoles((prev) =>
@@ -59,6 +80,7 @@ export default function RolesListPage() {
   return (
     <div className="container my-5">
       <Toaster />
+
       <h3 className="mb-4">Roles Management</h3>
 
       {/* TOOLBAR */}
@@ -101,14 +123,35 @@ export default function RolesListPage() {
           />
         </div>
 
-        <SearchBar
-          placeholder="Search roles..."
-          value={searchTerm}
-          onChange={setSearchTerm}
-          options={roles.map((r) => r.name)}
-        />
+        {/* SEARCH + FILTER */}
+        <div className="d-flex gap-2">
+          <SearchBar
+            placeholder="Search roles..."
+            value={searchTerm}
+            onChange={setSearchTerm}
+            options={roles.map((r) => r.name)}
+          />
+
+          {/* 🔥 CREATED_AT FILTER */}
+          <Filter
+            onApply={(f) => setFilters(f)}
+            config={[
+              {
+                key: "created_start",
+                label: "Start Date",
+                type: "date",
+              },
+              {
+                key: "created_end",
+                label: "End Date",
+                type: "date",
+              },
+            ]}
+          />
+        </div>
       </div>
 
+      {/* TABLE */}
       <RoleTable
         data={roles}
         selectedIds={selectedRoles}

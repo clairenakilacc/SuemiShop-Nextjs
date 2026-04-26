@@ -9,16 +9,19 @@ import AddSupplier from "../../components/suppliers/AddSupplier";
 import ExportButton from "../../components/ExportButton";
 import DeleteSelected from "../../components/DeleteSelected";
 import SearchBar from "../../components/SearchBar";
+import Filter from "../../components/Filter";
 import SupplierTable from "../../components/suppliers/SupplierTable";
 
 export default function SupplierListPage() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [selectedSuppliers, setSelectedSuppliers] = useState<number[]>([]); // ✅ FIXED
+  const [selectedSuppliers, setSelectedSuppliers] = useState<number[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
+
+  const [filters, setFilters] = useState<any>({});
 
   const fetchSuppliers = async (resetPage = false) => {
     const currentPage = resetPage ? 1 : page;
@@ -32,6 +35,23 @@ export default function SupplierListPage() {
       .order("created_at", { ascending: false })
       .range(from, to);
 
+    const f = filters ?? {};
+
+    // 🔥 CREATED_AT FILTER (SAME STYLE AS CATEGORIES)
+    if (f.created_start) {
+      const start = new Date(f.created_start);
+      const end = f.created_end
+        ? new Date(f.created_end)
+        : new Date(f.created_start);
+
+      end.setHours(23, 59, 59, 999);
+
+      query = query
+        .gte("created_at", start.toISOString())
+        .lte("created_at", end.toISOString());
+    }
+
+    // SEARCH
     if (searchTerm.trim()) {
       query = query.or(
         `name.ilike.%${searchTerm}%,contact_number.ilike.%${searchTerm}%`,
@@ -51,11 +71,8 @@ export default function SupplierListPage() {
 
   useEffect(() => {
     fetchSuppliers();
-  }, [page, pageSize, searchTerm]);
+  }, [page, pageSize, searchTerm, filters]);
 
-  /* =========================
-     SELECTION FIXED (number)
-  ========================= */
   const toggleSelectSupplier = (id: number) => {
     setSelectedSuppliers((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
@@ -109,7 +126,7 @@ export default function SupplierListPage() {
               const { error } = await supabase
                 .from("suppliers")
                 .delete()
-                .in("id", selectedSuppliers); // ✅ works with number[]
+                .in("id", selectedSuppliers);
 
               if (error) throw new Error(error.message);
 
@@ -119,14 +136,34 @@ export default function SupplierListPage() {
           />
         </div>
 
-        <SearchBar
-          placeholder="Search suppliers..."
-          value={searchTerm}
-          onChange={setSearchTerm}
-          options={suppliers.map((s) => s.name || "")} // ✅ null safe
-        />
+        {/* SEARCH + FILTER (SAME STYLE) */}
+        <div className="d-flex gap-2">
+          <SearchBar
+            placeholder="Search suppliers..."
+            value={searchTerm}
+            onChange={setSearchTerm}
+            options={suppliers.map((s) => s.name || "")}
+          />
+
+          <Filter
+            onApply={(f) => setFilters(f)}
+            config={[
+              {
+                key: "created_start",
+                label: "Start Date",
+                type: "date",
+              },
+              {
+                key: "created_end",
+                label: "End Date",
+                type: "date",
+              },
+            ]}
+          />
+        </div>
       </div>
 
+      {/* TABLE */}
       <SupplierTable
         data={suppliers}
         selectedIds={selectedSuppliers}
@@ -137,7 +174,7 @@ export default function SupplierListPage() {
         totalCount={totalCount}
         onPageChange={setPage}
         onPageSizeChange={setPageSize}
-        onRefresh={() => fetchSuppliers(true)} // ✅ matches expected type
+        onRefresh={() => fetchSuppliers(true)}
       />
     </div>
   );

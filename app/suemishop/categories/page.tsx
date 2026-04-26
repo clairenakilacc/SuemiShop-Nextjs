@@ -5,16 +5,13 @@ import toast, { Toaster } from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 
 import AddCategory from "../../components/categories/AddCategory";
-import ImportCategory from "../../components/categories/ImportCategory";
 import ExportButton from "../../components/ExportButton";
 import DeleteSelected from "../../components/DeleteSelected";
 import SearchBar from "../../components/SearchBar";
+import Filter from "../../components/Filter";
 import CategoryTable from "../../components/categories/CategoryTable";
 
 export default function CategoriesListPage() {
-  /* =========================
-     Local Type (NO IMPORTS)
-  ========================= */
   interface Category {
     id: string;
     description: string;
@@ -30,15 +27,10 @@ export default function CategoriesListPage() {
   const [pageSize, setPageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
 
-  const handleRefresh = async (resetPage = false) => {
-    if (resetPage) setPage(1);
-    await fetchCategories(resetPage);
-  };
+  const [filters, setFilters] = useState<any>({});
 
-  const fetchCategories = async (resetPage = false) => {
-    const currentPage = resetPage ? 1 : page;
-
-    const from = (currentPage - 1) * pageSize;
+  const fetchCategories = async () => {
+    const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
 
     let query = supabase
@@ -47,6 +39,23 @@ export default function CategoriesListPage() {
       .order("updated_at", { ascending: false })
       .range(from, to);
 
+    // 🔥 CREATED_AT FILTER ONLY
+    const f = filters ?? {};
+
+    if (f.created_start) {
+      const start = new Date(f.created_start);
+      const end = f.created_end
+        ? new Date(f.created_end)
+        : new Date(f.created_start);
+
+      end.setHours(23, 59, 59, 999);
+
+      query = query
+        .gte("created_at", start.toISOString())
+        .lte("created_at", end.toISOString());
+    }
+
+    // SEARCH
     if (searchTerm.trim()) {
       query = query.ilike("description", `%${searchTerm.trim()}%`);
     }
@@ -62,10 +71,9 @@ export default function CategoriesListPage() {
     setTotalCount(count || 0);
   };
 
-  //
   useEffect(() => {
     fetchCategories();
-  }, [page, pageSize, searchTerm]);
+  }, [page, pageSize, searchTerm, filters]);
 
   const toggleSelectCategory = (id: string) => {
     setSelectedCategories((prev) =>
@@ -86,10 +94,10 @@ export default function CategoriesListPage() {
       {/* TOOLBAR */}
       <div className="mb-3 d-flex justify-content-between flex-wrap gap-2">
         <div className="d-flex gap-2 flex-wrap">
-          <AddCategory onSuccess={() => handleRefresh(true)} />
+          {/* ADD */}
+          <AddCategory onSuccess={() => fetchCategories()} />
 
-          {/* <ImportCategory onSuccess={() => handleRefresh(true)} /> */}
-
+          {/* EXPORT */}
           <ExportButton
             data={categories}
             headersMap={{
@@ -106,6 +114,7 @@ export default function CategoriesListPage() {
             filename="categories.csv"
           />
 
+          {/* DELETE SELECTED */}
           <DeleteSelected
             selectedCount={selectedCategories.length}
             confirmMessage={
@@ -131,14 +140,35 @@ export default function CategoriesListPage() {
           />
         </div>
 
-        <SearchBar
-          placeholder="Search categories..."
-          value={searchTerm}
-          onChange={setSearchTerm}
-          options={categories.map((c) => c.description)}
-        />
+        {/* SEARCH + FILTER */}
+        <div className="d-flex gap-2">
+          <SearchBar
+            placeholder="Search categories..."
+            value={searchTerm}
+            onChange={setSearchTerm}
+            options={categories.map((c) => c.description)}
+          />
+
+          {/* 🔥 CREATED_AT FILTER */}
+          <Filter
+            onApply={(f) => setFilters(f)}
+            config={[
+              {
+                key: "created_start",
+                label: "Start Date",
+                type: "date",
+              },
+              {
+                key: "created_end",
+                label: "End Date",
+                type: "date",
+              },
+            ]}
+          />
+        </div>
       </div>
 
+      {/* TABLE */}
       <CategoryTable
         data={categories}
         selectedIds={selectedCategories}
