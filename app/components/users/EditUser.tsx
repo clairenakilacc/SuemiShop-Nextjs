@@ -317,7 +317,7 @@ export default function EditUser({
               onClick={handleSave}
               disabled={loading}
             >
-              {loading ? "Saving..." : "Save"}
+              {loading ? "Saving..." : "Edit"}
             </button>
           </div>
         </div>
