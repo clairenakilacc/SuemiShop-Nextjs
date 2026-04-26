@@ -7,12 +7,19 @@ import PasswordSettings from "../../components/profile/PasswordSettings";
 
 export default function ProfilePage() {
   const [userData, setUserData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadProfile() {
-      const stored = localStorage.getItem("user");
-      const localUser = stored ? JSON.parse(stored) : null;
+    const stored = localStorage.getItem("user");
+    const localUser = stored ? JSON.parse(stored) : null;
 
+    // 1. show cached user immediately
+    if (localUser) {
+      setUserData(localUser);
+    }
+
+    // 2. fetch fresh data in background
+    async function loadProfile() {
       try {
         const res = await fetch("/api/me");
         const data = await res.json();
@@ -29,19 +36,26 @@ export default function ProfilePage() {
           };
 
           setUserData(freshUser);
+          localStorage.setItem("user", JSON.stringify(freshUser));
         } else {
           setUserData(localUser || false);
         }
       } catch {
         setUserData(localUser || false);
+      } finally {
+        setLoading(false);
       }
     }
 
     loadProfile();
   }, []);
 
-  // ❌ NO LOADING UI
-  if (!userData) return null;
+  // loading state instead of blank screen
+  if (loading) {
+    return (
+      <div className="text-center mt-10 text-gray-500">Loading profile...</div>
+    );
+  }
 
   if (userData === false) {
     return (
