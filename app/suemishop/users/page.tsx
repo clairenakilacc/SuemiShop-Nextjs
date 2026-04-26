@@ -22,6 +22,17 @@ export default function UsersPage() {
   const [pageSize, setPageSize] = useState(50);
   const [totalCount, setTotalCount] = useState(0);
 
+  const [roles, setRoles] = useState<{ id: number; name: string }[]>([]);
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      const { data } = await supabase.from("roles").select("id, name");
+      setRoles(data || []);
+    };
+
+    fetchRoles();
+  }, []);
+
   const fetchUsers = useCallback(
     async (resetPage = false) => {
       const currentPage = resetPage ? 1 : page;
@@ -140,6 +151,7 @@ export default function UsersPage() {
         onToggleSelectAll={toggleSelectAll}
         onRefresh={() => fetchUsers()}
         page={page}
+        roles={roles}
         pageSize={pageSize}
         totalCount={totalCount}
         onPageChange={(p) => setPage(p)}

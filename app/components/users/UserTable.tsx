@@ -22,6 +22,8 @@ interface Props {
   pageSize: number;
   totalCount: number;
 
+  roles: { id: number; name: string }[];
+
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
 
@@ -33,6 +35,7 @@ interface Props {
 ========================= */
 export default function UserTable({
   data,
+  roles,
   selectedIds,
   onToggleSelect,
   onToggleSelectAll,
@@ -180,6 +183,7 @@ export default function UserTable({
         show={viewOpen}
         user={selectedUser}
         onClose={() => setViewOpen(false)}
+        roles={roles}
       />
 
       <EditUser
