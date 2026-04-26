@@ -8,13 +8,36 @@ import type { User } from "@/app/types/user";
 
 import AddUser from "@/app/components/users/AddUser";
 import UserTable from "@/app/components/users/UserTable";
-
 import ExportButton from "@/app/components/ExportButton";
 import DeleteSelected from "@/app/components/DeleteSelected";
 import SearchBar from "@/app/components/SearchBar";
+import Filter from "@/app/components/Filter";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const [roles, setRoles] = useState<{ id: number; name: string }[]>([]);
+
+  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const [filters, setFilters] = useState<any>({});
+
+  /* =========================
+     ROLES FETCH
+  ========================= */
+  useEffect(() => {
+    const fetchRoles = async () => {
+      const { data } = await supabase.from("roles").select("id, name");
+      setRoles(data || []);
+    };
+
+    fetchRoles();
+  }, []);
+
   const handleSaveUser = async (updatedUser: any) => {
     const { error } = await supabase
       .from("users")
@@ -41,27 +64,12 @@ export default function UsersPage() {
       throw new Error(error.message);
     }
 
-    // refresh list AFTER saving
     await fetchUsers();
   };
-  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
 
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
-  const [totalCount, setTotalCount] = useState(0);
-
-  const [roles, setRoles] = useState<{ id: number; name: string }[]>([]);
-
-  useEffect(() => {
-    const fetchRoles = async () => {
-      const { data } = await supabase.from("roles").select("id, name");
-      setRoles(data || []);
-    };
-
-    fetchRoles();
-  }, []);
-
+  /* =========================
+     FETCH USERS
+  ========================= */
   const fetchUsers = useCallback(
     async (resetPage = false) => {
       const currentPage = resetPage ? 1 : page;
@@ -71,10 +79,41 @@ export default function UsersPage() {
 
       let query = supabase
         .from("users")
-        .select("*", { count: "exact" })
+        .select("*, role:roles(id, name)", { count: "exact" })
         .order("created_at", { ascending: false })
         .range(from, to);
 
+      const f = filters ?? {};
+
+      /* DATE FILTER */
+      if (f.created_start) {
+        const start = new Date(f.created_start);
+        const end = f.created_end
+          ? new Date(f.created_end)
+          : new Date(f.created_start);
+
+        end.setHours(23, 59, 59, 999);
+
+        query = query
+          .gte("created_at", start.toISOString())
+          .lte("created_at", end.toISOString());
+      }
+
+      /* ROLE FILTER */
+      if (f.role) {
+        query = query.eq("role", f.role);
+      }
+
+      /* BOOLEAN FILTERS */
+      if (f.is_employee !== undefined) {
+        query = query.eq("is_employee", f.is_employee);
+      }
+
+      if (f.is_live_seller !== undefined) {
+        query = query.eq("is_live_seller", f.is_live_seller);
+      }
+
+      /* SEARCH */
       if (searchTerm.trim()) {
         const term = `%${searchTerm}%`;
 
@@ -101,13 +140,16 @@ export default function UsersPage() {
       setUsers((data as User[]) || []);
       setTotalCount(count || 0);
     },
-    [page, pageSize, searchTerm],
+    [page, pageSize, searchTerm, filters],
   );
 
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
 
+  /* =========================
+     SELECT
+  ========================= */
   const toggleSelectUser = (id: number) => {
     setSelectedUsers((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
@@ -130,8 +172,8 @@ export default function UsersPage() {
       <h3 className="mb-4">Users Management</h3>
 
       {/* TOOLBAR */}
-      <div className="mb-3 d-flex justify-content-between flex-wrap gap-2">
-        <div className="d-flex gap-2 flex-wrap">
+      <div className="mb-3 d-flex flex-wrap justify-content-between gap-2">
+        <div className="d-flex flex-wrap gap-2">
           <AddUser onSuccess={() => handleRefresh(true)} />
 
           <ExportButton
@@ -174,31 +216,68 @@ export default function UsersPage() {
           />
         </div>
 
-        <SearchBar
-          placeholder="Search users..."
-          value={searchTerm}
-          onChange={setSearchTerm}
-          options={users.map((u) => u.name)}
-        />
+        <div className="d-flex gap-2">
+          <SearchBar
+            placeholder="Search users..."
+            value={searchTerm}
+            onChange={setSearchTerm}
+            options={users.map((u) => u.name)}
+          />
+
+          <Filter
+            onApply={(f) => setFilters(f)}
+            config={[
+              {
+                key: "created_start",
+                label: "Start Date",
+                type: "date",
+              },
+              {
+                key: "created_end",
+                label: "End Date",
+                type: "date",
+              },
+              {
+                key: "role",
+                label: "Role",
+                type: "select",
+                options: roles.map((r) => ({
+                  label: r.name,
+                  value: r.id,
+                })),
+              },
+              {
+                key: "is_employee",
+                label: "Employee",
+                type: "boolean",
+              },
+              {
+                key: "is_live_seller",
+                label: "Live Seller",
+                type: "boolean",
+              },
+            ]}
+          />
+        </div>
       </div>
 
       {/* TABLE */}
       <UserTable
         data={users}
-        onSaveUser={handleSaveUser}
         selectedIds={selectedUsers}
         onToggleSelect={toggleSelectUser}
         onToggleSelectAll={toggleSelectAll}
         onRefresh={() => fetchUsers()}
         page={page}
-        roles={roles}
         pageSize={pageSize}
         totalCount={totalCount}
-        onPageChange={(p) => setPage(p)}
+        onPageChange={setPage}
         onPageSizeChange={(size) => {
           setPageSize(size);
           setPage(1);
         }}
+        roles={roles}
+        onSaveUser={handleSaveUser}
       />
     </div>
   );
