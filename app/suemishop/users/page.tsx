@@ -76,8 +76,18 @@ export default function UsersPage() {
         .range(from, to);
 
       if (searchTerm.trim()) {
+        const term = `%${searchTerm}%`;
+
         query = query.or(
-          `name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`,
+          [
+            `name.ilike.${term}`,
+            `email.ilike.${term}`,
+            `address.ilike.${term}`,
+            `phone_number.ilike.${term}`,
+            `sss_number.ilike.${term}`,
+            `philhealth_number.ilike.${term}`,
+            `pagibig_number.ilike.${term}`,
+          ].join(","),
         );
       }
 
