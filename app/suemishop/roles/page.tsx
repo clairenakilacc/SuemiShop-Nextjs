@@ -3,162 +3,123 @@
 import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
-
-import SearchBar from "../../components/SearchBar";
-import ConfirmDelete from "../../components/ConfirmDelete";
-import { DataTable, Column } from "../../components/DataTable";
-import AddButton from "../../components/AddButton";
-import BulkEdit from "../../components/BulkEdit";
+import AddRole from "../../components/roles/AddRole";
 import ExportButton from "../../components/ExportButton";
-import ToggleColumns from "../../components/ToggleColumns";
+import DeleteSelected from "../../components/DeleteSelected";
+import SearchBar from "../../components/SearchBar";
+import RoleTable from "../../components/roles/RoleTable";
 
-interface Role {
-  id?: string;
-  name: string;
-  created_at?: string;
-}
+import type { Role } from "@/app/types/role";
 
 export default function RolesListPage() {
   const [roles, setRoles] = useState<Role[]>([]);
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
-  const [tableColumns, setTableColumns] = useState<Column<Role>[]>([]);
+  const [selectedRoles, setSelectedRoles] = useState<number[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const fetchRoles = async () => {
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    let query = supabase
+      .from("roles")
+      .select("*", { count: "exact" })
+      .order("created_at", { ascending: false })
+      .range(from, to);
+
+    if (searchTerm.trim()) {
+      query = query.ilike("name", `%${searchTerm}%`);
+    }
+
+    const { data, error, count } = await query;
+
+    if (error) return toast.error(error.message);
+
+    setRoles(data || []);
+    setTotalCount(count || 0);
+  };
 
   useEffect(() => {
     fetchRoles();
-  }, []);
+  }, [page, pageSize, searchTerm]);
 
-  const fetchRoles = async () => {
-    const { data, error } = await supabase.from("roles").select("*");
-    if (error) return toast.error(error.message);
-    setRoles(data || []);
+  const toggleSelectRole = (id: number) => {
+    setSelectedRoles((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
   };
 
-  // Selection
-  const toggleSelectRole = (id: string) =>
-    setSelectedRoles((prev) =>
-      prev.includes(id) ? prev.filter((rid) => rid !== id) : [...prev, id],
-    );
-  const toggleSelectAll = (checked: boolean) =>
-    setSelectedRoles(checked ? roles.map((r) => r.id!) : []);
-
-  // Filtering
-  const filteredRoles = roles.filter((r) =>
-    r.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
-
-  // Columns
-  const columns: Column<Role>[] = [
-    {
-      header: "Created At",
-      accessor: (row) =>
-        row.created_at ? new Date(row.created_at).toLocaleDateString() : "",
-    },
-    { header: "Role Name", accessor: "name" },
-    {
-      header: "Action",
-      accessor: (row) => (
-        <ConfirmDelete
-          confirmMessage={`Are you sure you want to delete ${row.name}?`}
-          onConfirm={async () => {
-            const { error } = await supabase
-              .from("roles")
-              .delete()
-              .eq("id", row.id!);
-            if (error) {
-              toast.error(error.message);
-              return;
-            }
-            fetchRoles();
-          }}
-        >
-          Delete
-        </ConfirmDelete>
-      ),
-      center: true,
-    },
-  ];
-
-  useEffect(() => {
-    setTableColumns(columns);
-  }, []);
+  const toggleSelectAll = (checked: boolean) => {
+    setSelectedRoles(checked ? roles.map((r) => r.id) : []);
+  };
 
   return (
     <div className="container my-5">
       <Toaster />
       <h3 className="mb-4">Roles Management</h3>
 
-      {/* Toolbar */}
-      <div className="mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
-        <div className="d-flex flex-wrap align-items-center gap-2">
-          <AddButton
-            table="roles"
-            onSuccess={fetchRoles}
-            fields={[{ key: "name", label: "Role Name", type: "text" }]}
-          />
-
-          {/* <BulkEdit
-            table="roles"
-            selectedIds={selectedRoles}
-            onSuccess={fetchRoles}
-            fields={[{ key: "name", label: "Role Name", type: "text" }]}
-          /> */}
+      {/* TOOLBAR */}
+      <div className="mb-3 d-flex justify-content-between flex-wrap gap-2">
+        <div className="d-flex gap-2 flex-wrap">
+          <AddRole onSuccess={fetchRoles} />
 
           <ExportButton
-            data={filteredRoles}
+            data={roles}
             headersMap={{
-              "Created At": (row) => row.created_at || "",
+              "Created At": (row: Role) =>
+                row.created_at
+                  ? new Date(row.created_at).toLocaleDateString()
+                  : "",
               "Role Name": "name",
             }}
             filename="roles.csv"
           />
 
-          <ConfirmDelete
-            confirmMessage="Are you sure you want to delete selected roles?"
+          <DeleteSelected
+            selectedCount={selectedRoles.length}
+            confirmMessage={
+              selectedRoles.length === 0
+                ? "Select record first"
+                : "Delete selected roles?"
+            }
             onConfirm={async () => {
               if (!selectedRoles.length) throw new Error("No roles selected");
+
               const { error } = await supabase
                 .from("roles")
                 .delete()
                 .in("id", selectedRoles);
-              if (error) {
-                toast.error(error.message);
-                return;
-              }
+
+              if (error) throw new Error(error.message);
+
               setSelectedRoles([]);
               fetchRoles();
             }}
-          >
-            Delete Selected
-          </ConfirmDelete>
-        </div>
-
-        {/* Search + Toggle Columns */}
-        <div className="d-flex align-items-center gap-2">
-          <SearchBar
-            placeholder="Search roles..."
-            value={searchTerm}
-            onChange={setSearchTerm}
-            options={roles.map((r) => r.name)}
           />
-
-          <ToggleColumns columns={columns} onChange={setTableColumns} />
         </div>
+
+        <SearchBar
+          placeholder="Search roles..."
+          value={searchTerm}
+          onChange={setSearchTerm}
+          options={roles.map((r) => r.name)}
+        />
       </div>
 
-      <DataTable<Role>
-        data={filteredRoles}
-        columns={tableColumns}
-        selectable
+      <RoleTable
+        data={roles}
         selectedIds={selectedRoles}
         onToggleSelect={toggleSelectRole}
         onToggleSelectAll={toggleSelectAll}
-        rowKey="id"
-        page={1}
-        pageSize={50}
-        totalCount={filteredRoles.length}
-        onPageChange={() => {}}
-        onPageSizeChange={() => {}}
+        page={page}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+        onRefresh={fetchRoles}
       />
     </div>
   );
