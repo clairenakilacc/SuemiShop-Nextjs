@@ -88,7 +88,7 @@ export default function CategoriesListPage() {
         <div className="d-flex gap-2 flex-wrap">
           <AddCategory onSuccess={() => handleRefresh(true)} />
 
-          <ImportCategory onSuccess={() => handleRefresh(true)} />
+          {/* <ImportCategory onSuccess={() => handleRefresh(true)} /> */}
 
           <ExportButton
             data={categories}
