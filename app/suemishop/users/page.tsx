@@ -139,32 +139,15 @@ export default function UsersPage() {
         onToggleSelect={toggleSelectUser}
         onToggleSelectAll={toggleSelectAll}
         onRefresh={() => fetchUsers()}
+        page={page}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        onPageChange={(p) => setPage(p)}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setPage(1);
+        }}
       />
-
-      {/* PAGINATION */}
-      <div className="d-flex justify-content-between mt-3">
-        <div>
-          Page {page} / {Math.ceil(totalCount / pageSize) || 1}
-        </div>
-
-        <div className="d-flex gap-2">
-          <button
-            className="btn btn-secondary btn-sm"
-            disabled={page === 1}
-            onClick={() => setPage((p) => p - 1)}
-          >
-            Prev
-          </button>
-
-          <button
-            className="btn btn-secondary btn-sm"
-            disabled={page * pageSize >= totalCount}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            Next
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
