@@ -93,9 +93,9 @@ export default function AddUser({
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  //3. ERROR FIELDS
   const handleSubmit = async () => {
     setLoading(true);
-    //3. ERROR FIELDS
     const errors = {
       name: validateName(form.name),
       email: validateEmail(form.email),
