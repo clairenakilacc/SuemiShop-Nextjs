@@ -26,6 +26,22 @@ interface AddUserProps {
   buttonText?: string;
 }
 
+type Errors = {
+  name: string | null;
+  email: string | null;
+  password: string | null;
+  role: string | null;
+  phone_number: string | null;
+  address: string | null;
+  sss_number: string | null;
+  philhealth_number: string | null;
+  pagibig_number: string | null;
+  hourly_rate: string | null;
+  daily_rate: string | null;
+  is_employee: string | null;
+  is_live_seller: string | null;
+};
+
 export default function AddUser({
   onSuccess,
   className = "btn btn-add",
@@ -35,44 +51,18 @@ export default function AddUser({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 1. PASSWORD TOGGLE (FIXED)
   const [showPassword, setShowPassword] = useState(false);
 
-  //1. ROLE
   const [roles, setRoles] = useState<{ id: number; name: string }[]>([]);
 
   useEffect(() => {
     const fetchRoles = async () => {
       const { data } = await supabase.from("roles").select("id, name");
-
       setRoles(data || []);
     };
-
     fetchRoles();
   }, []);
 
-  //2. FIELD ERRORS
-  const [nameError, setNameError] = useState<string | null>(null);
-  const [emailError, setEmailError] = useState<string | null>(null);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [roleError, setRoleError] = useState<string | null>(null);
-  const [phoneError, setPhoneError] = useState<string | null>(null);
-  const [addressError, setAddressError] = useState<string | null>(null);
-  const [sssNumberError, setSssNumberError] = useState<string | null>(null);
-  const [philhealthNumberError, setPhilhealthNumberError] = useState<
-    string | null
-  >(null);
-  const [pagibigNumberError, setPagibigNumberError] = useState<string | null>(
-    null,
-  );
-  const [hourlyRateError, setHourlyRateError] = useState<string | null>(null);
-  const [dailyRateError, setDailyRateError] = useState<string | null>(null);
-  const [isEmployeeError, setIsEmployeeError] = useState<string | null>(null);
-  const [isLiveSellerError, setIsLiveSellerError] = useState<string | null>(
-    null,
-  );
-
-  // FORM STATE
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -89,14 +79,34 @@ export default function AddUser({
     is_live_seller: "false",
   });
 
+  const [errors, setErrors] = useState<Errors>({
+    name: null,
+    email: null,
+    password: null,
+    role: null,
+    phone_number: null,
+    address: null,
+    sss_number: null,
+    philhealth_number: null,
+    pagibig_number: null,
+    hourly_rate: null,
+    daily_rate: null,
+    is_employee: null,
+    is_live_seller: null,
+  });
+
   const handleChange = (key: string, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+    setErrors((prev) => ({ ...prev, [key]: null }));
   };
 
-  //3. ERROR FIELDS
   const handleSubmit = async () => {
+    if (loading) return;
+
     setLoading(true);
-    const errors = {
+    setError(null);
+
+    const newErrors: Errors = {
       name: validateName(form.name),
       email: validateEmail(form.email),
       password: validatePassword(form.password),
@@ -112,69 +122,75 @@ export default function AddUser({
       is_live_seller: validateIsLiveSeller(form.is_live_seller),
     };
 
-    setNameError(errors.name);
-    setEmailError(errors.email);
-    setPasswordError(errors.password);
-    setRoleError(errors.role);
-    setPhoneError(errors.phone_number);
-    setAddressError(errors.address);
-    setSssNumberError(errors.sss_number);
-    setPhilhealthNumberError(errors.philhealth_number);
-    setPagibigNumberError(errors.pagibig_number);
-    setHourlyRateError(errors.hourly_rate);
-    setDailyRateError(errors.daily_rate);
-    setIsEmployeeError(errors.is_employee);
-    setIsLiveSellerError(errors.is_live_seller);
+    setErrors(newErrors);
 
-    const hasError = Object.values(errors).some(Boolean);
+    const hasError = Object.values(newErrors).some(Boolean);
     if (hasError) {
       setLoading(false);
       return;
     }
 
-    const { error } = await supabase.from("users").insert([
-      {
-        name: form.name,
-        email: form.email || null,
-        password: form.password,
-        role: Number(form.role),
-        phone_number: form.phone_number,
-        address: form.address,
-        sss_number: form.sss_number,
-        philhealth_number: form.philhealth_number,
-        pagibig_number: form.pagibig_number,
-        hourly_rate: Number(form.hourly_rate || 0),
-        daily_rate: Number(form.daily_rate || 0),
-        is_employee: form.is_employee === "true",
-        is_live_seller: form.is_live_seller === "true",
-      },
-    ]);
+    try {
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email || null,
+          password: form.password,
+          role: Number(form.role),
+          phone_number: form.phone_number,
+          address: form.address,
+          sss_number: form.sss_number,
+          philhealth_number: form.philhealth_number,
+          pagibig_number: form.pagibig_number,
+          hourly_rate: Number(form.hourly_rate || 0),
+          daily_rate: Number(form.daily_rate || 0),
+          is_employee: form.is_employee === "true",
+          is_live_seller: form.is_live_seller === "true",
+        }),
+      });
 
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-      return;
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        const text = await res.text();
+        console.error("Non-JSON response:", text);
+        throw new Error("Server error");
+      }
+
+      if (!res.ok) {
+        setError(data.error || "Something went wrong");
+        setLoading(false);
+        return;
+      }
+
+      setForm({
+        name: "",
+        email: "",
+        password: "",
+        role: "",
+        phone_number: "",
+        address: "",
+        sss_number: "",
+        philhealth_number: "",
+        pagibig_number: "",
+        hourly_rate: "",
+        daily_rate: "",
+        is_employee: "false",
+        is_live_seller: "false",
+      });
+
+      setShowModal(false);
+      onSuccess();
+    } catch (err: any) {
+      setError(err.message || "Request failed");
     }
 
-    setForm({
-      name: "",
-      email: "",
-      password: "",
-      role: "",
-      phone_number: "",
-      address: "",
-      sss_number: "",
-      philhealth_number: "",
-      pagibig_number: "",
-      hourly_rate: "",
-      daily_rate: "",
-      is_employee: "true",
-      is_live_seller: "true",
-    });
-
     setLoading(false);
-    setShowModal(false);
-    onSuccess();
   };
 
   return (
@@ -204,34 +220,31 @@ export default function AddUser({
                 <div className="row g-2">
                   <label className="form-label fw-bold">Personal Info</label>
 
-                  {/* NAME */}
                   <div className="col-md-6">
                     <input
-                      className={`form-control ${nameError ? "is-invalid" : ""}`}
+                      className={`form-control ${errors.name ? "is-invalid" : ""}`}
                       placeholder="Name"
                       value={form.name}
                       onChange={(e) => handleChange("name", e.target.value)}
                     />
-                    <div className="invalid-feedback">{nameError}</div>
+                    <div className="invalid-feedback">{errors.name}</div>
                   </div>
 
-                  {/* EMAIL */}
                   <div className="col-md-6">
                     <input
-                      className={`form-control ${emailError ? "is-invalid" : ""}`}
+                      className={`form-control ${errors.email ? "is-invalid" : ""}`}
                       placeholder="Email"
                       value={form.email}
                       onChange={(e) => handleChange("email", e.target.value)}
                     />
-                    <div className="invalid-feedback">{emailError}</div>
+                    <div className="invalid-feedback">{errors.email}</div>
                   </div>
 
-                  {/* PASSWORD ✅ FIXED */}
                   <div className="col-md-6">
                     <div className="input-group">
                       <input
                         type={showPassword ? "text" : "password"}
-                        className={`form-control ${passwordError ? "is-invalid" : ""}`}
+                        className={`form-control ${errors.password ? "is-invalid" : ""}`}
                         placeholder="Password"
                         value={form.password}
                         onChange={(e) =>
@@ -252,70 +265,65 @@ export default function AddUser({
                       </button>
                     </div>
                     <div className="invalid-feedback d-block">
-                      {passwordError}
+                      {errors.password}
                     </div>
                   </div>
 
-                  {/* ROLE */}
                   <div className="col-md-6">
                     <select
-                      className={`form-select ${roleError ? "is-invalid" : ""}`}
+                      className={`form-select ${errors.role ? "is-invalid" : ""}`}
                       value={form.role}
                       onChange={(e) => handleChange("role", e.target.value)}
                     >
                       <option value="">Select Role</option>
-
                       {roles.map((role) => (
                         <option key={role.id} value={role.id}>
                           {role.name}
                         </option>
                       ))}
                     </select>
-
-                    <div className="invalid-feedback">{roleError}</div>
+                    <div className="invalid-feedback">{errors.role}</div>
                   </div>
 
-                  {/* PHONE */}
                   <div className="col-md-6">
                     <input
-                      className={`form-control ${phoneError ? "is-invalid" : ""}`}
+                      className={`form-control ${errors.phone_number ? "is-invalid" : ""}`}
                       placeholder="Phone Number"
                       value={form.phone_number}
                       onChange={(e) =>
                         handleChange("phone_number", e.target.value)
                       }
                     />
-                    <div className="invalid-feedback">{phoneError}</div>
+                    <div className="invalid-feedback">
+                      {errors.phone_number}
+                    </div>
                   </div>
 
-                  {/* ADDRESS */}
                   <div className="col-md-6">
                     <input
-                      className={`form-control ${addressError ? "is-invalid" : ""}`}
+                      className={`form-control ${errors.address ? "is-invalid" : ""}`}
                       placeholder="Address"
                       value={form.address}
                       onChange={(e) => handleChange("address", e.target.value)}
                     />
-                    <div className="invalid-feedback">{addressError}</div>
+                    <div className="invalid-feedback">{errors.address}</div>
                   </div>
 
-                  {/* SSS NUMBER */}
                   <div className="col-md-6">
                     <input
-                      className={`form-control ${sssNumberError ? "is-invalid" : ""}`}
+                      className={`form-control ${errors.sss_number ? "is-invalid" : ""}`}
                       placeholder="SSS Number"
                       value={form.sss_number}
                       onChange={(e) =>
                         handleChange("sss_number", e.target.value)
                       }
                     />
-                    <div className="invalid-feedback">{sssNumberError}</div>
+                    <div className="invalid-feedback">{errors.sss_number}</div>
                   </div>
 
-                  {/* PHILHEALTH NUMBER */}
                   <div className="col-md-6">
                     <input
-                      className={`form-control ${philhealthNumberError ? "is-invalid" : ""}`}
+                      className={`form-control ${errors.philhealth_number ? "is-invalid" : ""}`}
                       placeholder="PhilHealth Number"
                       value={form.philhealth_number}
                       onChange={(e) =>
@@ -323,87 +331,84 @@ export default function AddUser({
                       }
                     />
                     <div className="invalid-feedback">
-                      {philhealthNumberError}
+                      {errors.philhealth_number}
                     </div>
                   </div>
 
-                  {/* PAGIBIG NUMBER */}
                   <div className="col-md-6">
                     <input
-                      className={`form-control ${pagibigNumberError ? "is-invalid" : ""}`}
+                      className={`form-control ${errors.pagibig_number ? "is-invalid" : ""}`}
                       placeholder="PagIbig Number"
                       value={form.pagibig_number}
                       onChange={(e) =>
                         handleChange("pagibig_number", e.target.value)
                       }
                     />
-                    <div className="invalid-feedback">{pagibigNumberError}</div>
+                    <div className="invalid-feedback">
+                      {errors.pagibig_number}
+                    </div>
                   </div>
 
                   <label className="form-label fw-bold">Rate</label>
-                  {/* HOURLY RATE */}
+
                   <div className="col-md-6">
                     <input
                       type="number"
-                      className={`form-control ${hourlyRateError ? "is-invalid" : ""}`}
+                      className={`form-control ${errors.hourly_rate ? "is-invalid" : ""}`}
                       placeholder="Hourly Rate"
                       value={form.hourly_rate}
                       onChange={(e) =>
                         handleChange("hourly_rate", e.target.value)
                       }
                     />
-                    <div className="invalid-feedback">{hourlyRateError}</div>
+                    <div className="invalid-feedback">{errors.hourly_rate}</div>
                   </div>
 
-                  {/* DAILY RATE */}
                   <div className="col-md-6">
                     <input
                       type="number"
-                      className={`form-control ${dailyRateError ? "is-invalid" : ""}`}
+                      className={`form-control ${errors.daily_rate ? "is-invalid" : ""}`}
                       placeholder="Daily Rate"
                       value={form.daily_rate}
                       onChange={(e) =>
                         handleChange("daily_rate", e.target.value)
                       }
                     />
-                    <div className="invalid-feedback">{dailyRateError}</div>
+                    <div className="invalid-feedback">{errors.daily_rate}</div>
                   </div>
 
                   <label className="form-label fw-bold">Classification</label>
-                  {/* EMPLOYEE */}
+
                   <div className="col-md-6">
                     <select
-                      className={`form-select ${isEmployeeError ? "is-invalid" : ""}`}
+                      className={`form-select ${errors.is_employee ? "is-invalid" : ""}`}
                       value={form.is_employee}
-                      onChange={(e) => {
-                        handleChange("is_employee", e.target.value);
-                        setIsEmployeeError(null);
-                      }}
+                      onChange={(e) =>
+                        handleChange("is_employee", e.target.value)
+                      }
                     >
                       <option value="">Select Employee Status</option>
                       <option value="true">Employee</option>
                       <option value="false">Not Employee</option>
                     </select>
-
-                    <div className="invalid-feedback">{isEmployeeError}</div>
+                    <div className="invalid-feedback">{errors.is_employee}</div>
                   </div>
 
-                  {/* LIVE SELLER */}
                   <div className="col-md-6">
                     <select
-                      className={`form-select ${isLiveSellerError ? "is-invalid" : ""}`}
+                      className={`form-select ${errors.is_live_seller ? "is-invalid" : ""}`}
                       value={form.is_live_seller}
-                      onChange={(e) => {
-                        handleChange("is_live_seller", e.target.value);
-                        setIsLiveSellerError(null);
-                      }}
+                      onChange={(e) =>
+                        handleChange("is_live_seller", e.target.value)
+                      }
                     >
                       <option value="">Select Live Seller Status</option>
                       <option value="true">Live Seller</option>
                       <option value="false">Not Live Seller</option>
                     </select>
-
-                    <div className="invalid-feedback">{isLiveSellerError}</div>
+                    <div className="invalid-feedback">
+                      {errors.is_live_seller}
+                    </div>
                   </div>
                 </div>
               </div>
