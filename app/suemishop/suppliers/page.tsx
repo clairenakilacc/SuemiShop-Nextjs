@@ -3,219 +3,141 @@
 import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
+import type { Supplier } from "@/app/types/supplier";
 
-import SearchBar from "../../../components/SearchBar";
-import ConfirmDelete from "../../../components/ConfirmDelete";
-import { DataTable, Column } from "../../../components/DataTable";
-import BulkEdit from "../../../components/BulkEdit";
-import DateRangePicker from "../../../components/DateRangePicker";
-import AddButton from "../../../components/AddButton";
-import ToggleColumns from "../../../components/ToggleColumns";
-import ImportButton from "../../../components/ImportButton";
-import ExportButton from "../../../components/ExportButton";
+import AddSupplier from "../../components/suppliers/AddSupplier";
+import ExportButton from "../../components/ExportButton";
+import DeleteSelected from "../../components/DeleteSelected";
+import SearchBar from "../../components/SearchBar";
+import SupplierTable from "../../components/suppliers/SupplierTable";
 
-interface Supplier {
-  id?: string;
-  created_at?: string;
-  name?: string;
-  phone_number?: string;
-}
-
-export default function SuppliersPage() {
+export default function SupplierListPage() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [selectedSuppliers, setSelectedSuppliers] = useState<string[]>([]);
+  const [selectedSuppliers, setSelectedSuppliers] = useState<number[]>([]); // ✅ FIXED
   const [searchTerm, setSearchTerm] = useState("");
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [dateRange, setDateRange] = useState<{
-    startDate: string | null;
-    endDate: string | null;
-  }>({ startDate: null, endDate: null });
 
-  // Fetch suppliers
-  useEffect(() => {
-    fetchSuppliers();
-  }, []);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
+  const [totalCount, setTotalCount] = useState(0);
 
-  const fetchSuppliers = async () => {
-    const { data, error } = await supabase
+  const fetchSuppliers = async (resetPage = false) => {
+    const currentPage = resetPage ? 1 : page;
+
+    const from = (currentPage - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    let query = supabase
       .from("suppliers")
-      .select("*")
-      .order("created_at", { ascending: false });
+      .select("*", { count: "exact" })
+      .order("created_at", { ascending: false })
+      .range(from, to);
 
-    if (error) return toast.error(error.message);
-    setSuppliers(data || []);
-  };
-
-  // Selection
-  const toggleSelectSupplier = (id: string) =>
-    setSelectedSuppliers((prev) =>
-      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
-    );
-  const toggleSelectAll = (checked: boolean) =>
-    setSelectedSuppliers(checked ? suppliers.map((s) => s.id!) : []);
-
-  // Filtering
-  const filteredSuppliers = suppliers.filter((s) => {
-    const term = searchTerm.toLowerCase();
-    const matchesSearch = [s.name, s.phone_number].some((val) =>
-      val?.toLowerCase().includes(term)
-    );
-
-    let matchesDateRange = true;
-    if (dateRange.startDate && dateRange.endDate && s.created_at) {
-      const created = new Date(s.created_at);
-      const start = new Date(dateRange.startDate);
-      const end = new Date(dateRange.endDate);
-      start.setHours(0, 0, 0, 0);
-      end.setHours(23, 59, 59, 999);
-      matchesDateRange = created >= start && created <= end;
+    if (searchTerm.trim()) {
+      query = query.or(
+        `name.ilike.%${searchTerm}%,contact_number.ilike.%${searchTerm}%`,
+      );
     }
 
-    return matchesSearch && matchesDateRange;
-  });
+    const { data, error, count } = await query;
 
-  // Columns
-  const columns: Column<Supplier>[] = [
-    {
-      header: "Created At",
-      accessor: (row) =>
-        row.created_at ? new Date(row.created_at).toLocaleDateString() : "",
-    },
-    { header: "Name", accessor: "name" },
-    { header: "Contact Number", accessor: "phone_number" },
-    {
-      header: "Action",
-      accessor: (row) => (
-        <ConfirmDelete
-          confirmMessage={`Delete supplier ${row.name}?`}
-          onConfirm={async () => {
-            const { error } = await supabase
-              .from("suppliers")
-              .delete()
-              .eq("id", row.id!);
-            if (error) throw error;
-            fetchSuppliers();
-          }}
-        >
-          Delete
-        </ConfirmDelete>
-      ),
-      center: true,
-    },
-  ];
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
 
-  const [tableColumns, setTableColumns] = useState<Column<Supplier>[]>(columns);
+    setSuppliers(data || []);
+    setTotalCount(count || 0);
+  };
+
+  useEffect(() => {
+    fetchSuppliers();
+  }, [page, pageSize, searchTerm]);
+
+  /* =========================
+     SELECTION FIXED (number)
+  ========================= */
+  const toggleSelectSupplier = (id: number) => {
+    setSelectedSuppliers((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
+  const toggleSelectAll = (checked: boolean) => {
+    setSelectedSuppliers(checked ? suppliers.map((s) => s.id) : []);
+  };
 
   return (
     <div className="container my-5">
       <Toaster />
-      <h3 className="mb-4">Suppliers Management</h3>
 
-      {/* Toolbar */}
-      <div className="mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
-        <div className="d-flex flex-wrap align-items-center gap-2">
-          <AddButton
-            table="suppliers"
-            onSuccess={fetchSuppliers}
-            fields={[
-              { key: "name", label: "Supplier Name", type: "text" },
-              {
-                key: "phone_number",
-                label: "Contact Number",
-                type: "number",
-                placeholder: "Must be 11 digits:09918895977",
-              },
-            ]}
-          />
-          <BulkEdit
-            table="suppliers"
-            selectedIds={selectedSuppliers}
-            onSuccess={fetchSuppliers}
-            fields={[
-              { key: "name", label: "Supplier Name", type: "text" },
-              {
-                key: "phone_number",
-                label: "Phone Number",
-                type: "number",
-                placeholder: "Must be 11 digits:09918895977",
-              },
-            ]}
-          />
-          <ImportButton
-            table="suppliers"
-            headersMap={{
-              Name: "name",
-              "Phone Number": "phone_number",
-              "Created At": "created_at",
-            }}
-            onSuccess={fetchSuppliers}
-          />
+      <h3 className="mb-4">Supplier Management</h3>
+
+      {/* TOOLBAR */}
+      <div className="mb-3 d-flex justify-content-between flex-wrap gap-2">
+        <div className="d-flex gap-2 flex-wrap">
+          <AddSupplier onSuccess={() => fetchSuppliers(true)} />
+
           <ExportButton
-            data={filteredSuppliers}
+            data={suppliers}
             headersMap={{
-              "Created At": (row) => row.created_at || "",
+              "Created At": (row: Supplier) => {
+                if (!row.created_at) return "";
+                const d = new Date(row.created_at);
+                return `${(d.getMonth() + 1).toString().padStart(2, "0")}-${d
+                  .getDate()
+                  .toString()
+                  .padStart(2, "0")}-${d.getFullYear().toString().slice(-2)}`;
+              },
               Name: "name",
-              "Phone Number": "phone_number",
+              "Contact Number": "contact_number",
             }}
             filename="suppliers.csv"
           />
-          <ConfirmDelete
-            confirmMessage="Delete selected suppliers?"
+
+          <DeleteSelected
+            selectedCount={selectedSuppliers.length}
+            confirmMessage={
+              selectedSuppliers.length === 0
+                ? "Select record first"
+                : "Delete selected suppliers?"
+            }
             onConfirm={async () => {
-              if (!selectedSuppliers.length)
-                throw new Error("No suppliers selected");
+              if (selectedSuppliers.length === 0) {
+                throw new Error("Select record first");
+              }
+
               const { error } = await supabase
                 .from("suppliers")
                 .delete()
-                .in("id", selectedSuppliers);
-              if (error) throw error;
+                .in("id", selectedSuppliers); // ✅ works with number[]
+
+              if (error) throw new Error(error.message);
+
               setSelectedSuppliers([]);
               fetchSuppliers();
             }}
-          >
-            Delete Selected
-          </ConfirmDelete>
+          />
         </div>
 
-        {/* Search + Calendar */}
-        <div className="d-flex align-items-center gap-2">
-          <SearchBar
-            placeholder="Search suppliers..."
-            value={searchTerm}
-            onChange={setSearchTerm}
-            options={suppliers.map((s) => s.name || "")}
-          />
-          <button
-            onClick={() => setShowDatePicker(!showDatePicker)}
-            className="p-2 bg-light border rounded-3 d-flex align-items-center justify-content-center shadow-sm"
-            style={{ borderRadius: "12px", width: "42px", height: "42px" }}
-            title="Filter by created date"
-          >
-            <i className="bi bi-calendar3 fs-5 text-secondary"></i>
-          </button>
-          <ToggleColumns columns={columns} onChange={setTableColumns} />
-        </div>
+        <SearchBar
+          placeholder="Search suppliers..."
+          value={searchTerm}
+          onChange={setSearchTerm}
+          options={suppliers.map((s) => s.name || "")} // ✅ null safe
+        />
       </div>
 
-      {showDatePicker && (
-        <div className="bg-white p-3 shadow-md rounded-4 mb-3 w-fit">
-          <DateRangePicker onChange={setDateRange} />
-        </div>
-      )}
-
-      <DataTable<Supplier>
-        data={filteredSuppliers}
-        columns={tableColumns}
-        selectable
+      <SupplierTable
+        data={suppliers}
         selectedIds={selectedSuppliers}
         onToggleSelect={toggleSelectSupplier}
         onToggleSelectAll={toggleSelectAll}
-        rowKey="id"
-        page={1}
-        pageSize={50}
-        totalCount={filteredSuppliers.length}
-        onPageChange={() => {}}
-        onPageSizeChange={() => {}}
+        page={page}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+        onRefresh={() => fetchSuppliers(true)} // ✅ matches expected type
       />
     </div>
   );
