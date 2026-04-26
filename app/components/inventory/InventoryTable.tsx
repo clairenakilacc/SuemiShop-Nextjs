@@ -1,60 +1,23 @@
 "use client";
 
-import React, { useState } from "react";
-import { supabase } from "@/lib/supabase";
-
-import ViewItem from "../../components/items/ViewItem";
-import EditItem from "../../components/items/EditItem";
-import DeleteItem from "../../components/items/DeleteItem";
-
-/* =========================
-   Inventory Type
-========================= */
-export interface Inventory {
-  id: number;
-
-  created_at: string;
-  updated_at: string;
-
-  date_arrived?: string | null;
-
-  box_number?: string | null;
-  supplier?: number | null;
-  category?: number | null;
-
-  quantity: number;
-  price: number;
-  total: number;
-
-  quantity_left: number;
-  total_left: number;
-
-  status: string;
-}
+import React from "react";
+import type { Inventory } from "@/app/types/inventory";
 
 interface Props {
   data: Inventory[];
-
   selectedIds: number[];
+
   onToggleSelect: (id: number) => void;
   onToggleSelectAll: (checked: boolean) => void;
-  loading: boolean;
 
   page: number;
   pageSize: number;
   totalCount: number;
+
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
-
-  categories: { id: number; description: string }[];
-
-  onRefresh: (page?: number) => void;
-  selectable?: boolean;
 }
 
-/* =========================
-   Component
-========================= */
 export default function InventoryTable({
   data,
   selectedIds,
@@ -65,16 +28,12 @@ export default function InventoryTable({
   totalCount,
   onPageChange,
   onPageSizeChange,
-  onRefresh,
-  categories = [],
 }: Props) {
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
-  const getCategoryName = (id?: number | null) =>
-    categories.find((c) => c.id === id)?.description || "-";
-
   return (
     <div>
+      {/* TABLE */}
       <div className="table-responsive" style={{ maxHeight: "70vh" }}>
         <table className="table table-bordered table-striped text-capitalize">
           <thead className="table-light sticky-top">
@@ -89,29 +48,27 @@ export default function InventoryTable({
                 />
               </th>
 
-              <th>Date Arrived</th>
-              <th>Box #</th>
-              <th>Category</th>
+              <th>Box Number</th>
+              <th>Supplier ID</th>
+              <th>Category ID</th>
               <th>Quantity</th>
               <th>Price</th>
               <th>Total</th>
-              <th>Qty Left</th>
+              <th>Quantity Left</th>
               <th>Total Left</th>
-              <th>Status</th>
             </tr>
           </thead>
 
           <tbody>
             {data.length === 0 ? (
               <tr>
-                <td colSpan={10} className="text-center py-4 text-muted">
-                  No inventory found.
+                <td colSpan={9} className="text-center py-4 text-muted">
+                  No inventories found.
                 </td>
               </tr>
             ) : (
               data.map((row) => (
                 <tr key={row.id}>
-                  {/* SELECT */}
                   <td className="text-center">
                     <input
                       type="checkbox"
@@ -120,23 +77,16 @@ export default function InventoryTable({
                     />
                   </td>
 
-                  <td>
-                    {row.date_arrived
-                      ? new Date(row.date_arrived).toLocaleDateString("en-CA")
-                      : "-"}
-                  </td>
-
-                  <td>{row.box_number ?? "-"}</td>
-                  <td>{getCategoryName(row.category)}</td>
+                  <td>{row.box_number || "-"}</td>
+                  <td>{row.supplier_id ?? "-"}</td>
+                  <td>{row.category_id ?? "-"}</td>
 
                   <td>{row.quantity}</td>
-                  <td>{row.price}</td>
-                  <td>{row.total}</td>
+                  <td>{Number(row.price).toFixed(2)}</td>
+                  <td>{Number(row.total).toFixed(2)}</td>
 
                   <td>{row.quantity_left}</td>
                   <td>{row.total_left}</td>
-
-                  <td>{row.status}</td>
                 </tr>
               ))
             )}
