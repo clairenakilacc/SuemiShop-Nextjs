@@ -16,7 +16,10 @@ export default function DeleteUser({ show, user, onClose, onSuccess }: Props) {
   const handleDelete = async () => {
     const { error } = await supabase.from("users").delete().eq("id", user.id);
 
-    if (error) return alert(error.message);
+    if (error) {
+      alert(error.message);
+      return;
+    }
 
     onSuccess();
     onClose();
@@ -28,20 +31,28 @@ export default function DeleteUser({ show, user, onClose, onSuccess }: Props) {
       style={{ background: "rgba(0,0,0,0.5)" }}
     >
       <div className="modal-dialog modal-dialog-centered">
-        <div className="modal-content">
-          <div className="modal-header">
-            <h5>Delete User</h5>
+        <div className="modal-content rounded-3 overflow-hidden">
+          {/* HEADER */}
+          <div className="modal-header bg-light">
+            <h5 className="modal-title">Delete User</h5>
             <button className="btn-close" onClick={onClose} />
           </div>
 
+          {/* BODY */}
           <div className="modal-body">
-            Are you sure you want to delete <b>{user.name}</b>?
+            <p>Are you sure you want to delete:</p>
+
+            <div className="alert alert-warning mb-0">
+              <strong>{user.name}</strong>
+            </div>
           </div>
 
+          {/* FOOTER */}
           <div className="modal-footer">
             <button className="btn btn-secondary" onClick={onClose}>
               Cancel
             </button>
+
             <button className="btn btn-danger" onClick={handleDelete}>
               Delete
             </button>
