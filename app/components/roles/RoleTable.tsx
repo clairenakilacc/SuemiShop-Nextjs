@@ -1,7 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import type { Role } from "@/app/types/role";
+
+import ViewRole from "../../components/roles/ViewRole";
+import EditRole from "../../components/roles/EditRole";
+import DeleteRole from "../../components/roles/DeleteRole";
 
 /* =========================
    Props
@@ -36,7 +40,14 @@ export default function RoleTable({
   totalCount,
   onPageChange,
   onPageSizeChange,
+  onRefresh,
 }: Props) {
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+
+  const [viewOpen, setViewOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   return (
@@ -57,14 +68,15 @@ export default function RoleTable({
               </th>
 
               <th>Role Name</th>
-              <th>Created At</th>
+              {/* <th>Created At</th> */}
+              <th className="text-center">Action</th>
             </tr>
           </thead>
 
           <tbody>
             {data.length === 0 ? (
               <tr>
-                <td colSpan={3} className="text-center py-4 text-muted">
+                <td colSpan={4} className="text-center py-4 text-muted">
                   No roles found.
                 </td>
               </tr>
@@ -80,11 +92,49 @@ export default function RoleTable({
                   </td>
 
                   <td>{row.name}</td>
-
+                  {/* 
                   <td>
                     {row.created_at
                       ? new Date(row.created_at).toLocaleDateString("en-CA")
                       : "-"}
+                  </td> */}
+
+                  {/* ACTIONS */}
+                  <td className="text-center">
+                    <div className="d-flex justify-content-center gap-2">
+                      {/* VIEW */}
+                      <button
+                        className="action-btn view"
+                        onClick={() => {
+                          setSelectedRole(row);
+                          setViewOpen(true);
+                        }}
+                      >
+                        👁
+                      </button>
+
+                      {/* EDIT */}
+                      <button
+                        className="action-btn edit"
+                        onClick={() => {
+                          setSelectedRole(row);
+                          setEditOpen(true);
+                        }}
+                      >
+                        ✏️
+                      </button>
+
+                      {/* DELETE */}
+                      <button
+                        className="action-btn delete"
+                        onClick={() => {
+                          setSelectedRole(row);
+                          setDeleteOpen(true);
+                        }}
+                      >
+                        🗑
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -126,6 +176,27 @@ export default function RoleTable({
             ))}
         </div>
       </div>
+
+      {/* MODALS */}
+      <ViewRole
+        show={viewOpen}
+        role={selectedRole}
+        onClose={() => setViewOpen(false)}
+      />
+
+      <EditRole
+        show={editOpen}
+        role={selectedRole}
+        onClose={() => setEditOpen(false)}
+        onSuccess={onRefresh}
+      />
+
+      <DeleteRole
+        show={deleteOpen}
+        role={selectedRole}
+        onClose={() => setDeleteOpen(false)}
+        onSuccess={onRefresh}
+      />
     </div>
   );
 }
