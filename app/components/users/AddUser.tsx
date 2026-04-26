@@ -422,7 +422,7 @@ export default function AddUser({
                 </button>
 
                 <button className="btn btn-add" onClick={handleSubmit}>
-                  {loading ? "Saving..." : "Save"}
+                  {loading ? "Saving..." : "Add"}
                 </button>
               </div>
             </div>
