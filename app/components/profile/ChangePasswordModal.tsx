@@ -122,16 +122,16 @@ export default function ChangePasswordModal({
       <div className="d-flex justify-content-end gap-2 mt-4 pt-3">
         <button
           onClick={onClose}
-          className="btn btn-light px-4 small"
+          className="btn  px-4 small"
           disabled={loading}
+          style={{ backgroundColor: "lightgrey", borderRadius: "6px" }}
         >
           Cancel
         </button>
         <button
           onClick={handleUpdate}
           disabled={loading}
-          className="btn px-4 small"
-          style={{ backgroundColor: "#FFB6C1" }}
+          className="btn btn-edit px-4 small"
         >
           {loading ? "Processing..." : "Update Password"}
         </button>

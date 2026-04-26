@@ -59,9 +59,9 @@ export default function ProfileCard({ user }: ProfileCardProps) {
         </p>
 
         {/* ROLE (FIXED) */}
-        <p className="text-gray-500 text-sm sm:text-base truncate mt-2 px-2">
+        {/* <p className="text-gray-500 text-sm sm:text-base truncate mt-2 px-2">
           Role: {roleName || "No role assigned"}
-        </p>
+        </p> */}
       </div>
     </div>
   );

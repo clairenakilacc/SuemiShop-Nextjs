@@ -176,6 +176,7 @@ export default function EditProfileModal({
               name="name"
               className={`form-control ${errors.name ? "is-invalid" : ""}`}
               value={formData.name}
+              readOnly
               onChange={handleChange}
             />
             {errors.name && (
@@ -189,6 +190,7 @@ export default function EditProfileModal({
             <input
               type="email"
               name="email"
+              readOnly
               className={`form-control ${errors.email ? "is-invalid" : ""}`}
               value={formData.email}
               onChange={handleChange}
@@ -220,10 +222,9 @@ export default function EditProfileModal({
           {/* Address */}
           <div className="col-md-6">
             <label className="form-label fw-medium text-dark">Address</label>
-            <textarea
+            <input
               name="address"
               className={`form-control ${errors.address ? "is-invalid" : ""}`}
-              rows={4}
               value={formData.address}
               onChange={handleChange}
             />
@@ -245,14 +246,9 @@ export default function EditProfileModal({
           <button
             onClick={handleSave}
             disabled={loading}
-            className="btn text-black px-4"
-            style={{
-              backgroundColor: "#FFB6C1",
-              borderRadius: "6px",
-              fontWeight: "500",
-            }}
+            className="btn btn-edit px-4"
           >
-            {loading ? "Saving..." : "Save Changes"}
+            {loading ? "Saving..." : "Edit"}
           </button>
         </div>
       </Modal>
