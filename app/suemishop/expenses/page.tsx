@@ -172,6 +172,7 @@ export default function ExpensesListPage() {
         totalCount={totalCount}
         onPageChange={setPage}
         onPageSizeChange={setPageSize}
+        onRefresh={fetchExpenses}
       />
     </div>
   );

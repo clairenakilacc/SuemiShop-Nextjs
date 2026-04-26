@@ -108,7 +108,9 @@ export default function AddExpense({
               {/* BODY */}
               <div className="modal-body">
                 {/* LABEL */}
-                <label className="form-label fw-bold mb-2">Expense Info</label>
+                <label className="form-label fw-bold mb-2">
+                  Expense Information
+                </label>
 
                 {/* DESCRIPTION */}
                 <input

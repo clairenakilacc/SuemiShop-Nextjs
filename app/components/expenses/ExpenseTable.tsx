@@ -1,7 +1,11 @@
 "use client";
 
-import React from "react";
-import type { Expense } from "../../../app/types/expense";
+import React, { useState } from "react";
+import type { Expense } from "@/app/types/expense";
+
+import ViewExpense from "@/app/components/expenses/ViewExpense";
+import EditExpense from "@/app/components/expenses/EditExpense";
+import DeleteExpense from "@/app/components/expenses/DeleteExpense";
 
 interface Props {
   data: Expense[];
@@ -14,6 +18,8 @@ interface Props {
   totalCount: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
+
+  onRefresh: () => void; // 🔥 REQUIRED (not optional)
 }
 
 export default function ExpenseTable({
@@ -26,12 +32,18 @@ export default function ExpenseTable({
   totalCount,
   onPageChange,
   onPageSizeChange,
+  onRefresh,
 }: Props) {
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+
+  const [viewOpen, setViewOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   return (
     <div>
-      {/* TABLE */}
       <div className="table-responsive" style={{ maxHeight: "70vh" }}>
         <table className="table table-bordered table-striped text-capitalize">
           <thead className="table-light sticky-top">
@@ -48,7 +60,7 @@ export default function ExpenseTable({
 
               <th>Description</th>
               <th>Amount</th>
-              {/* <th>Created At</th> */}
+              <th className="text-center">Action</th>
             </tr>
           </thead>
 
@@ -71,14 +83,41 @@ export default function ExpenseTable({
                   </td>
 
                   <td>{row.description}</td>
+                  <td>{Number(row.amount).toFixed(2)}</td>
 
-                  <td>{row.amount ? Number(row.amount).toFixed(2) : "0.00"}</td>
+                  <td className="text-center">
+                    <div className="d-flex justify-content-center gap-2">
+                      <button
+                        className="action-btn view"
+                        onClick={() => {
+                          setSelectedExpense(row);
+                          setViewOpen(true);
+                        }}
+                      >
+                        👁
+                      </button>
 
-                  {/* <td>
-                    {row.created_at
-                      ? new Date(row.created_at).toLocaleDateString()
-                      : ""}
-                  </td> */}
+                      <button
+                        className="action-btn edit"
+                        onClick={() => {
+                          setSelectedExpense(row);
+                          setEditOpen(true);
+                        }}
+                      >
+                        ✏️
+                      </button>
+
+                      <button
+                        className="action-btn delete"
+                        onClick={() => {
+                          setSelectedExpense(row);
+                          setDeleteOpen(true);
+                        }}
+                      >
+                        🗑
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))
             )}
@@ -87,21 +126,18 @@ export default function ExpenseTable({
       </div>
 
       {/* PAGINATION */}
-      <div className="d-flex justify-content-between mt-3 flex-wrap gap-2">
-        <div>
-          Show{" "}
-          <select
-            className="form-select d-inline-block w-auto"
-            value={pageSize}
-            onChange={(e) => onPageSizeChange(Number(e.target.value))}
-          >
-            {[10, 20, 30].map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
-        </div>
+      <div className="d-flex justify-content-between mt-3">
+        <select
+          className="form-select w-auto"
+          value={pageSize}
+          onChange={(e) => onPageSizeChange(Number(e.target.value))}
+        >
+          {[10, 20, 30].map((n) => (
+            <option key={n} value={n}>
+              {n}
+            </option>
+          ))}
+        </select>
 
         <div>
           {Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -119,6 +155,27 @@ export default function ExpenseTable({
             ))}
         </div>
       </div>
+
+      {/* MODALS */}
+      <ViewExpense
+        show={viewOpen}
+        expense={selectedExpense}
+        onClose={() => setViewOpen(false)}
+      />
+
+      <EditExpense
+        show={editOpen}
+        expense={selectedExpense}
+        onClose={() => setEditOpen(false)}
+        onSuccess={onRefresh} // 🔥 IMPORTANT
+      />
+
+      <DeleteExpense
+        show={deleteOpen}
+        expense={selectedExpense}
+        onClose={() => setDeleteOpen(false)}
+        onSuccess={onRefresh} // 🔥 IMPORTANT
+      />
     </div>
   );
 }

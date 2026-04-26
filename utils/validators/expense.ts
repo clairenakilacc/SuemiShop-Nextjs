@@ -4,7 +4,7 @@ export const validateDescription = async (
 ): Promise<string | null> => {
   const trimmed = value.trim();
 
-  if (!trimmed) return "Brand is required";
+  if (!trimmed) return "Description is required";
 
   if (trimmed.length > 20) return "Must be 20 characters or less";
 
@@ -47,7 +47,7 @@ export const validateDescription = async (
 export const validateAmount = (value: string): string | null => {
   const trimmed = value.trim();
 
-  if (!trimmed) return "Capital is required";
+  if (!trimmed) return "Amount is required";
 
   if (/,/.test(trimmed)) return "No commas allowed";
 
