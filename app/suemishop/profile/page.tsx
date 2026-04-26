@@ -40,11 +40,8 @@ export default function ProfilePage() {
     loadProfile();
   }, []);
 
-  if (userData === null) {
-    return (
-      <div className="text-center mt-10 text-gray-500">Loading profile...</div>
-    );
-  }
+  // ❌ NO LOADING UI
+  if (!userData) return null;
 
   if (userData === false) {
     return (

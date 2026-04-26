@@ -26,7 +26,7 @@ interface Props {
 
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
-
+  onSaveUser: (updatedUser: any) => void;
   onRefresh: () => void;
 }
 
@@ -44,6 +44,7 @@ export default function UserTable({
   totalCount,
   onPageChange,
   onPageSizeChange,
+  onSaveUser,
   onRefresh,
 }: Props) {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -191,6 +192,8 @@ export default function UserTable({
         user={selectedUser}
         onClose={() => setEditOpen(false)}
         onSuccess={onRefresh}
+        roles={roles}
+        onSave={onSaveUser}
       />
 
       <DeleteUser

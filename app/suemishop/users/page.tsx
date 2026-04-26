@@ -15,6 +15,35 @@ import SearchBar from "@/app/components/SearchBar";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const handleSaveUser = async (updatedUser: any) => {
+    const { error } = await supabase
+      .from("users")
+      .update({
+        name: updatedUser.name,
+        password: updatedUser.password ?? undefined,
+        role: updatedUser.role,
+        phone_number: updatedUser.phone_number,
+        address: updatedUser.address,
+
+        sss_number: updatedUser.sss_number,
+        philhealth_number: updatedUser.philhealth_number,
+        pagibig_number: updatedUser.pagibig_number,
+
+        hourly_rate: updatedUser.hourly_rate,
+        daily_rate: updatedUser.daily_rate,
+
+        is_employee: updatedUser.is_employee,
+        is_live_seller: updatedUser.is_live_seller,
+      })
+      .eq("id", updatedUser.id);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    // refresh list AFTER saving
+    await fetchUsers();
+  };
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -146,6 +175,7 @@ export default function UsersPage() {
       {/* TABLE */}
       <UserTable
         data={users}
+        onSaveUser={handleSaveUser}
         selectedIds={selectedUsers}
         onToggleSelect={toggleSelectUser}
         onToggleSelectAll={toggleSelectAll}
