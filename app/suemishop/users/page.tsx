@@ -4,21 +4,14 @@ import { useEffect, useState, useCallback } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 
+import type { User } from "@/app/types/user";
+
 import AddUser from "@/app/components/users/AddUser";
+import UserTable from "@/app/components/users/UserTable";
+
 import ExportButton from "@/app/components/ExportButton";
 import DeleteSelected from "@/app/components/DeleteSelected";
 import SearchBar from "@/app/components/SearchBar";
-
-interface User {
-  id: number;
-  created_at: string | null;
-
-  name: string;
-  email: string | null;
-
-  is_employee: boolean | null;
-  is_live_seller: boolean | null;
-}
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -29,9 +22,6 @@ export default function UsersPage() {
   const [pageSize, setPageSize] = useState(50);
   const [totalCount, setTotalCount] = useState(0);
 
-  /* =========================
-     FETCH USERS
-  ========================= */
   const fetchUsers = useCallback(
     async (resetPage = false) => {
       const currentPage = resetPage ? 1 : page;
@@ -58,7 +48,7 @@ export default function UsersPage() {
         return;
       }
 
-      setUsers(data || []);
+      setUsers((data as User[]) || []);
       setTotalCount(count || 0);
     },
     [page, pageSize, searchTerm],
@@ -68,9 +58,6 @@ export default function UsersPage() {
     fetchUsers();
   }, [fetchUsers]);
 
-  /* =========================
-     SELECT LOGIC
-  ========================= */
   const toggleSelectUser = (id: number) => {
     setSelectedUsers((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
@@ -86,9 +73,6 @@ export default function UsersPage() {
     await fetchUsers(resetPage);
   };
 
-  /* =========================
-     UI
-  ========================= */
   return (
     <div className="container my-5">
       <Toaster />
@@ -149,59 +133,13 @@ export default function UsersPage() {
       </div>
 
       {/* TABLE */}
-      <div className="table-responsive">
-        <table className="table table-striped align-middle">
-          <thead>
-            <tr>
-              <th>
-                <input
-                  type="checkbox"
-                  checked={
-                    users.length > 0 && selectedUsers.length === users.length
-                  }
-                  onChange={(e) => toggleSelectAll(e.target.checked)}
-                />
-              </th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Employee</th>
-              <th>Live Seller</th>
-              <th>Created</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {users.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="text-center">
-                  No users found
-                </td>
-              </tr>
-            ) : (
-              users.map((u) => (
-                <tr key={u.id}>
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={selectedUsers.includes(u.id)}
-                      onChange={() => toggleSelectUser(u.id)}
-                    />
-                  </td>
-                  <td>{u.name}</td>
-                  <td>{u.email || "-"}</td>
-                  <td>{u.is_employee ? "Yes" : "No"}</td>
-                  <td>{u.is_live_seller ? "Yes" : "No"}</td>
-                  <td>
-                    {u.created_at
-                      ? new Date(u.created_at).toLocaleDateString()
-                      : "-"}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <UserTable
+        data={users}
+        selectedIds={selectedUsers}
+        onToggleSelect={toggleSelectUser}
+        onToggleSelectAll={toggleSelectAll}
+        onRefresh={() => fetchUsers()}
+      />
 
       {/* PAGINATION */}
       <div className="d-flex justify-content-between mt-3">
