@@ -5,7 +5,10 @@ export interface User {
   name: string;
   password?: string | null;
 
-  role: number | null;
+  role: {
+    id: number;
+    name: string;
+  } | null;
 
   sss_number?: string | null;
   philhealth_number?: string | null;

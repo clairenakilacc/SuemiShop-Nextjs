@@ -180,14 +180,28 @@ export default function UsersPage() {
             data={users}
             filename="users.csv"
             headersMap={{
-              Name: "name",
-              Email: "email",
-              Employee: (row: User) => (row.is_employee ? "Yes" : "No"),
-              "Live Seller": (row: User) => (row.is_live_seller ? "Yes" : "No"),
               "Created At": (row: User) =>
                 row.created_at
                   ? new Date(row.created_at).toLocaleDateString()
                   : "",
+
+              Name: (row: User) => row.name,
+              Email: (row: User) => row.email || "",
+
+              Role: (row: User) => row.role?.name || "",
+
+              "Phone Number": (row: User) => row.phone_number || "",
+              Address: (row: User) => row.address || "",
+
+              "SSS Number": (row: User) => row.sss_number || "",
+              "PhilHealth Number": (row: User) => row.philhealth_number || "",
+              "PagIBIG Number": (row: User) => row.pagibig_number || "",
+
+              "Hourly Rate": (row: User) => row.hourly_rate || "",
+              "Daily Rate": (row: User) => row.daily_rate || "",
+
+              Employee: (row: User) => (row.is_employee ? "Yes" : "No"),
+              "Live Seller": (row: User) => (row.is_live_seller ? "Yes" : "No"),
             }}
           />
 
