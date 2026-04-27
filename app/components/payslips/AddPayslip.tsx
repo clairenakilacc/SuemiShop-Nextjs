@@ -6,6 +6,8 @@ import { supabase } from "@/lib/supabase";
 interface User {
   id: number;
   name: string;
+  daily_rate?: number | null;
+  hourly_rate?: number | null;
 }
 
 interface Props {
@@ -33,14 +35,13 @@ export default function AddPayslip({
     overtime_hours: "",
   });
 
-  // ================= LOAD EMPLOYEES =================
   useEffect(() => {
     if (!show) return;
 
     const loadUsers = async () => {
       const { data } = await supabase
         .from("users")
-        .select("id, name")
+        .select("id, name, daily_rate, hourly_rate")
         .eq("is_employee", true);
 
       setUsers(data || []);
@@ -49,7 +50,6 @@ export default function AddPayslip({
     loadUsers();
   }, [show]);
 
-  // ================= SELECT USERS =================
   const toggleUser = (id: number) => {
     setSelectedUsers((prev) =>
       prev.includes(id) ? prev.filter((u) => u !== id) : [...prev, id],
@@ -59,21 +59,40 @@ export default function AddPayslip({
   const selectAll = () => setSelectedUsers(users.map((u) => u.id));
   const clearAll = () => setSelectedUsers([]);
 
-  // ================= SUBMIT =================
   const handleSubmit = async () => {
     setLoading(true);
 
     try {
-      const inserts = selectedUsers.map((userId) => ({
-        user_id: userId,
-        start_period: form.start_period,
-        end_period: form.end_period,
-        days_worked: Number(form.days_worked || 0),
-        overtime_hours: Number(form.overtime_hours || 0),
-      }));
+      const daysWorked = Number(form.days_worked || 0);
+      const overtimeHours = Number(form.overtime_hours || 0);
+
+      const inserts = selectedUsers.map((userId) => {
+        const user = users.find((u) => u.id === userId);
+
+        const daily = user?.daily_rate || 0;
+        const hourly = user?.hourly_rate || 0;
+
+        const total_daily_pay = daysWorked * daily;
+        const total_overtime_pay = overtimeHours * hourly;
+
+        const gross_pay = total_daily_pay + total_overtime_pay;
+
+        return {
+          user_id: userId,
+          start_period: form.start_period,
+          end_period: form.end_period,
+          days_worked: daysWorked,
+          overtime_hours: overtimeHours,
+
+          total_daily_pay,
+          total_overtime_pay,
+
+          gross_pay,
+          net_pay: gross_pay,
+        };
+      });
 
       const { error } = await supabase.from("payslips").insert(inserts);
-
       if (error) throw error;
 
       setShow(false);
@@ -92,7 +111,6 @@ export default function AddPayslip({
     }
   };
 
-  // ================= UI =================
   return (
     <>
       <button className={className} onClick={() => setShow(true)}>
@@ -104,19 +122,17 @@ export default function AddPayslip({
           className="modal fade show d-block"
           style={{ background: "rgba(0,0,0,0.5)" }}
         >
-          <div className="modal-dialog modal-lg modal-dialog-centered">
-            <div className="modal-content">
-              {/* HEADER */}
-              <div className="modal-header">
-                <h5>Add Payslip</h5>
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content rounded-3 overflow-hidden">
+              <div className="modal-header bg-light">
+                <h5 className="modal-title">Add Payslip</h5>
                 <button className="btn-close" onClick={() => setShow(false)} />
               </div>
 
               <div className="modal-body">
-                {/* STEP 1 */}
                 {step === 1 && (
                   <>
-                    <h6>Payroll Period</h6>
+                    <label className="form-label fw-bold">Payroll Period</label>
 
                     <input
                       type="date"
@@ -138,11 +154,12 @@ export default function AddPayslip({
                   </>
                 )}
 
-                {/* STEP 2 */}
                 {step === 2 && (
                   <>
                     <div className="d-flex justify-content-between mb-2">
-                      <h6>Select Employees</h6>
+                      <label className="form-label fw-bold">
+                        Select Employees
+                      </label>
 
                       <div>
                         <button
@@ -163,10 +180,9 @@ export default function AddPayslip({
                     {users.map((u) => (
                       <div
                         key={u.id}
-                        className="d-flex justify-content-between border p-2 mb-1"
+                        className="d-flex justify-content-between border rounded p-2 mb-2"
                       >
                         <span>{u.name}</span>
-
                         <input
                           type="checkbox"
                           checked={selectedUsers.includes(u.id)}
@@ -177,10 +193,9 @@ export default function AddPayslip({
                   </>
                 )}
 
-                {/* STEP 3 */}
                 {step === 3 && (
                   <>
-                    <h6>Work Summary</h6>
+                    <label className="form-label fw-bold">Work Summary</label>
 
                     <input
                       type="number"
@@ -205,7 +220,6 @@ export default function AddPayslip({
                 )}
               </div>
 
-              {/* FOOTER */}
               <div className="modal-footer">
                 <button
                   className="btn btn-secondary"
@@ -218,14 +232,14 @@ export default function AddPayslip({
 
                 {step < 3 ? (
                   <button
-                    className="btn btn-primary"
+                    className="btn btn-add"
                     onClick={() => setStep(step + 1)}
                   >
                     Next
                   </button>
                 ) : (
                   <button
-                    className="btn btn-success"
+                    className="btn btn-add"
                     onClick={handleSubmit}
                     disabled={loading}
                   >

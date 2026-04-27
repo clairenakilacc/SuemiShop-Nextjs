@@ -48,6 +48,9 @@ export default function ViewPayslip({ show, payslip, onClose }: Props) {
             <button className="btn btn-secondary" onClick={onClose}>
               Close
             </button>
+            <button className="btn btn-add" onClick={onClose}>
+              Print
+            </button>
           </div>
         </div>
       </div>

@@ -60,12 +60,14 @@ export default function PayslipTable({
 
               <th>Period</th>
               <th>Employee</th>
-              <th>Days</th>
-              <th>Overtime</th>
-              <th>Gross Pay</th>
-              <th>Net Pay</th>
 
-              {/* ✅ ACTIONS */}
+              {/* ✅ CORE PAYROLL BREAKDOWN ONLY */}
+              <th>Days Worked</th>
+              <th>Overtime Hours</th>
+
+              <th>Total Daily Pay</th>
+              <th>Total Overtime Pay</th>
+
               <th className="text-center">Actions</th>
             </tr>
           </thead>
@@ -95,20 +97,21 @@ export default function PayslipTable({
                   </td>
 
                   <td>{row.user?.name || "Unknown"}</td>
+
+                  {/* ✅ WORK INPUTS */}
                   <td>{row.days_worked}</td>
                   <td>{row.overtime_hours}</td>
 
-                  <td>₱{Number(row.gross_pay || 0).toLocaleString()}</td>
+                  {/* ✅ COMPUTED VALUES */}
+                  <td>₱{Number(row.total_daily_pay || 0).toLocaleString()}</td>
+
                   <td>
-                    <strong className="text-success">
-                      ₱{Number(row.net_pay || 0).toLocaleString()}
-                    </strong>
+                    ₱{Number(row.total_overtime_pay || 0).toLocaleString()}
                   </td>
 
-                  {/* ✅ ACTION BUTTONS */}
+                  {/* ACTIONS */}
                   <td className="text-center">
                     <div className="d-flex justify-content-center gap-2">
-                      {/* VIEW */}
                       <button
                         className="action-btn view"
                         onClick={() => {
@@ -119,7 +122,6 @@ export default function PayslipTable({
                         👁
                       </button>
 
-                      {/* EDIT */}
                       <button
                         className="action-btn edit"
                         onClick={() => {
@@ -130,7 +132,6 @@ export default function PayslipTable({
                         ✏️
                       </button>
 
-                      {/* DELETE */}
                       <button
                         className="action-btn delete"
                         onClick={() => {
