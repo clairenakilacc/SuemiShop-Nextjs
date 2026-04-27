@@ -1,10 +1,17 @@
 "use client";
 
 import { useEffect } from "react";
+import { Archivo_Black } from "next/font/google";
+
+// ✅ MUST be outside component (Next.js rule)
+const archivoBlack = Archivo_Black({
+  weight: "400",
+  subsets: ["latin"],
+});
 
 export default function PrintPayslipPage() {
   // ======================
-  // STATIC DATA (replace anytime)
+  // STATIC DATA
   // ======================
   const payslip = {
     user: {
@@ -43,10 +50,13 @@ export default function PrintPayslipPage() {
           {/* HEADER */}
           <div className="bg-pink-200 p-2 flex justify-between items-end">
             <div>
-              <h1 className="text-sm md:text-base font-bold text-gray-800">
+              <h5
+                className={`${archivoBlack.className} text-sm md:text-base font-bold text-gray-800 m-0 leading-none`}
+              >
                 Suemi Online Shop
-              </h1>
-              <p className="text-[9px] md:text-xs text-gray-600 leading-tight">
+              </h5>
+
+              <p className="text-[9px] md:text-xs text-gray-600 leading-tight mt-0">
                 BLK 9 L5 Calliandra 2 Phase 1 Greenwoods
                 <br />
                 Dasmariñas Cavite

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import LayoutClient from "./LayoutClient"; //in same folder
 import "./globals.css";
+
+import LayoutClient from "./LayoutClient";
 import Loader from "./components/Loader";
 
 export const metadata: Metadata = {
