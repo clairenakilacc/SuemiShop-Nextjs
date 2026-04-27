@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
-import { Archivo_Black } from "next/font/google";
+import { Inter, Archivo_Black } from "next/font/google";
 
-// ✅ MUST be outside component (Next.js rule)
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
+
 const archivoBlack = Archivo_Black({
   weight: "400",
   subsets: ["latin"],
