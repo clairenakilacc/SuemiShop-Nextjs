@@ -213,6 +213,7 @@ export default function InventoriesPage() {
         totalCount={totalCount}
         onPageChange={setPage}
         onPageSizeChange={setPageSize}
+        onRefresh={fetchInventories}
       />
     </div>
   );

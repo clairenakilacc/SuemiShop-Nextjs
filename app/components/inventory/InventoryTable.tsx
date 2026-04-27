@@ -1,12 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import type { Inventory } from "@/app/types/inventory";
+
+import ViewInventory from "../../components/inventory/ViewInventory";
+import EditInventory from "../../components/inventory/EditInventory";
+import DeleteInventory from "../../components/inventory/DeleteInventory";
 
 interface Props {
   data: Inventory[];
   selectedIds: number[];
-
   onToggleSelect: (id: number) => void;
   onToggleSelectAll: (checked: boolean) => void;
 
@@ -16,6 +19,8 @@ interface Props {
 
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
+
+  onRefresh: () => void;
 }
 
 export default function InventoryTable({
@@ -28,8 +33,14 @@ export default function InventoryTable({
   totalCount,
   onPageChange,
   onPageSizeChange,
+  onRefresh,
 }: Props) {
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  const [selectedRow, setSelectedRow] = useState<Inventory | null>(null);
+  const [viewOpen, setViewOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   return (
     <div>
@@ -38,7 +49,7 @@ export default function InventoryTable({
         <table className="table table-bordered table-striped text-capitalize">
           <thead className="table-light sticky-top">
             <tr>
-              <th className="text-center">
+              <th>
                 <input
                   type="checkbox"
                   checked={
@@ -55,22 +66,23 @@ export default function InventoryTable({
               <th>Quantity</th>
               <th>Price</th>
               <th>Total</th>
-              <th>Quantity Left</th>
+              <th>Qty Left</th>
               <th>Total Left</th>
+              <th className="text-center">Actions</th>
             </tr>
           </thead>
 
           <tbody>
             {data.length === 0 ? (
               <tr>
-                <td colSpan={10} className="text-center py-4 text-muted">
+                <td colSpan={11} className="text-center py-4 text-muted">
                   No inventories found.
                 </td>
               </tr>
             ) : (
               data.map((row) => (
                 <tr key={row.id}>
-                  <td className="text-center">
+                  <td>
                     <input
                       type="checkbox"
                       checked={selectedIds.includes(row.id)}
@@ -87,20 +99,51 @@ export default function InventoryTable({
                   </td>
 
                   <td>{row.box_number || "-"}</td>
-
                   <td>{row.supplier?.name || "-"}</td>
-
                   <td>{row.category?.description || "-"}</td>
-
                   <td>{row.quantity}</td>
-
                   <td>{Number(row.price).toFixed(2)}</td>
-
                   <td>{Number(row.total).toFixed(2)}</td>
-
                   <td>{row.quantity_left}</td>
-
                   <td>{row.total_left}</td>
+
+                  {/* ACTIONS */}
+                  <td className="text-center">
+                    <div className="d-flex justify-content-center gap-2">
+                      {/* VIEW */}
+                      <button
+                        className="action-btn view"
+                        onClick={() => {
+                          setSelectedRow(row);
+                          setViewOpen(true);
+                        }}
+                      >
+                        👁
+                      </button>
+
+                      {/* EDIT */}
+                      <button
+                        className="action-btn edit"
+                        onClick={() => {
+                          setSelectedRow(row);
+                          setEditOpen(true);
+                        }}
+                      >
+                        ✏️
+                      </button>
+
+                      {/* DELETE */}
+                      <button
+                        className="action-btn delete"
+                        onClick={() => {
+                          setSelectedRow(row);
+                          setDeleteOpen(true);
+                        }}
+                      >
+                        🗑
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))
             )}
@@ -141,6 +184,27 @@ export default function InventoryTable({
             ))}
         </div>
       </div>
+
+      {/* MODALS */}
+      <ViewInventory
+        show={viewOpen}
+        inventory={selectedRow}
+        onClose={() => setViewOpen(false)}
+      />
+
+      <EditInventory
+        show={editOpen}
+        inventory={selectedRow}
+        onClose={() => setEditOpen(false)}
+        onSuccess={onRefresh}
+      />
+
+      <DeleteInventory
+        show={deleteOpen}
+        inventory={selectedRow}
+        onClose={() => setDeleteOpen(false)}
+        onSuccess={onRefresh}
+      />
     </div>
   );
 }

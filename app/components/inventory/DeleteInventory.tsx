@@ -1,17 +1,25 @@
 "use client";
 
 import { supabase } from "@/lib/supabase";
+import type { Inventory } from "@/app/types/inventory";
+
+interface Props {
+  show: boolean;
+  inventory: Inventory | null;
+  onClose: () => void;
+  onSuccess: () => void;
+}
 
 export default function DeleteInventory({
   show,
-  item,
+  inventory,
   onClose,
   onSuccess,
-}: any) {
-  if (!show || !item) return null;
+}: Props) {
+  if (!show || !inventory) return null;
 
   const handleDelete = async () => {
-    await supabase.from("inventories").delete().eq("id", item.id);
+    await supabase.from("inventories").delete().eq("id", inventory.id);
     onSuccess();
     onClose();
   };
@@ -22,20 +30,21 @@ export default function DeleteInventory({
       style={{ background: "rgba(0,0,0,0.5)" }}
     >
       <div className="modal-dialog modal-dialog-centered">
-        <div className="modal-content rounded-3">
-          <div className="modal-header bg-light">
+        <div className="modal-content">
+          <div className="modal-header">
             <h5>Delete Inventory</h5>
             <button className="btn-close" onClick={onClose} />
           </div>
 
           <div className="modal-body">
-            Delete <b>{item.box_number}</b>?
+            Are you sure you want to delete <b>{inventory.box_number}</b>?
           </div>
 
           <div className="modal-footer">
             <button className="btn btn-secondary" onClick={onClose}>
               Cancel
             </button>
+
             <button className="btn btn-danger" onClick={handleDelete}>
               Delete
             </button>
