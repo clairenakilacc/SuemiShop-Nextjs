@@ -18,7 +18,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="d-flex flex-column min-vh-100">
-        <Loader />
+        {/* <Loader /> */}
         <LayoutClient>{children}</LayoutClient>
       </body>
     </html>
