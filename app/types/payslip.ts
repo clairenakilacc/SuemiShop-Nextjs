@@ -4,7 +4,7 @@ export interface PayslipUser {
 }
 
 export interface Payslip {
-  id: string;
+  id: number;
   created_at: string | null;
   updated_at: string | null;
 

@@ -13,9 +13,11 @@ import PayslipTable from "../../components/payslips/PayslipTable";
 
 import type { Payslip } from "@/app/types/payslip";
 
+type ID = number;
+
 export default function PayslipsPage() {
   const [payslips, setPayslips] = useState<Payslip[]>([]);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<ID[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
   const [page, setPage] = useState(1);
@@ -24,7 +26,6 @@ export default function PayslipsPage() {
 
   const [filters, setFilters] = useState<any>({});
 
-  // ================= FETCH =================
   const fetchPayslips = async () => {
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
@@ -33,18 +34,14 @@ export default function PayslipsPage() {
       .from("payslips")
       .select(
         `
-          *,
-          user:users (
-            id,
-            name
-          )
-        `,
+        *,
+        user:users(id, name)
+      `,
         { count: "exact" },
       )
       .order("created_at", { ascending: false })
       .range(from, to);
 
-    // ================= DATE FILTER =================
     if (filters.created_start) {
       const start = new Date(filters.created_start);
       const end = filters.created_end
@@ -58,10 +55,6 @@ export default function PayslipsPage() {
         .lte("created_at", end.toISOString());
     }
 
-    // ================= SEARCH (FIXED) =================
-    // NOTE: Supabase cannot directly ilike nested relation safely in all cases
-    // so we filter via post-processing fallback if needed.
-
     const { data, error, count } = await query;
 
     if (error) {
@@ -73,7 +66,6 @@ export default function PayslipsPage() {
 
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
-
       filtered = filtered.filter((p: any) =>
         p.user?.name?.toLowerCase().includes(term),
       );
@@ -83,36 +75,30 @@ export default function PayslipsPage() {
     setTotalCount(count || 0);
   };
 
-  // ================= EFFECT =================
   useEffect(() => {
     fetchPayslips();
   }, [page, pageSize, searchTerm, filters]);
 
-  // ================= SELECT =================
-  const toggleSelect = (id: string) => {
+  const toggleSelect = (id: ID) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   };
 
   const toggleSelectAll = (checked: boolean) => {
-    setSelectedIds(checked ? payslips.map((p) => p.id) : []);
+    setSelectedIds(checked ? payslips.map((p) => Number(p.id)) : []);
   };
 
-  // ================= UI =================
   return (
     <div className="container my-5">
       <Toaster />
 
       <h3 className="mb-4">Payslips Management</h3>
 
-      {/* TOOLBAR */}
       <div className="mb-3 d-flex justify-content-between flex-wrap gap-2">
         <div className="d-flex gap-2 flex-wrap">
-          {/* ADD */}
           <AddPayslip onSuccess={fetchPayslips} />
 
-          {/* EXPORT */}
           <ExportButton
             data={payslips}
             headersMap={{
@@ -120,17 +106,10 @@ export default function PayslipsPage() {
               "Start Period": "start_period",
               "End Period": "end_period",
               "Net Pay": "net_pay",
-              "Created At": (row: any) =>
-                row.created_at
-                  ? new Date(row.created_at).toLocaleDateString("en-CA", {
-                      timeZone: "Asia/Manila",
-                    })
-                  : "",
             }}
             filename="payslips.csv"
           />
 
-          {/* DELETE SELECTED */}
           <DeleteSelected
             selectedCount={selectedIds.length}
             confirmMessage={
@@ -139,10 +118,6 @@ export default function PayslipsPage() {
                 : "Delete selected payslips?"
             }
             onConfirm={async () => {
-              if (selectedIds.length === 0) {
-                throw new Error("Select record first");
-              }
-
               const { error } = await supabase
                 .from("payslips")
                 .delete()
@@ -156,7 +131,6 @@ export default function PayslipsPage() {
           />
         </div>
 
-        {/* SEARCH + FILTER */}
         <div className="d-flex gap-2">
           <SearchBar
             placeholder="Search employee..."
@@ -175,7 +149,6 @@ export default function PayslipsPage() {
         </div>
       </div>
 
-      {/* TABLE */}
       <PayslipTable
         data={payslips}
         selectedIds={selectedIds}

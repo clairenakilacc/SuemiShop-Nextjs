@@ -8,12 +8,15 @@ import EditPayslip from "@/app/components/payslips/EditPayslip";
 import DeletePayslip from "@/app/components/payslips/DeletePayslip";
 
 /* =========================
-   PROPS
+   TYPES (BIGINT SAFE)
 ========================= */
+type ID = number;
+
 interface Props {
   data: Payslip[];
-  selectedIds: string[];
-  onToggleSelect: (id: string) => void;
+
+  selectedIds: ID[];
+  onToggleSelect: (id: ID) => void;
   onToggleSelectAll: (checked: boolean) => void;
 
   page: number;
@@ -48,9 +51,6 @@ export default function PayslipTable({
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
-  /* =========================
-     SAFE OPEN HANDLER
-  ========================= */
   const openModal = (type: "view" | "edit" | "delete", row: Payslip) => {
     setSelectedPayslip(row);
 
@@ -99,64 +99,70 @@ export default function PayslipTable({
                 </td>
               </tr>
             ) : (
-              data.map((row) => (
-                <tr key={row.id}>
-                  {/* CHECKBOX */}
-                  <td className="text-center">
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.includes(row.id)}
-                      onChange={() => onToggleSelect(row.id)}
-                    />
-                  </td>
+              data.map((row) => {
+                const id = Number(row.id); // 🔥 IMPORTANT BIGINT FIX
 
-                  {/* PERIOD */}
-                  <td>
-                    {row.start_period && row.end_period
-                      ? `${new Date(row.start_period).toLocaleDateString()} - ${new Date(row.end_period).toLocaleDateString()}`
-                      : "-"}
-                  </td>
+                return (
+                  <tr key={id}>
+                    {/* CHECKBOX */}
+                    <td className="text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(id)}
+                        onChange={() => onToggleSelect(id)}
+                      />
+                    </td>
 
-                  {/* EMPLOYEE */}
-                  <td>{row.user?.name || "Unknown"}</td>
+                    {/* PERIOD */}
+                    <td>
+                      {row.start_period && row.end_period
+                        ? `${new Date(row.start_period).toLocaleDateString()} - ${new Date(row.end_period).toLocaleDateString()}`
+                        : "-"}
+                    </td>
 
-                  {/* INPUTS */}
-                  <td>{row.days_worked ?? 0}</td>
-                  <td>{row.overtime_hours ?? 0}</td>
+                    {/* EMPLOYEE */}
+                    <td>{row.user?.name || "Unknown"}</td>
 
-                  {/* PAY */}
-                  <td>₱{Number(row.total_daily_pay || 0).toLocaleString()}</td>
-                  <td>
-                    ₱{Number(row.total_overtime_pay || 0).toLocaleString()}
-                  </td>
+                    {/* WORK */}
+                    <td>{row.days_worked ?? 0}</td>
+                    <td>{row.overtime_hours ?? 0}</td>
 
-                  {/* ACTIONS */}
-                  <td className="text-center">
-                    <div className="d-flex justify-content-center gap-2">
-                      <button
-                        className="action-btn view"
-                        onClick={() => openModal("view", row)}
-                      >
-                        👁
-                      </button>
+                    {/* PAY */}
+                    <td>
+                      ₱{Number(row.total_daily_pay || 0).toLocaleString()}
+                    </td>
+                    <td>
+                      ₱{Number(row.total_overtime_pay || 0).toLocaleString()}
+                    </td>
 
-                      <button
-                        className="action-btn edit"
-                        onClick={() => openModal("edit", row)}
-                      >
-                        ✏️
-                      </button>
+                    {/* ACTIONS */}
+                    <td className="text-center">
+                      <div className="d-flex justify-content-center gap-2">
+                        <button
+                          className="action-btn view"
+                          onClick={() => openModal("view", row)}
+                        >
+                          👁
+                        </button>
 
-                      <button
-                        className="action-btn delete"
-                        onClick={() => openModal("delete", row)}
-                      >
-                        🗑
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+                        <button
+                          className="action-btn edit"
+                          onClick={() => openModal("edit", row)}
+                        >
+                          ✏️
+                        </button>
+
+                        <button
+                          className="action-btn delete"
+                          onClick={() => openModal("delete", row)}
+                        >
+                          🗑
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
@@ -196,7 +202,7 @@ export default function PayslipTable({
         </div>
       </div>
 
-      {/* MODALS (SAFE RENDER) */}
+      {/* MODALS */}
       {selectedPayslip && (
         <>
           <ViewPayslip
