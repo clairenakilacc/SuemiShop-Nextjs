@@ -7,6 +7,9 @@ import ViewPayslip from "@/app/components/payslips/ViewPayslip";
 import EditPayslip from "@/app/components/payslips/EditPayslip";
 import DeletePayslip from "@/app/components/payslips/DeletePayslip";
 
+/* =========================
+   PROPS
+========================= */
 interface Props {
   data: Payslip[];
   selectedIds: string[];
@@ -22,6 +25,9 @@ interface Props {
   onRefresh: () => void;
 }
 
+/* =========================
+   COMPONENT
+========================= */
 export default function PayslipTable({
   data,
   selectedIds,
@@ -42,10 +48,23 @@ export default function PayslipTable({
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
+  /* =========================
+     SAFE OPEN HANDLER
+  ========================= */
+  const openModal = (type: "view" | "edit" | "delete", row: Payslip) => {
+    setSelectedPayslip(row);
+
+    if (type === "view") setViewOpen(true);
+    if (type === "edit") setEditOpen(true);
+    if (type === "delete") setDeleteOpen(true);
+  };
+
   return (
     <div>
+      {/* TABLE */}
       <div className="table-responsive" style={{ maxHeight: "70vh" }}>
         <table className="table table-bordered table-striped text-capitalize">
+          {/* HEADER */}
           <thead className="table-light sticky-top">
             <tr>
               <th className="text-center">
@@ -61,7 +80,6 @@ export default function PayslipTable({
               <th>Period</th>
               <th>Employee</th>
 
-              {/* ✅ CORE PAYROLL BREAKDOWN ONLY */}
               <th>Days Worked</th>
               <th>Overtime Hours</th>
 
@@ -72,6 +90,7 @@ export default function PayslipTable({
             </tr>
           </thead>
 
+          {/* BODY */}
           <tbody>
             {data.length === 0 ? (
               <tr>
@@ -82,6 +101,7 @@ export default function PayslipTable({
             ) : (
               data.map((row) => (
                 <tr key={row.id}>
+                  {/* CHECKBOX */}
                   <td className="text-center">
                     <input
                       type="checkbox"
@@ -90,21 +110,22 @@ export default function PayslipTable({
                     />
                   </td>
 
+                  {/* PERIOD */}
                   <td>
                     {row.start_period && row.end_period
                       ? `${new Date(row.start_period).toLocaleDateString()} - ${new Date(row.end_period).toLocaleDateString()}`
                       : "-"}
                   </td>
 
+                  {/* EMPLOYEE */}
                   <td>{row.user?.name || "Unknown"}</td>
 
-                  {/* ✅ WORK INPUTS */}
-                  <td>{row.days_worked}</td>
-                  <td>{row.overtime_hours}</td>
+                  {/* INPUTS */}
+                  <td>{row.days_worked ?? 0}</td>
+                  <td>{row.overtime_hours ?? 0}</td>
 
-                  {/* ✅ COMPUTED VALUES */}
+                  {/* PAY */}
                   <td>₱{Number(row.total_daily_pay || 0).toLocaleString()}</td>
-
                   <td>
                     ₱{Number(row.total_overtime_pay || 0).toLocaleString()}
                   </td>
@@ -114,30 +135,21 @@ export default function PayslipTable({
                     <div className="d-flex justify-content-center gap-2">
                       <button
                         className="action-btn view"
-                        onClick={() => {
-                          setSelectedPayslip(row);
-                          setViewOpen(true);
-                        }}
+                        onClick={() => openModal("view", row)}
                       >
                         👁
                       </button>
 
                       <button
                         className="action-btn edit"
-                        onClick={() => {
-                          setSelectedPayslip(row);
-                          setEditOpen(true);
-                        }}
+                        onClick={() => openModal("edit", row)}
                       >
                         ✏️
                       </button>
 
                       <button
                         className="action-btn delete"
-                        onClick={() => {
-                          setSelectedPayslip(row);
-                          setDeleteOpen(true);
-                        }}
+                        onClick={() => openModal("delete", row)}
                       >
                         🗑
                       </button>
@@ -184,26 +196,30 @@ export default function PayslipTable({
         </div>
       </div>
 
-      {/* MODALS */}
-      <ViewPayslip
-        show={viewOpen}
-        payslip={selectedPayslip}
-        onClose={() => setViewOpen(false)}
-      />
+      {/* MODALS (SAFE RENDER) */}
+      {selectedPayslip && (
+        <>
+          <ViewPayslip
+            show={viewOpen}
+            payslip={selectedPayslip}
+            onClose={() => setViewOpen(false)}
+          />
 
-      <EditPayslip
-        show={editOpen}
-        payslip={selectedPayslip}
-        onClose={() => setEditOpen(false)}
-        onSuccess={onRefresh}
-      />
+          <EditPayslip
+            show={editOpen}
+            payslip={selectedPayslip}
+            onClose={() => setEditOpen(false)}
+            onSuccess={onRefresh}
+          />
 
-      <DeletePayslip
-        show={deleteOpen}
-        payslip={selectedPayslip}
-        onClose={() => setDeleteOpen(false)}
-        onSuccess={onRefresh}
-      />
+          <DeletePayslip
+            show={deleteOpen}
+            payslip={selectedPayslip}
+            onClose={() => setDeleteOpen(false)}
+            onSuccess={onRefresh}
+          />
+        </>
+      )}
     </div>
   );
 }
