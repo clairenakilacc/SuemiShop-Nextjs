@@ -16,4 +16,12 @@ export interface Inventory {
 
   quantity_left: number;
   total_left: number;
+
+  supplier?: {
+    name: string;
+  };
+
+  category?: {
+    description: string;
+  };
 }

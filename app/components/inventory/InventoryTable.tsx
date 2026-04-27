@@ -48,9 +48,10 @@ export default function InventoryTable({
                 />
               </th>
 
+              <th>Date Arrived</th>
               <th>Box Number</th>
-              <th>Supplier ID</th>
-              <th>Category ID</th>
+              <th>Supplier</th>
+              <th>Category</th>
               <th>Quantity</th>
               <th>Price</th>
               <th>Total</th>
@@ -62,7 +63,7 @@ export default function InventoryTable({
           <tbody>
             {data.length === 0 ? (
               <tr>
-                <td colSpan={9} className="text-center py-4 text-muted">
+                <td colSpan={10} className="text-center py-4 text-muted">
                   No inventories found.
                 </td>
               </tr>
@@ -77,15 +78,28 @@ export default function InventoryTable({
                     />
                   </td>
 
+                  <td>
+                    {row.date_arrived
+                      ? new Date(row.date_arrived).toLocaleString()
+                      : "-"}
+                  </td>
+
                   <td>{row.box_number || "-"}</td>
-                  <td>{row.supplier_id ?? "-"}</td>
-                  <td>{row.category_id ?? "-"}</td>
+
+                  {/* ✅ FIXED: Supplier name instead of ID */}
+                  <td>{row.supplier?.name || "-"}</td>
+
+                  {/* ✅ FIXED: Category description instead of ID */}
+                  <td>{row.category?.description || "-"}</td>
 
                   <td>{row.quantity}</td>
+
                   <td>{Number(row.price).toFixed(2)}</td>
+
                   <td>{Number(row.total).toFixed(2)}</td>
 
                   <td>{row.quantity_left}</td>
+
                   <td>{row.total_left}</td>
                 </tr>
               ))

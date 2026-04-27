@@ -29,7 +29,14 @@ export default function InventoriesPage() {
 
     let query = supabase
       .from("inventories")
-      .select("*", { count: "exact" })
+      .select(
+        `
+    *,
+    supplier:suppliers(name),
+    category:categories(description)
+  `,
+        { count: "exact" },
+      )
       .order("created_at", { ascending: false })
       .range(from, to);
 
@@ -68,15 +75,19 @@ export default function InventoriesPage() {
           <AddInventory onSuccess={fetchInventories} />
 
           <ExportButton
-            data={inventories}
+            data={inventories.map((i) => ({
+              ...i,
+              supplier: i.supplier?.name || "-",
+              category: i.category?.description || "-",
+            }))}
             headersMap={{
               "Box Number": "box_number",
-              Supplier: "supplier_id",
-              Category: "category_id",
+              Supplier: "supplier",
+              Category: "category",
               Quantity: "quantity",
               Price: "price",
               Total: "total",
-              "Qty Left": "quantity_left",
+              "Quantity Left": "quantity_left",
               "Total Left": "total_left",
             }}
             filename="inventories.csv"
