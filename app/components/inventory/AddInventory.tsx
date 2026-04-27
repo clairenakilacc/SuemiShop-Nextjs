@@ -314,7 +314,7 @@ export default function AddInventory({
                   onClick={handleSubmit}
                   disabled={loading}
                 >
-                  {loading ? "Saving..." : "Save"}
+                  {loading ? "Saving..." : "Add"}
                 </button>
               </div>
             </div>
