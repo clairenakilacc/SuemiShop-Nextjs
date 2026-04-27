@@ -52,13 +52,12 @@ export default function PayslipTable({
                   onChange={(e) => onToggleSelectAll(e.target.checked)}
                 />
               </th>
-
+              <th>Period</th>
               <th>Employee</th>
               <th>Days</th>
               <th>Overtime</th>
               <th>Gross Pay</th>
               <th>Net Pay</th>
-              <th>Period</th>
             </tr>
           </thead>
 
@@ -81,6 +80,18 @@ export default function PayslipTable({
                     />
                   </td>
 
+                  {/* PERIOD */}
+                  <td>
+                    {row.start_period && row.end_period ? (
+                      <>
+                        {new Date(row.start_period).toLocaleDateString()} -{" "}
+                        {new Date(row.end_period).toLocaleDateString()}
+                      </>
+                    ) : (
+                      "-"
+                    )}
+                  </td>
+
                   {/* EMPLOYEE */}
                   <td>{row.user?.name || "Unknown"}</td>
 
@@ -98,18 +109,6 @@ export default function PayslipTable({
                     <strong className="text-success">
                       ₱{Number(row.net_pay || 0).toLocaleString()}
                     </strong>
-                  </td>
-
-                  {/* PERIOD */}
-                  <td>
-                    {row.start_period && row.end_period ? (
-                      <>
-                        {new Date(row.start_period).toLocaleDateString()} -{" "}
-                        {new Date(row.end_period).toLocaleDateString()}
-                      </>
-                    ) : (
-                      "-"
-                    )}
                   </td>
                 </tr>
               ))
