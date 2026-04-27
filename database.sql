@@ -184,27 +184,45 @@ create table public.expenses (
 );
 
 -- =====================================
--- PAYROLLS
+-- PAYSLIPS
 -- =====================================
-create table public.payrolls (
+create table public.payslips (
   id uuid primary key default gen_random_uuid(),
+
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
+
   user_id bigint,
-  days_worked double precision,
-  overtime_hours double precision,
-  total_daily_pay double precision,
-  total_overtime_pay double precision,
-  daily_rate double precision not null,
-  hourly_rate double precision not null,
-  total_commission double precision,
-  total_bonus double precision,
-  total_deduction double precision,
-  gross_pay double precision,
-  net_pay double precision,
+
+  days_worked double precision default 0,
+  overtime_hours double precision default 0,
+
+  daily_rate double precision not null default 0,
+  hourly_rate double precision not null default 0,
+
+  total_daily_pay double precision default 0,
+  total_overtime_pay double precision default 0,
+
+  total_commission double precision default 0,
+  total_bonus double precision default 0,
+  total_deduction double precision default 0,
+
+  gross_pay double precision default 0,
+  net_pay double precision default 0,
+
   start_period date,
-  end_period date
+  end_period date,
+
+  -- =========================
+  -- FOREIGN KEYS
+  -- =========================
+
+  constraint payslips_user_id_fkey
+    foreign key (user_id)
+    references public.users(id)
+    on delete set null
 );
+
 
 -- =====================================
 -- DEFAULT DATA
