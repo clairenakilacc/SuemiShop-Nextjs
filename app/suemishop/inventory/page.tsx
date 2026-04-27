@@ -23,6 +23,31 @@ export default function InventoriesPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [filters, setFilters] = useState<any>({});
 
+  // ✅ DISTINCT FILTER DATA
+  const [suppliers, setSuppliers] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+
+  /* ================= LOAD FILTER OPTIONS ================= */
+  useEffect(() => {
+    const loadFilterOptions = async () => {
+      const { data: sup } = await supabase
+        .from("suppliers")
+        .select("id, name")
+        .order("name");
+
+      const { data: cat } = await supabase
+        .from("categories")
+        .select("id, description")
+        .order("description");
+
+      setSuppliers(sup || []);
+      setCategories(cat || []);
+    };
+
+    loadFilterOptions();
+  }, []);
+
+  /* ================= FETCH INVENTORIES ================= */
   const fetchInventories = async () => {
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
@@ -31,16 +56,35 @@ export default function InventoriesPage() {
       .from("inventories")
       .select(
         `
-    *,
-    supplier:suppliers(name),
-    category:categories(description)
-  `,
+        *,
+        supplier:suppliers(name),
+        category:categories(description)
+      `,
         { count: "exact" },
       )
       .order("created_at", { ascending: false })
       .range(from, to);
 
-    if (searchTerm) query = query.ilike("box_number", `%${searchTerm}%`);
+    if (searchTerm) {
+      query = query.ilike("box_number", `%${searchTerm}%`);
+    }
+
+    // FILTERS
+    if (filters.created_start) {
+      query = query.gte("created_at", filters.created_start);
+    }
+
+    if (filters.created_end) {
+      query = query.lte("created_at", filters.created_end);
+    }
+
+    if (filters.supplier_id) {
+      query = query.eq("supplier_id", filters.supplier_id);
+    }
+
+    if (filters.category_id) {
+      query = query.eq("category_id", filters.category_id);
+    }
 
     const { data, error, count } = await query;
 
@@ -54,9 +98,10 @@ export default function InventoriesPage() {
     fetchInventories();
   }, [page, pageSize, searchTerm, filters]);
 
+  /* ================= SELECT HANDLERS ================= */
   const toggleSelect = (id: number) => {
-    setSelectedIds((p) =>
-      p.includes(id) ? p.filter((x) => x !== id) : [...p, id],
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   };
 
@@ -70,7 +115,7 @@ export default function InventoriesPage() {
 
       {/* TOOLBAR */}
       <div className="mb-3 d-flex justify-content-between flex-wrap gap-2">
-        {/* LEFT SIDE ACTIONS */}
+        {/* LEFT ACTIONS */}
         <div className="d-flex gap-2 flex-wrap align-items-center">
           <AddInventory onSuccess={fetchInventories} />
 
@@ -118,7 +163,7 @@ export default function InventoriesPage() {
           />
         </div>
 
-        {/* RIGHT SIDE SEARCH + FILTER */}
+        {/* RIGHT SIDE */}
         <div className="d-flex gap-2">
           <SearchBar
             value={searchTerm}
@@ -132,10 +177,32 @@ export default function InventoriesPage() {
             config={[
               { key: "created_start", label: "Start Date", type: "date" },
               { key: "created_end", label: "End Date", type: "date" },
+
+              {
+                key: "supplier_id",
+                label: "Supplier",
+                type: "select",
+                options: suppliers.map((s) => ({
+                  label: s.name,
+                  value: s.id,
+                })),
+              },
+
+              {
+                key: "category_id",
+                label: "Category",
+                type: "select",
+                options: categories.map((c) => ({
+                  label: c.description,
+                  value: c.id,
+                })),
+              },
             ]}
           />
         </div>
       </div>
+
+      {/* TABLE */}
       <InventoryTable
         data={inventories}
         selectedIds={selectedIds}

@@ -80,7 +80,9 @@ export default function InventoryTable({
 
                   <td>
                     {row.date_arrived
-                      ? new Date(row.date_arrived).toLocaleString()
+                      ? new Date(row.date_arrived).toLocaleDateString("en-CA", {
+                          timeZone: "Asia/Manila",
+                        })
                       : "-"}
                   </td>
 
