@@ -266,3 +266,100 @@ values (
   'Dasmarinas Cavite',
   '09789789789'
 );
+
+
+
+
+---------PAYSLIPS FINAL
+
+create table public.payslips (
+  id uuid primary key default gen_random_uuid(),
+
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+
+  user_id bigint not null,
+
+  start_period date,
+  end_period date,
+
+  days_worked double precision default 0,
+  overtime_hours double precision default 0,
+
+  total_daily_pay double precision default 0,
+  total_overtime_pay double precision default 0,
+
+  gross_pay double precision default 0,
+  net_pay double precision default 0,
+
+  -- =========================
+  -- FOREIGN KEY
+  -- =========================
+  constraint payslips_user_id_fkey
+    foreign key (user_id)
+    references public.users(id)
+    on delete cascade
+);
+
+
+create table public.payslip_commissions (
+  id uuid primary key default gen_random_uuid(),
+
+  payslip_id uuid not null,
+
+  description text not null,
+  quantity double precision default 0,
+  price double precision default 0,
+
+  total double precision generated always as (quantity * price) stored,
+
+  created_at timestamptz default now(),
+
+  -- =========================
+  -- FOREIGN KEY
+  -- =========================
+  constraint payslip_commissions_payslip_id_fkey
+    foreign key (payslip_id)
+    references public.payslips(id)
+    on delete cascade
+);
+
+
+create table public.payslip_bonuses (
+  id uuid primary key default gen_random_uuid(),
+
+  payslip_id uuid not null,
+
+  description text,
+  amount double precision not null,
+
+  created_at timestamptz default now(),
+
+  -- =========================
+  -- FOREIGN KEY
+  -- =========================
+  constraint payslip_bonuses_payslip_id_fkey
+    foreign key (payslip_id)
+    references public.payslips(id)
+    on delete cascade
+);
+
+
+create table public.payslip_deductions (
+  id uuid primary key default gen_random_uuid(),
+
+  payslip_id uuid not null,
+
+  description text not null,
+  amount double precision not null,
+
+  created_at timestamptz default now(),
+
+  -- =========================
+  -- FOREIGN KEY
+  -- =========================
+  constraint payslip_deductions_payslip_id_fkey
+    foreign key (payslip_id)
+    references public.payslips(id)
+    on delete cascade
+);

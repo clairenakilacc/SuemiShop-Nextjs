@@ -8,12 +8,6 @@ interface User {
   name: string;
 }
 
-interface LineItem {
-  id: string;
-  description: string;
-  amount: number;
-}
-
 interface Props {
   onSuccess: () => void;
   className?: string;
@@ -37,15 +31,7 @@ export default function AddPayslip({
     end_period: "",
     days_worked: "",
     overtime_hours: "",
-    daily_rate: "",
-    hourly_rate: "",
   });
-
-  const [commissions, setCommissions] = useState<LineItem[]>([]);
-  const [bonuses, setBonuses] = useState<LineItem[]>([]);
-  const [deductions, setDeductions] = useState<LineItem[]>([]);
-
-  const [tempItem, setTempItem] = useState({ description: "", amount: "" });
 
   // ================= LOAD EMPLOYEES =================
   useEffect(() => {
@@ -63,82 +49,28 @@ export default function AddPayslip({
     loadUsers();
   }, [show]);
 
-  // ================= NAVIGATION =================
-  const next = () => setStep((s) => s + 1);
-  const back = () => setStep((s) => s - 1);
-
+  // ================= SELECT USERS =================
   const toggleUser = (id: number) => {
     setSelectedUsers((prev) =>
       prev.includes(id) ? prev.filter((u) => u !== id) : [...prev, id],
     );
   };
 
-  const addItem = (
-    setter: React.Dispatch<React.SetStateAction<LineItem[]>>,
-  ) => {
-    if (!tempItem.description || !tempItem.amount) return;
-
-    setter((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        description: tempItem.description,
-        amount: Number(tempItem.amount),
-      },
-    ]);
-
-    setTempItem({ description: "", amount: "" });
-  };
-
-  const removeItem = (
-    setter: React.Dispatch<React.SetStateAction<LineItem[]>>,
-    id: string,
-  ) => {
-    setter((prev) => prev.filter((i) => i.id !== id));
-  };
+  const selectAll = () => setSelectedUsers(users.map((u) => u.id));
+  const clearAll = () => setSelectedUsers([]);
 
   // ================= SUBMIT =================
   const handleSubmit = async () => {
     setLoading(true);
 
     try {
-      const inserts = [];
-
-      for (const userId of selectedUsers) {
-        const totalCommission = commissions.reduce((a, b) => a + b.amount, 0);
-        const totalBonus = bonuses.reduce((a, b) => a + b.amount, 0);
-        const totalDeduction = deductions.reduce((a, b) => a + b.amount, 0);
-
-        const days = Number(form.days_worked || 0);
-        const overtime = Number(form.overtime_hours || 0);
-        const daily = Number(form.daily_rate || 0);
-        const hourly = Number(form.hourly_rate || 0);
-
-        const totalDailyPay = days * daily;
-        const totalOvertimePay = overtime * hourly;
-
-        const gross =
-          totalDailyPay + totalOvertimePay + totalCommission + totalBonus;
-
-        const net = gross - totalDeduction;
-
-        inserts.push({
-          user_id: userId,
-          start_period: form.start_period,
-          end_period: form.end_period,
-          days_worked: days,
-          overtime_hours: overtime,
-          daily_rate: daily,
-          hourly_rate: hourly,
-          total_daily_pay: totalDailyPay,
-          total_overtime_pay: totalOvertimePay,
-          total_commission: totalCommission,
-          total_bonus: totalBonus,
-          total_deduction: totalDeduction,
-          gross_pay: gross,
-          net_pay: net,
-        });
-      }
+      const inserts = selectedUsers.map((userId) => ({
+        user_id: userId,
+        start_period: form.start_period,
+        end_period: form.end_period,
+        days_worked: Number(form.days_worked || 0),
+        overtime_hours: Number(form.overtime_hours || 0),
+      }));
 
       const { error } = await supabase.from("payslips").insert(inserts);
 
@@ -147,9 +79,12 @@ export default function AddPayslip({
       setShow(false);
       setStep(1);
       setSelectedUsers([]);
-      setCommissions([]);
-      setBonuses([]);
-      setDeductions([]);
+      setForm({
+        start_period: "",
+        end_period: "",
+        days_worked: "",
+        overtime_hours: "",
+      });
 
       onSuccess();
     } finally {
@@ -170,122 +105,102 @@ export default function AddPayslip({
           style={{ background: "rgba(0,0,0,0.5)" }}
         >
           <div className="modal-dialog modal-lg modal-dialog-centered">
-            <div className="modal-content rounded-3 overflow-hidden">
+            <div className="modal-content">
               {/* HEADER */}
-              <div className="modal-header bg-light">
-                <h5 className="modal-title">Add Payslip</h5>
+              <div className="modal-header">
+                <h5>Add Payslip</h5>
                 <button className="btn-close" onClick={() => setShow(false)} />
               </div>
 
-              {/* BODY */}
               <div className="modal-body">
-                {/* ================= STEP 1 ================= */}
+                {/* STEP 1 */}
                 {step === 1 && (
                   <>
-                    <h6>Select Period</h6>
+                    <h6>Payroll Period</h6>
 
-                    <div className="row g-2">
-                      <div className="col-md-6">
-                        <input
-                          type="date"
-                          className="form-control"
-                          value={form.start_period}
-                          onChange={(e) =>
-                            setForm({ ...form, start_period: e.target.value })
-                          }
-                        />
-                      </div>
+                    <input
+                      type="date"
+                      className="form-control mb-2"
+                      value={form.start_period}
+                      onChange={(e) =>
+                        setForm({ ...form, start_period: e.target.value })
+                      }
+                    />
 
-                      <div className="col-md-6">
-                        <input
-                          type="date"
-                          className="form-control"
-                          value={form.end_period}
-                          onChange={(e) =>
-                            setForm({ ...form, end_period: e.target.value })
-                          }
-                        />
-                      </div>
-                    </div>
+                    <input
+                      type="date"
+                      className="form-control"
+                      value={form.end_period}
+                      onChange={(e) =>
+                        setForm({ ...form, end_period: e.target.value })
+                      }
+                    />
                   </>
                 )}
 
-                {/* ================= STEP 2 ================= */}
+                {/* STEP 2 */}
                 {step === 2 && (
                   <>
-                    <h6>Select Employees</h6>
+                    <div className="d-flex justify-content-between mb-2">
+                      <h6>Select Employees</h6>
 
-                    <div className="list-group">
-                      {users.map((u) => (
-                        <label
-                          key={u.id}
-                          className="list-group-item d-flex gap-2"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedUsers.includes(u.id)}
-                            onChange={() => toggleUser(u.id)}
-                          />
-                          {u.name}
-                        </label>
-                      ))}
-                    </div>
-                  </>
-                )}
-
-                {/* ================= STEP 3 ================= */}
-                {step === 3 && (
-                  <>
-                    <h6>Commissions / Bonuses / Deductions</h6>
-
-                    <div className="row g-2">
-                      <input
-                        className="form-control col-md-6"
-                        placeholder="Description"
-                        value={tempItem.description}
-                        onChange={(e) =>
-                          setTempItem({
-                            ...tempItem,
-                            description: e.target.value,
-                          })
-                        }
-                      />
-
-                      <input
-                        className="form-control col-md-4"
-                        placeholder="Amount"
-                        value={tempItem.amount}
-                        onChange={(e) =>
-                          setTempItem({ ...tempItem, amount: e.target.value })
-                        }
-                      />
-
-                      <div className="col-md-2">
+                      <div>
                         <button
-                          className="btn btn-add w-100"
-                          onClick={() => addItem(setCommissions)}
+                          className="btn btn-sm btn-light me-1"
+                          onClick={selectAll}
                         >
-                          Add
+                          Select All
+                        </button>
+                        <button
+                          className="btn btn-sm btn-light"
+                          onClick={clearAll}
+                        >
+                          Clear
                         </button>
                       </div>
                     </div>
 
-                    <hr />
+                    {users.map((u) => (
+                      <div
+                        key={u.id}
+                        className="d-flex justify-content-between border p-2 mb-1"
+                      >
+                        <span>{u.name}</span>
 
-                    <small>Commissions: {commissions.length}</small>
-                    <small className="d-block">Bonuses: {bonuses.length}</small>
-                    <small>Deductions: {deductions.length}</small>
+                        <input
+                          type="checkbox"
+                          checked={selectedUsers.includes(u.id)}
+                          onChange={() => toggleUser(u.id)}
+                        />
+                      </div>
+                    ))}
                   </>
                 )}
 
-                {/* ================= STEP 4 ================= */}
-                {step === 4 && (
+                {/* STEP 3 */}
+                {step === 3 && (
                   <>
-                    <h6>Review</h6>
-                    <p>Employees: {selectedUsers.length}</p>
-                    <p>Commissions: {commissions.length}</p>
-                    <p>Bonuses: {bonuses.length}</p>
-                    <p>Deductions: {deductions.length}</p>
+                    <h6>Work Summary</h6>
+
+                    <input
+                      type="number"
+                      placeholder="Total Days Worked"
+                      className="form-control mb-2"
+                      value={form.days_worked}
+                      onChange={(e) =>
+                        setForm({ ...form, days_worked: e.target.value })
+                      }
+                    />
+
+                    <input
+                      type="number"
+                      placeholder="Total Overtime Hours"
+                      className="form-control"
+                      value={form.overtime_hours}
+                      onChange={(e) =>
+                        setForm({ ...form, overtime_hours: e.target.value })
+                      }
+                    />
                   </>
                 )}
               </div>
@@ -294,22 +209,27 @@ export default function AddPayslip({
               <div className="modal-footer">
                 <button
                   className="btn btn-secondary"
-                  onClick={() => (step > 1 ? back() : setShow(false))}
+                  onClick={() =>
+                    step === 1 ? setShow(false) : setStep(step - 1)
+                  }
                 >
-                  {step > 1 ? "Back" : "Cancel"}
+                  Back
                 </button>
 
-                {step < 4 ? (
-                  <button className="btn btn-primary" onClick={next}>
+                {step < 3 ? (
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => setStep(step + 1)}
+                  >
                     Next
                   </button>
                 ) : (
                   <button
-                    className="btn btn-add"
+                    className="btn btn-success"
                     onClick={handleSubmit}
                     disabled={loading}
                   >
-                    {loading ? "Saving..." : "Submit"}
+                    Submit
                   </button>
                 )}
               </div>
