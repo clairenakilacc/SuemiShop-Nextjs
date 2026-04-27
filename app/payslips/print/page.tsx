@@ -51,7 +51,7 @@ export default function PrintPayslipPage() {
           <div className="bg-pink-200 p-2 flex justify-between items-end">
             <div>
               <h5
-                className={`${archivoBlack.className} text-sm md:text-base font-bold text-gray-800 m-0 leading-none`}
+                className={`${archivoBlack.className} text-sm mt-1 md:text-base font-bold text-gray-800 m-0 leading-none`}
               >
                 Suemi Online Shop
               </h5>
