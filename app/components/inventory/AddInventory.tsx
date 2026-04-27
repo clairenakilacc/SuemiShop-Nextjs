@@ -62,12 +62,10 @@ export default function AddInventory({
     loadData();
   }, []);
 
-  /* ================= HANDLE CHANGE ================= */
   const handleChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  /* ================= VALIDATION ================= */
   const validate = () => {
     if (!form.quantity || Number(form.quantity) <= 0)
       return "Quantity is required";
@@ -75,7 +73,6 @@ export default function AddInventory({
     return null;
   };
 
-  /* ================= RESET ================= */
   const resetForm = () => {
     setForm({
       date_arrived: "",
@@ -89,7 +86,6 @@ export default function AddInventory({
     setTouched(false);
   };
 
-  /* ================= SUBMIT ================= */
   const handleSubmit = async () => {
     setTouched(true);
     setLoading(true);
@@ -132,7 +128,6 @@ export default function AddInventory({
     onSuccess();
   };
 
-  /* ================= UI ================= */
   return (
     <>
       <button
@@ -161,82 +156,108 @@ export default function AddInventory({
                 />
               </div>
 
-              <div className="modal-body d-flex flex-column gap-2">
-                {/* DATE ARRIVED */}
-                <input
-                  type="datetime-local"
-                  className="form-control"
-                  value={form.date_arrived}
-                  onChange={(e) => handleChange("date_arrived", e.target.value)}
-                />
+              {/* ================= TWO COLUMN FORM ================= */}
+              <div className="modal-body">
+                <div className="row g-2">
+                  {/* DATE ARRIVED */}
+                  <div className="col-md-6">
+                    <input
+                      type="datetime-local"
+                      className="form-control"
+                      value={form.date_arrived}
+                      onChange={(e) =>
+                        handleChange("date_arrived", e.target.value)
+                      }
+                    />
+                  </div>
 
-                {/* BOX NUMBER */}
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Box Number"
-                  value={form.box_number}
-                  onChange={(e) => handleChange("box_number", e.target.value)}
-                />
+                  {/* BOX NUMBER */}
+                  <div className="col-md-6">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Box Number"
+                      value={form.box_number}
+                      onChange={(e) =>
+                        handleChange("box_number", e.target.value)
+                      }
+                    />
+                  </div>
 
-                {/* SUPPLIER */}
-                <select
-                  className="form-select"
-                  value={form.supplier_id}
-                  onChange={(e) => handleChange("supplier_id", e.target.value)}
-                >
-                  <option value="">Select Supplier</option>
-                  {suppliers.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
+                  {/* SUPPLIER */}
+                  <div className="col-md-6">
+                    <select
+                      className="form-select"
+                      value={form.supplier_id}
+                      onChange={(e) =>
+                        handleChange("supplier_id", e.target.value)
+                      }
+                    >
+                      <option value="">Select Supplier</option>
+                      {suppliers.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-                {/* CATEGORY */}
-                <select
-                  className="form-select"
-                  value={form.category_id}
-                  onChange={(e) => handleChange("category_id", e.target.value)}
-                >
-                  <option value="">Select Category</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.description}
-                    </option>
-                  ))}
-                </select>
+                  {/* CATEGORY */}
+                  <div className="col-md-6">
+                    <select
+                      className="form-select"
+                      value={form.category_id}
+                      onChange={(e) =>
+                        handleChange("category_id", e.target.value)
+                      }
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.description}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-                {/* QUANTITY */}
-                <input
-                  type="number"
-                  className={`form-control ${
-                    error && touched && !form.quantity ? "is-invalid" : ""
-                  }`}
-                  placeholder="Quantity"
-                  value={form.quantity}
-                  onChange={(e) => handleChange("quantity", e.target.value)}
-                  onBlur={() => setTouched(true)}
-                />
+                  {/* QUANTITY */}
+                  <div className="col-md-6">
+                    <input
+                      type="number"
+                      className={`form-control ${
+                        error && touched && !form.quantity ? "is-invalid" : ""
+                      }`}
+                      placeholder="Quantity"
+                      value={form.quantity}
+                      onChange={(e) => handleChange("quantity", e.target.value)}
+                      onBlur={() => setTouched(true)}
+                    />
+                  </div>
 
-                {/* PRICE */}
-                <input
-                  type="number"
-                  className={`form-control ${
-                    error && touched && !form.price ? "is-invalid" : ""
-                  }`}
-                  placeholder="Price"
-                  value={form.price}
-                  onChange={(e) => handleChange("price", e.target.value)}
-                  onBlur={() => setTouched(true)}
-                />
+                  {/* PRICE */}
+                  <div className="col-md-6">
+                    <input
+                      type="number"
+                      className={`form-control ${
+                        error && touched && !form.price ? "is-invalid" : ""
+                      }`}
+                      placeholder="Price"
+                      value={form.price}
+                      onChange={(e) => handleChange("price", e.target.value)}
+                      onBlur={() => setTouched(true)}
+                    />
+                  </div>
 
-                {/* ERROR */}
-                {error && touched && (
-                  <small className="text-danger">{error}</small>
-                )}
+                  {/* ERROR */}
+                  {error && touched && (
+                    <div className="col-12">
+                      <small className="text-danger">{error}</small>
+                    </div>
+                  )}
+                </div>
               </div>
 
+              {/* ================= FOOTER ================= */}
               <div className="modal-footer">
                 <button
                   className="btn btn-secondary"
