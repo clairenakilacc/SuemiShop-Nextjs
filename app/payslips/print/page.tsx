@@ -133,10 +133,18 @@ export default function PrintPayslipPage() {
               <table className="w-full border border-gray-300 text-xs">
                 <thead className="bg-gray-100">
                   <tr>
-                    <th className="border px-1">HOURS</th>
-                    <th className="border px-1">DAYS</th>
-                    <th className="border px-1">HOURLY</th>
-                    <th className="border px-1">DAILY</th>
+                    <th className="border px-1 text-center align-middle">
+                      TOTAL OVERTIME/HOURS WORKED
+                    </th>
+                    <th className="border px-1 text-center align-middle">
+                      TOTAL DAYS WORKED
+                    </th>
+                    <th className="border px-1 text-center align-middle">
+                      HOURLY RATE
+                    </th>
+                    <th className="border px-1 text-center align-middle">
+                      DAILY RATE
+                    </th>
                   </tr>
                 </thead>
 
