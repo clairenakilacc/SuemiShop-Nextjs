@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
-
 import type { Payslip } from "@/app/types/payslip";
+
+import ViewPayslip from "@/app/components/payslips/ViewPayslip";
+import EditPayslip from "@/app/components/payslips/EditPayslip";
+import DeletePayslip from "@/app/components/payslips/DeletePayslip";
 
 interface Props {
   data: Payslip[];
@@ -31,18 +34,20 @@ export default function PayslipTable({
   onPageSizeChange,
   onRefresh,
 }: Props) {
-  const [selected, setSelected] = useState<Payslip | null>(null);
+  const [selectedPayslip, setSelectedPayslip] = useState<Payslip | null>(null);
+
+  const [viewOpen, setViewOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   return (
     <div>
-      {/* ================= TABLE ================= */}
       <div className="table-responsive" style={{ maxHeight: "70vh" }}>
         <table className="table table-bordered table-striped text-capitalize">
           <thead className="table-light sticky-top">
             <tr>
-              {/* CHECKBOX */}
               <th className="text-center">
                 <input
                   type="checkbox"
@@ -52,26 +57,29 @@ export default function PayslipTable({
                   onChange={(e) => onToggleSelectAll(e.target.checked)}
                 />
               </th>
+
               <th>Period</th>
               <th>Employee</th>
               <th>Days</th>
               <th>Overtime</th>
               <th>Gross Pay</th>
               <th>Net Pay</th>
+
+              {/* ✅ ACTIONS */}
+              <th className="text-center">Actions</th>
             </tr>
           </thead>
 
           <tbody>
             {data.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-4 text-muted">
+                <td colSpan={8} className="text-center py-4 text-muted">
                   No payslips found.
                 </td>
               </tr>
             ) : (
               data.map((row) => (
                 <tr key={row.id}>
-                  {/* CHECKBOX */}
                   <td className="text-center">
                     <input
                       type="checkbox"
@@ -80,35 +88,59 @@ export default function PayslipTable({
                     />
                   </td>
 
-                  {/* PERIOD */}
                   <td>
-                    {row.start_period && row.end_period ? (
-                      <>
-                        {new Date(row.start_period).toLocaleDateString()} -{" "}
-                        {new Date(row.end_period).toLocaleDateString()}
-                      </>
-                    ) : (
-                      "-"
-                    )}
+                    {row.start_period && row.end_period
+                      ? `${new Date(row.start_period).toLocaleDateString()} - ${new Date(row.end_period).toLocaleDateString()}`
+                      : "-"}
                   </td>
 
-                  {/* EMPLOYEE */}
                   <td>{row.user?.name || "Unknown"}</td>
-
-                  {/* DAYS */}
                   <td>{row.days_worked}</td>
-
-                  {/* OVERTIME */}
                   <td>{row.overtime_hours}</td>
 
-                  {/* GROSS */}
                   <td>₱{Number(row.gross_pay || 0).toLocaleString()}</td>
-
-                  {/* NET */}
                   <td>
                     <strong className="text-success">
                       ₱{Number(row.net_pay || 0).toLocaleString()}
                     </strong>
+                  </td>
+
+                  {/* ✅ ACTION BUTTONS */}
+                  <td className="text-center">
+                    <div className="d-flex justify-content-center gap-2">
+                      {/* VIEW */}
+                      <button
+                        className="action-btn view"
+                        onClick={() => {
+                          setSelectedPayslip(row);
+                          setViewOpen(true);
+                        }}
+                      >
+                        👁
+                      </button>
+
+                      {/* EDIT */}
+                      <button
+                        className="action-btn edit"
+                        onClick={() => {
+                          setSelectedPayslip(row);
+                          setEditOpen(true);
+                        }}
+                      >
+                        ✏️
+                      </button>
+
+                      {/* DELETE */}
+                      <button
+                        className="action-btn delete"
+                        onClick={() => {
+                          setSelectedPayslip(row);
+                          setDeleteOpen(true);
+                        }}
+                      >
+                        🗑
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -117,7 +149,7 @@ export default function PayslipTable({
         </table>
       </div>
 
-      {/* ================= PAGINATION ================= */}
+      {/* PAGINATION */}
       <div className="d-flex justify-content-between mt-3 flex-wrap gap-2">
         <div>
           Show{" "}
@@ -150,6 +182,27 @@ export default function PayslipTable({
             ))}
         </div>
       </div>
+
+      {/* MODALS */}
+      <ViewPayslip
+        show={viewOpen}
+        payslip={selectedPayslip}
+        onClose={() => setViewOpen(false)}
+      />
+
+      <EditPayslip
+        show={editOpen}
+        payslip={selectedPayslip}
+        onClose={() => setEditOpen(false)}
+        onSuccess={onRefresh}
+      />
+
+      <DeletePayslip
+        show={deleteOpen}
+        payslip={selectedPayslip}
+        onClose={() => setDeleteOpen(false)}
+        onSuccess={onRefresh}
+      />
     </div>
   );
 }
