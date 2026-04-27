@@ -88,10 +88,8 @@ export default function InventoryTable({
 
                   <td>{row.box_number || "-"}</td>
 
-                  {/* ✅ FIXED: Supplier name instead of ID */}
                   <td>{row.supplier?.name || "-"}</td>
 
-                  {/* ✅ FIXED: Category description instead of ID */}
                   <td>{row.category?.description || "-"}</td>
 
                   <td>{row.quantity}</td>
