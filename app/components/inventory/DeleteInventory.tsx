@@ -1,6 +1,7 @@
 "use client";
 
 import { supabase } from "@/lib/supabase";
+import toast from "react-hot-toast";
 import type { Inventory } from "@/app/types/inventory";
 
 interface Props {
@@ -19,9 +20,20 @@ export default function DeleteInventory({
   if (!show || !inventory) return null;
 
   const handleDelete = async () => {
-    await supabase.from("inventories").delete().eq("id", inventory.id);
-    onSuccess();
-    onClose();
+    try {
+      const { error } = await supabase
+        .from("inventories")
+        .delete()
+        .eq("id", inventory.id);
+
+      if (error) throw error;
+
+      toast.success("Inventory deleted");
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      toast.error(err.message);
+    }
   };
 
   return (
@@ -30,16 +42,23 @@ export default function DeleteInventory({
       style={{ background: "rgba(0,0,0,0.5)" }}
     >
       <div className="modal-dialog modal-dialog-centered">
-        <div className="modal-content">
-          <div className="modal-header">
-            <h5>Delete Inventory</h5>
+        <div className="modal-content rounded-3 overflow-hidden">
+          {/* HEADER */}
+          <div className="modal-header bg-light">
+            <h5 className="modal-title">Delete Inventory</h5>
             <button className="btn-close" onClick={onClose} />
           </div>
 
+          {/* BODY */}
           <div className="modal-body">
-            Are you sure you want to delete <b>{inventory.box_number}</b>?
+            <p>Are you sure you want to delete:</p>
+
+            <div className="alert alert-warning mb-0">
+              <strong>{inventory.box_number || "Inventory item"}</strong>
+            </div>
           </div>
 
+          {/* FOOTER */}
           <div className="modal-footer">
             <button className="btn btn-secondary" onClick={onClose}>
               Cancel
